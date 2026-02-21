@@ -37,9 +37,10 @@ type SessionPhase =
 const WRITING_RESULT_KEY = "writing_test_last_result";
 
 export default function WritingSessionScreen() {
-  const { level, deckId } = useLocalSearchParams<{
+  const { level, deckId, topic } = useLocalSearchParams<{
     level: WritingLevel;
     deckId?: string;
+    topic?: string;
   }>();
   const { getDeck } = useDecks();
   const deck = deckId ? getDeck(deckId) : null;
@@ -73,7 +74,7 @@ export default function WritingSessionScreen() {
 
   const loadPrompts = async () => {
     try {
-      const generated = await generateWritingPrompts(levelConfig, deck);
+      const generated = await generateWritingPrompts(levelConfig, deck, topic);
       if (generated.length === 0) throw new Error("No prompts generated");
       setPrompts(generated);
       setPhase("writing");

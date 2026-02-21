@@ -24,6 +24,7 @@ export interface WritingPrompt {
   id: string;
   level: WritingLevel;
   instruction: string;
+  instructionDa?: string;
   contextWords?: string[];
   hints?: string[];
   minWords: number;

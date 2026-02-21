@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Pressable, ScrollView } from "react-native";
+import { View, Text, Pressable, ScrollView, TextInput } from "react-native";
 import { Check, ChevronRight } from "lucide-react-native";
 import { WRITING_LEVELS, LevelConfig } from "../../constants/writingLevels";
 import { WritingLevel, Deck } from "../../types";
@@ -10,6 +10,8 @@ interface LevelSelectorProps {
   decks: Deck[];
   selectedDeckId: string | null;
   onSelectDeck: (deckId: string | null) => void;
+  topic: string;
+  onChangeTopic: (topic: string) => void;
   onStart: () => void;
 }
 
@@ -20,12 +22,25 @@ const LEVEL_COLORS: Record<string, { bg: string; border: string; text: string; b
   rose: { bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", badge: "bg-rose-100" },
 };
 
+const SUGGESTED_TOPICS = [
+  "Familie og venner",
+  "Mad og drikke",
+  "Arbejde og uddannelse",
+  "Ferie og rejser",
+  "Natur og miljø",
+  "By og nabolag",
+  "Sundhed og sport",
+  "Teknologi",
+];
+
 export function LevelSelector({
   selectedLevel,
   onSelectLevel,
   decks,
   selectedDeckId,
   onSelectDeck,
+  topic,
+  onChangeTopic,
   onStart,
 }: LevelSelectorProps) {
   const danishDecks = decks.filter(
@@ -34,6 +49,7 @@ export function LevelSelector({
 
   return (
     <ScrollView className="flex-1" contentContainerClassName="p-6 gap-6">
+      {/* Level selection */}
       <View>
         <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
           Select Level
@@ -97,6 +113,45 @@ export function LevelSelector({
         </View>
       </View>
 
+      {/* Topic */}
+      <View>
+        <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
+          Topic (Optional)
+        </Text>
+        <Text className="text-xs text-slate-400 mb-3">
+          Choose a theme for your writing prompts.
+        </Text>
+        <TextInput
+          value={topic}
+          onChangeText={onChangeTopic}
+          placeholder="e.g. familie, mad, ferie..."
+          placeholderTextColor="#94a3b8"
+          className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-sm text-slate-800 mb-3"
+        />
+        <View className="flex-row flex-wrap gap-2">
+          {SUGGESTED_TOPICS.map((t) => (
+            <Pressable
+              key={t}
+              onPress={() => onChangeTopic(topic === t ? "" : t)}
+              className={`px-3 py-1.5 rounded-full border ${
+                topic === t
+                  ? "bg-amber-100 border-amber-300"
+                  : "bg-white border-slate-200"
+              }`}
+            >
+              <Text
+                className={`text-xs font-medium ${
+                  topic === t ? "text-amber-700" : "text-slate-600"
+                }`}
+              >
+                {t}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      {/* Vocabulary deck (only for Danish decks) */}
       {danishDecks.length > 0 && (
         <View>
           <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">

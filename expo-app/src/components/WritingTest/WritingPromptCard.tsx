@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
-import { Send, Lightbulb } from "lucide-react-native";
+import { Send, Lightbulb, Languages, ChevronDown, ChevronUp } from "lucide-react-native";
 import { WritingPrompt } from "../../types";
 import { LevelConfig } from "../../constants/writingLevels";
 
@@ -23,13 +23,43 @@ export function WritingPromptCard({
 }: WritingPromptCardProps) {
   const wordCount = userText.trim().split(/\s+/).filter(Boolean).length;
   const meetsMinWords = wordCount >= prompt.minWords;
+  const [showTranslation, setShowTranslation] = useState(false);
+  const [showHints, setShowHints] = useState(false);
 
   return (
     <View className="gap-5">
       <View className="bg-white rounded-2xl p-5 border border-slate-100 gap-4">
+        {/* Danish instruction */}
         <Text className="text-lg font-bold text-slate-800 leading-relaxed">
           {prompt.instruction}
         </Text>
+
+        {/* Translation toggle */}
+        {prompt.instructionDa && (
+          <View>
+            <Pressable
+              onPress={() => setShowTranslation((v) => !v)}
+              className="flex-row items-center gap-1.5 self-start"
+            >
+              <Languages size={14} color="#6366f1" />
+              <Text className="text-xs font-semibold text-indigo-500">
+                {showTranslation ? "Hide translation" : "Show translation"}
+              </Text>
+              {showTranslation ? (
+                <ChevronUp size={12} color="#6366f1" />
+              ) : (
+                <ChevronDown size={12} color="#6366f1" />
+              )}
+            </Pressable>
+            {showTranslation && (
+              <View className="mt-2 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
+                <Text className="text-sm text-indigo-700 leading-relaxed">
+                  {prompt.instructionDa}
+                </Text>
+              </View>
+            )}
+          </View>
+        )}
 
         {prompt.contextWords && prompt.contextWords.length > 0 && (
           <View className="gap-1">
@@ -48,21 +78,32 @@ export function WritingPromptCard({
           </View>
         )}
 
+        {/* Hints — hidden by default, tap to reveal */}
         {prompt.hints && prompt.hints.length > 0 && (
-          <View className="gap-1">
-            <View className="flex-row items-center gap-1">
-              <Lightbulb size={12} color="#94a3b8" />
-              <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                Hints
+          <View>
+            <Pressable
+              onPress={() => setShowHints((v) => !v)}
+              className="flex-row items-center gap-1.5 self-start"
+            >
+              <Lightbulb size={14} color="#94a3b8" />
+              <Text className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                {showHints ? "Hide hints" : "Show hints"}
               </Text>
-            </View>
-            <View className="gap-1">
-              {prompt.hints.map((hint, i) => (
-                <Text key={i} className="text-xs text-slate-500 italic">
-                  {hint}
-                </Text>
-              ))}
-            </View>
+              {showHints ? (
+                <ChevronUp size={12} color="#94a3b8" />
+              ) : (
+                <ChevronDown size={12} color="#94a3b8" />
+              )}
+            </Pressable>
+            {showHints && (
+              <View className="mt-2 gap-1">
+                {prompt.hints.map((hint, i) => (
+                  <Text key={i} className="text-xs text-slate-500 italic">
+                    {hint}
+                  </Text>
+                ))}
+              </View>
+            )}
           </View>
         )}
       </View>

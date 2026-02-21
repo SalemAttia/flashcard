@@ -10,11 +10,13 @@ export default function WritingTestScreen() {
   const { decks } = useDecks();
   const [selectedLevel, setSelectedLevel] = useState<WritingLevel | null>(null);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
+  const [topic, setTopic] = useState("");
 
   const handleStart = () => {
     if (!selectedLevel) return;
     const params: Record<string, string> = { level: selectedLevel };
     if (selectedDeckId) params.deckId = selectedDeckId;
+    if (topic.trim()) params.topic = topic.trim();
     router.push({ pathname: "/writing-session", params });
   };
 
@@ -35,6 +37,8 @@ export default function WritingTestScreen() {
         decks={decks}
         selectedDeckId={selectedDeckId}
         onSelectDeck={setSelectedDeckId}
+        topic={topic}
+        onChangeTopic={setTopic}
         onStart={handleStart}
       />
     </SafeAreaView>
