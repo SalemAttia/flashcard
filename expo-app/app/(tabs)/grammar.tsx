@@ -3,7 +3,8 @@ import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { TopicSelector } from "../../src/components/Grammar/TopicSelector";
-import { GrammarTopicId } from "../../src/types";
+import { GrammarTopicId, SavedCustomTopic } from "../../src/types";
+import { useCustomGrammarTopics } from "../../src/store/useCustomGrammarTopics";
 
 export default function GrammarScreen() {
   const [selectedTopic, setSelectedTopic] = useState<GrammarTopicId | null>(
@@ -11,10 +12,26 @@ export default function GrammarScreen() {
   );
   const [customTopic, setCustomTopic] = useState("");
   const [questionCount, setQuestionCount] = useState(10);
+  const [selectedSavedTopicId, setSelectedSavedTopicId] = useState<
+    string | null
+  >(null);
+
+  const { topics: savedTopics, saveTopic, deleteTopic, markTopicUsed } =
+    useCustomGrammarTopics();
+
+  const handleSelectSavedTopic = (topic: SavedCustomTopic) => {
+    setCustomTopic(topic.title);
+    setSelectedTopic(null);
+    setSelectedSavedTopicId(topic.id);
+  };
 
   const handleStart = () => {
     const hasCustom = customTopic.trim().length > 0;
     if (!selectedTopic && !hasCustom) return;
+
+    if (selectedSavedTopicId) {
+      markTopicUsed(selectedSavedTopicId);
+    }
 
     const params: Record<string, string> = {
       questionCount: String(questionCount),
@@ -42,12 +59,23 @@ export default function GrammarScreen() {
 
       <TopicSelector
         selectedTopic={selectedTopic}
-        onSelectTopic={setSelectedTopic}
+        onSelectTopic={(id) => {
+          setSelectedTopic(id);
+          setSelectedSavedTopicId(null);
+        }}
         customTopic={customTopic}
-        onChangeCustomTopic={setCustomTopic}
+        onChangeCustomTopic={(text) => {
+          setCustomTopic(text);
+          setSelectedSavedTopicId(null);
+        }}
         questionCount={questionCount}
         onChangeQuestionCount={setQuestionCount}
         onStart={handleStart}
+        savedTopics={savedTopics}
+        onSaveTopic={saveTopic}
+        onDeleteSavedTopic={deleteTopic}
+        onSelectSavedTopic={handleSelectSavedTopic}
+        selectedSavedTopicId={selectedSavedTopicId}
       />
     </SafeAreaView>
   );

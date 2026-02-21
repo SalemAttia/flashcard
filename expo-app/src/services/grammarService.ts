@@ -314,3 +314,33 @@ function generateLocalGrammarQuestions(
   }
   return result;
 }
+
+export async function generateGrammarTopicTitle(
+  rawDescription: string
+): Promise<string> {
+  const openai = getOpenAIClient();
+  if (!openai) {
+    return rawDescription
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+  }
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      temperature: 0.3,
+      max_tokens: 30,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a Danish grammar expert. Given a learner's description of a grammar concept, return ONLY a concise English title for that grammar topic. Format: [Category]: [Specifics] or a short noun phrase. Max 8 words. No quotes, no punctuation at end.",
+        },
+        { role: "user", content: rawDescription },
+      ],
+    });
+    return response.choices[0]?.message?.content?.trim() || rawDescription;
+  } catch {
+    return rawDescription;
+  }
+}
