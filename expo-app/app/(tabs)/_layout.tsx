@@ -1,7 +1,11 @@
 import { Tabs } from "expo-router";
+import { Platform } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BookOpen, PenLine } from "lucide-react-native";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -11,6 +15,7 @@ export default function TabLayout() {
         tabBarStyle: {
           borderTopColor: "#f1f5f9",
           backgroundColor: "#ffffff",
+          paddingBottom: Platform.OS === "web" ? 8 : insets.bottom,
         },
         tabBarLabelStyle: {
           fontSize: 12,
