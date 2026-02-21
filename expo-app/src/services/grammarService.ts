@@ -55,7 +55,8 @@ Rules:
 - Explanations should be in English (the student is learning Danish).
 - Options should be plausible distractors.
 - Vary difficulty from easy to moderate.
-- Return ONLY the JSON array.`,
+- Return ONLY the JSON array.
+- IMPORTANT: Every question MUST have exactly 4 items in the "options" array. Never return a question without options, for both multiple-choice and fill-in-the-blank types.`,
         },
       ],
     });
@@ -67,7 +68,18 @@ Rules:
     const parsed: Omit<GrammarQuestion, "id" | "topicId">[] =
       JSON.parse(jsonStr);
 
-    return parsed.map((q, i) => ({
+    const valid = parsed.filter(
+      (q) =>
+        Array.isArray(q.options) &&
+        q.options.length >= 2 &&
+        typeof q.correctAnswer === "string" &&
+        q.correctAnswer.length > 0 &&
+        typeof q.sentence === "string"
+    );
+
+    if (valid.length === 0) throw new Error("No valid questions in response");
+
+    return valid.map((q, i) => ({
       ...q,
       id: `gq-${i}`,
       topicId: topicId,
