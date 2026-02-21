@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { Plus } from "lucide-react-native";
+import { Plus, PenLine, ChevronRight } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { useDecks } from "../src/store/useDecks";
 import { DeckList } from "../src/components/DeckList";
@@ -54,6 +54,32 @@ export default function HomeScreen() {
             router.push(`/test?deckId=${deck.id}`);
           }}
         />
+
+        <View className="mt-6 mb-2">
+          <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
+            Exam Mode
+          </Text>
+          <Pressable
+            onPress={() => router.push("/writing-test")}
+            className="w-full bg-amber-50 border border-amber-200 py-5 px-5 rounded-2xl flex-row items-center gap-4"
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            })}
+          >
+            <View className="w-10 h-10 bg-amber-100 rounded-xl items-center justify-center">
+              <PenLine size={20} color="#d97706" />
+            </View>
+            <View className="flex-1">
+              <Text className="font-semibold text-slate-800">
+                Danish Writing Exam
+              </Text>
+              <Text className="text-xs text-slate-500 mt-0.5">
+                A1 → B2 · AI-graded · Prøve i Dansk
+              </Text>
+            </View>
+            <ChevronRight size={18} color="#94a3b8" />
+          </Pressable>
+        </View>
       </ScrollView>
 
       <View className="p-6 border-t border-slate-100 bg-white">

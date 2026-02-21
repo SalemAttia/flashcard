@@ -36,6 +36,21 @@ export default function RootLayout() {
             name="summary"
             options={{ animation: "slide_from_bottom" }}
           />
+          <Stack.Screen
+            name="writing-test"
+            options={{ animation: "slide_from_bottom" }}
+          />
+          <Stack.Screen
+            name="writing-session"
+            options={{
+              animation: "slide_from_right",
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
+            name="writing-summary"
+            options={{ animation: "slide_from_bottom" }}
+          />
         </Stack>
         <Toast />
       </SafeAreaProvider>
