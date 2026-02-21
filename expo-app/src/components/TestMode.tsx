@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Sparkles,
   AlertCircle,
+  Volume2,
 } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import Animated, {
@@ -16,6 +17,7 @@ import Animated, {
   Easing,
   FadeIn,
 } from "react-native-reanimated";
+import * as Speech from "expo-speech";
 import OpenAI from "openai";
 import { Deck, Card, Language } from "../types";
 
@@ -27,7 +29,7 @@ interface TestModeProps {
   onCancel: () => void;
 }
 
-type QuestionType = "multiple-choice" | "true-false" | "written";
+type QuestionType = "multiple-choice" | "true-false" | "written" | "sound";
 
 interface Question {
   id: string;
@@ -36,6 +38,9 @@ interface Question {
   correctAnswer: string;
   options?: string[];
   explanation?: string;
+  audioText?: string;
+  audioLang?: Language;
+  soundVariant?: "multiple-choice" | "written";
 }
 
 export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
@@ -45,8 +50,10 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
   const [userAnswer, setUserAnswer] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const spinRotation = useSharedValue(0);
+  const speakingPulse = useSharedValue(1);
 
   useEffect(() => {
     spinRotation.value = withRepeat(
@@ -55,11 +62,61 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
       false
     );
     generateQuestions();
+    return () => {
+      Speech.stop();
+    };
   }, []);
+
+  // Auto-play audio when a sound question becomes current
+  useEffect(() => {
+    const current = questions[currentIndex];
+    if (
+      !loading &&
+      current?.type === "sound" &&
+      current.audioText &&
+      current.audioLang
+    ) {
+      const timer = setTimeout(() => {
+        speakAudio(current.audioText!, current.audioLang!);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [currentIndex, loading]);
+
+  // Pulse animation when speaking
+  useEffect(() => {
+    if (isSpeaking) {
+      speakingPulse.value = withRepeat(
+        withTiming(1.08, {
+          duration: 600,
+          easing: Easing.inOut(Easing.ease),
+        }),
+        -1,
+        true
+      );
+    } else {
+      speakingPulse.value = withTiming(1, { duration: 200 });
+    }
+  }, [isSpeaking]);
 
   const spinStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${spinRotation.value}deg` }],
   }));
+
+  const speakingPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: speakingPulse.value }],
+  }));
+
+  const speakAudio = (text: string, lang: Language) => {
+    Speech.stop();
+    setIsSpeaking(true);
+    Speech.speak(text, {
+      language: lang,
+      onDone: () => setIsSpeaking(false),
+      onError: () => setIsSpeaking(false),
+      onStopped: () => setIsSpeaking(false),
+    });
+  };
 
   const generateQuestions = async () => {
     setLoading(true);
@@ -98,19 +155,31 @@ Back language: ${deck.backLang}
 Cards:
 ${cardsList}
 
-Generate exactly ${questionCount} questions as a JSON array. Include a mix of these types:
-1. "multiple-choice" — 4 plausible options (options in ${deck.backLang}), only one correct
+Generate exactly ${questionCount} questions as a JSON array. Include a mix of all four types:
+1. "multiple-choice" — 4 plausible written options, only one correct
 2. "true-false" — present a term with a potentially wrong definition
-3. "written" — ask for the translation
+3. "written" — ask the user to type the translation
+4. "sound" — the user hears a word/phrase spoken aloud and must identify it
 
 Each object must have:
 {
-  "type": "multiple-choice" | "true-false" | "written",
-  "prompt": "question text",
+  "type": "multiple-choice" | "true-false" | "written" | "sound",
+  "prompt": "question text shown to the user (for sound: e.g. 'Listen and translate:')",
   "correctAnswer": "the correct answer string",
-  "options": ["a", "b", "c", "d"],  // only for multiple-choice
-  "explanation": "brief explanation"
+  "options": ["a","b","c","d"],     // for multiple-choice and sound with soundVariant multiple-choice
+  "explanation": "brief explanation",
+  // For type "sound" only:
+  "audioText": "the exact text to speak aloud",
+  "audioLang": "${deck.frontLang}",
+  "soundVariant": "multiple-choice" | "written"
 }
+
+For type "sound":
+- audioText should be the word/phrase from the front side of the card (in ${deck.frontLang})
+- correctAnswer should be the translation the user must produce (in ${deck.backLang})
+- options (if soundVariant is "multiple-choice") should be plausible translations in ${deck.backLang}
+- prompt should be instructional, e.g. "Listen and translate:"
+- audioLang must be "${deck.frontLang}"
 
 For true-false, correctAnswer must be exactly "true" or "false".
 For written, correctAnswer is the expected translation.
@@ -146,7 +215,7 @@ Return ONLY the JSON array.`,
       // Local fallback generator
       const generated = deck.cards.map((card, i) => {
         const typeRand = Math.random();
-        if (typeRand > 0.6) {
+        if (typeRand > 0.75) {
           return {
             id: `q-${i}`,
             type: "multiple-choice" as const,
@@ -162,7 +231,7 @@ Return ONLY the JSON array.`,
             ].sort(() => Math.random() - 0.5),
             explanation: `"${card.front}" translates to "${card.back}".`,
           };
-        } else if (typeRand > 0.3) {
+        } else if (typeRand > 0.5) {
           const isCorrect = Math.random() > 0.5;
           const randomBack = isCorrect
             ? card.back
@@ -176,13 +245,39 @@ Return ONLY the JSON array.`,
               ? "Correct!"
               : `No, "${card.front}" actually means "${card.back}".`,
           };
-        } else {
+        } else if (typeRand > 0.25) {
           return {
             id: `q-${i}`,
             type: "written" as const,
             prompt: `Translate "${card.front}" into ${deck.backLang}:`,
             correctAnswer: card.back,
             explanation: `The correct answer is "${card.back}".`,
+          };
+        } else {
+          // Sound question
+          const canDoSoundMultiple = deck.cards.length >= 4;
+          const soundIsMultipleChoice =
+            canDoSoundMultiple && Math.random() > 0.5;
+          const distractors = deck.cards
+            .filter((c) => c.id !== card.id)
+            .sort(() => Math.random() - 0.5)
+            .slice(0, 3)
+            .map((c) => c.back);
+
+          return {
+            id: `q-${i}`,
+            type: "sound" as const,
+            prompt: "Listen and translate:",
+            audioText: card.front,
+            audioLang: deck.frontLang,
+            correctAnswer: card.back,
+            soundVariant: (soundIsMultipleChoice
+              ? "multiple-choice"
+              : "written") as "multiple-choice" | "written",
+            options: soundIsMultipleChoice
+              ? [card.back, ...distractors].sort(() => Math.random() - 0.5)
+              : undefined,
+            explanation: `"${card.front}" (${deck.frontLang}) translates to "${card.back}".`,
           };
         }
       });
@@ -197,11 +292,14 @@ Return ONLY the JSON array.`,
     if (showFeedback) return;
 
     const current = questions[currentIndex];
-    const isCorrect =
-      current.type === "written"
-        ? answer.trim().toLowerCase() ===
-          current.correctAnswer.trim().toLowerCase()
-        : answer === current.correctAnswer;
+    const isWrittenInput =
+      current.type === "written" ||
+      (current.type === "sound" && current.soundVariant === "written");
+
+    const isCorrect = isWrittenInput
+      ? answer.trim().toLowerCase() ===
+        current.correctAnswer.trim().toLowerCase()
+      : answer === current.correctAnswer;
 
     if (isCorrect) setCorrectCount((prev) => prev + 1);
     setUserAnswer(answer);
@@ -209,6 +307,8 @@ Return ONLY the JSON array.`,
   };
 
   const nextQuestion = () => {
+    Speech.stop();
+    setIsSpeaking(false);
     if (currentIndex + 1 < questions.length) {
       setCurrentIndex((prev) => prev + 1);
       setUserAnswer("");
@@ -255,17 +355,26 @@ Return ONLY the JSON array.`,
   const current = questions[currentIndex];
   const progressPercent = ((currentIndex + 1) / questions.length) * 100;
 
-  const isAnswerCorrect =
-    current.type === "written"
-      ? userAnswer.trim().toLowerCase() ===
-        current.correctAnswer.trim().toLowerCase()
-      : userAnswer === current.correctAnswer;
+  const isWrittenInput =
+    current.type === "written" ||
+    (current.type === "sound" && current.soundVariant === "written");
+
+  const isAnswerCorrect = isWrittenInput
+    ? userAnswer.trim().toLowerCase() ===
+      current.correctAnswer.trim().toLowerCase()
+    : userAnswer === current.correctAnswer;
 
   return (
     <View className="flex-1 bg-slate-50">
       {/* Header */}
       <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
-        <Pressable onPress={onCancel} className="p-2 -ml-2">
+        <Pressable
+          onPress={() => {
+            Speech.stop();
+            onCancel();
+          }}
+          className="p-2 -ml-2"
+        >
           <X size={24} color="#64748b" />
         </Pressable>
         <View className="items-center">
@@ -310,12 +419,60 @@ Return ONLY the JSON array.`,
           <View className="items-center gap-4">
             <View className="px-3 py-1 bg-indigo-50 rounded-full">
               <Text className="text-indigo-600 text-[10px] font-bold uppercase tracking-widest">
-                {current.type.replace("-", " ")}
+                {current.type === "sound"
+                  ? "listening"
+                  : current.type.replace("-", " ")}
               </Text>
             </View>
-            <Text className="text-2xl font-bold text-slate-800 text-center leading-relaxed">
-              {current.prompt}
-            </Text>
+
+            {/* Non-sound prompt */}
+            {current.type !== "sound" && (
+              <Text className="text-2xl font-bold text-slate-800 text-center leading-relaxed">
+                {current.prompt}
+              </Text>
+            )}
+
+            {/* Sound prompt: speaker button */}
+            {current.type === "sound" && (
+              <View className="items-center gap-4">
+                <Text className="text-base text-slate-500 text-center">
+                  {current.prompt}
+                </Text>
+                <Pressable
+                  onPress={() => {
+                    if (current.audioText && current.audioLang) {
+                      speakAudio(current.audioText, current.audioLang);
+                    }
+                  }}
+                  disabled={showFeedback}
+                  style={({ pressed }) => ({
+                    transform: [{ scale: pressed ? 0.94 : 1 }],
+                  })}
+                >
+                  <Animated.View
+                    style={[
+                      {
+                        width: 96,
+                        height: 96,
+                        borderRadius: 48,
+                        alignItems: "center" as const,
+                        justifyContent: "center" as const,
+                        backgroundColor: isSpeaking ? "#e0e7ff" : "#4f46e5",
+                      },
+                      isSpeaking ? speakingPulseStyle : {},
+                    ]}
+                  >
+                    <Volume2
+                      size={44}
+                      color={isSpeaking ? "#4f46e5" : "#ffffff"}
+                    />
+                  </Animated.View>
+                </Pressable>
+                <Text className="text-xs text-slate-400 font-medium">
+                  Tap to {isSpeaking ? "replay" : "listen"}
+                </Text>
+              </View>
+            )}
           </View>
 
           <View className="gap-3">
@@ -449,6 +606,93 @@ Return ONLY the JSON array.`,
                 )}
               </View>
             )}
+
+            {/* Sound: multiple-choice variant */}
+            {current.type === "sound" &&
+              current.soundVariant === "multiple-choice" &&
+              current.options?.map((option, idx) => {
+                const isSelected = userAnswer === option;
+                const isCorrectOption = option === current.correctAnswer;
+                return (
+                  <Pressable
+                    key={idx}
+                    disabled={showFeedback}
+                    onPress={() => handleAnswer(option)}
+                    className={`w-full p-4 rounded-2xl border-2 ${
+                      showFeedback
+                        ? isCorrectOption
+                          ? "bg-green-50 border-green-500"
+                          : isSelected
+                          ? "bg-red-50 border-red-500"
+                          : "bg-white border-slate-100"
+                        : "bg-white border-slate-100"
+                    }`}
+                    style={({ pressed }) =>
+                      !showFeedback
+                        ? { transform: [{ scale: pressed ? 0.98 : 1 }] }
+                        : {}
+                    }
+                  >
+                    <View className="flex-row items-center justify-between">
+                      <Text
+                        className={`font-medium ${
+                          showFeedback
+                            ? isCorrectOption
+                              ? "text-green-700"
+                              : isSelected
+                              ? "text-red-700"
+                              : "text-slate-400"
+                            : "text-slate-800"
+                        }`}
+                      >
+                        {option}
+                      </Text>
+                      {showFeedback && isCorrectOption && (
+                        <Check size={18} color="#16a34a" />
+                      )}
+                      {showFeedback && isSelected && !isCorrectOption && (
+                        <X size={18} color="#dc2626" />
+                      )}
+                    </View>
+                  </Pressable>
+                );
+              })}
+
+            {/* Sound: written variant */}
+            {current.type === "sound" &&
+              current.soundVariant === "written" && (
+                <View className="gap-4">
+                  <TextInput
+                    editable={!showFeedback}
+                    value={userAnswer}
+                    onChangeText={setUserAnswer}
+                    onSubmitEditing={() => handleAnswer(userAnswer)}
+                    returnKeyType="done"
+                    placeholder="Type what you heard..."
+                    placeholderTextColor="#94a3b8"
+                    className={`w-full p-4 rounded-2xl border-2 text-base ${
+                      showFeedback
+                        ? isAnswerCorrect
+                          ? "bg-green-50 border-green-500 text-green-700"
+                          : "bg-red-50 border-red-500 text-red-700"
+                        : "bg-white border-slate-200 text-slate-900"
+                    }`}
+                  />
+                  {!showFeedback && (
+                    <Pressable
+                      onPress={() => handleAnswer(userAnswer)}
+                      className="w-full py-4 bg-indigo-600 rounded-2xl items-center"
+                      style={({ pressed }) => ({
+                        transform: [{ scale: pressed ? 0.98 : 1 }],
+                      })}
+                    >
+                      <Text className="text-white font-semibold">
+                        Check Answer
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+              )}
           </View>
 
           {/* Feedback */}
