@@ -218,7 +218,7 @@ export default function GrammarSessionScreen() {
           </Text>
         </View>
         <View className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-          <Animated.View
+          <View
             style={{ width: `${progressPercent}%` }}
             className="h-full bg-indigo-500 rounded-full"
           />
