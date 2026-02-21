@@ -8,11 +8,15 @@ import {
   Modal,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from "react-native";
-import { ChevronLeft, Plus, Trash2, Save, X, FileText } from "lucide-react-native";
+import { ChevronLeft, Plus, Trash2, Save, X, FileText, Sparkles } from "lucide-react-native";
 import Toast from "react-native-toast-message";
+import OpenAI from "openai";
 import { Deck, Card, Language } from "../types";
 import { LanguagePicker } from "./LanguagePicker";
+
+const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
 interface DeckEditorProps {
   deck?: Deck;
@@ -31,6 +35,11 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
   );
   const [showBulk, setShowBulk] = useState(false);
   const [bulkText, setBulkText] = useState("");
+  const [showAiGenerate, setShowAiGenerate] = useState(false);
+  const [aiTopic, setAiTopic] = useState("");
+  const [aiLevel, setAiLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [aiCardCount, setAiCardCount] = useState(10);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const addCard = () => {
     setCards([
@@ -72,6 +81,78 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
     Toast.show({ type: "success", text1: `Imported ${newCards.length} cards` });
   };
 
+  const handleAiGenerate = async () => {
+    if (!aiTopic.trim()) {
+      Toast.show({ type: "error", text1: "Please enter a topic" });
+      return;
+    }
+    if (!OPENAI_KEY || OPENAI_KEY === "your-api-key-here") {
+      Toast.show({ type: "error", text1: "OpenAI API key not configured" });
+      return;
+    }
+
+    setAiLoading(true);
+    try {
+      const openai = new OpenAI({
+        apiKey: OPENAI_KEY,
+        dangerouslyAllowBrowser: true,
+      });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        temperature: 0.7,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert language educator. Generate flashcard pairs for language learners. Always respond with valid JSON only, no markdown fences.",
+          },
+          {
+            role: "user",
+            content: `Generate ${aiCardCount} flashcard pairs for the topic "${aiTopic}" at ${aiLevel} level.
+Front language: ${frontLang}
+Back language: ${backLang}
+
+Return a JSON array where each object has:
+{ "front": "word/phrase in ${frontLang}", "back": "translation in ${backLang}" }
+
+Guidelines:
+- For beginner: common, everyday words and simple phrases
+- For intermediate: more nuanced vocabulary, common idioms
+- For advanced: specialized terms, complex expressions, rare vocabulary
+- Ensure variety within the topic
+- Return ONLY the JSON array.`,
+          },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content?.trim() || "[]";
+      const jsonStr = content
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "");
+      const parsed: { front: string; back: string }[] = JSON.parse(jsonStr);
+
+      if (parsed.length === 0) {
+        throw new Error("AI returned no cards");
+      }
+
+      const newCards: Card[] = parsed.map((c) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        front: c.front,
+        back: c.back,
+      }));
+
+      setCards([...cards.filter((c) => c.front || c.back), ...newCards]);
+      setShowAiGenerate(false);
+      setAiTopic("");
+      Toast.show({ type: "success", text1: `Generated ${newCards.length} cards` });
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Failed to generate cards. Please try again." });
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (!title.trim()) return;
     onSave({
@@ -97,13 +178,22 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
         <Text className="font-semibold">
           {deck ? "Edit Set" : "Create New Set"}
         </Text>
-        <Pressable
-          onPress={() => setShowBulk(true)}
-          className="flex-row items-center gap-1.5"
-        >
-          <FileText size={16} color="#4f46e5" />
-          <Text className="text-indigo-600 font-medium text-sm">Bulk</Text>
-        </Pressable>
+        <View className="flex-row items-center gap-3">
+          <Pressable
+            onPress={() => setShowAiGenerate(true)}
+            className="flex-row items-center gap-1"
+          >
+            <Sparkles size={16} color="#4f46e5" />
+            <Text className="text-indigo-600 font-medium text-sm">AI</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setShowBulk(true)}
+            className="flex-row items-center gap-1"
+          >
+            <FileText size={16} color="#4f46e5" />
+            <Text className="text-indigo-600 font-medium text-sm">Bulk</Text>
+          </Pressable>
+        </View>
       </View>
 
       {/* Form */}
@@ -244,6 +334,123 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
               className="flex-1 py-3 bg-indigo-600 rounded-xl items-center"
             >
               <Text className="text-white font-semibold">Import Cards</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* AI Generate Modal */}
+      <Modal visible={showAiGenerate} transparent animationType="slide">
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => !aiLoading && setShowAiGenerate(false)}
+        />
+        <View className="bg-white rounded-t-3xl p-6 pb-10">
+          <View className="flex-row justify-between items-center mb-4">
+            <View className="flex-row items-center gap-2">
+              <Sparkles size={20} color="#4f46e5" />
+              <Text className="font-bold text-lg">AI Generate</Text>
+            </View>
+            <Pressable
+              onPress={() => !aiLoading && setShowAiGenerate(false)}
+              className="p-2"
+            >
+              <X size={20} color="#94a3b8" />
+            </Pressable>
+          </View>
+
+          <View className="gap-4">
+            <View className="gap-1.5">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                Topic
+              </Text>
+              <TextInput
+                value={aiTopic}
+                onChangeText={setAiTopic}
+                placeholder="e.g., Food vocabulary, Travel phrases"
+                placeholderTextColor="#cbd5e1"
+                className="bg-slate-50 rounded-2xl p-4 text-sm border border-slate-100 text-slate-900"
+                editable={!aiLoading}
+              />
+            </View>
+
+            <View className="gap-1.5">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                Level
+              </Text>
+              <View className="flex-row gap-2">
+                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
+                  <Pressable
+                    key={level}
+                    onPress={() => !aiLoading && setAiLevel(level)}
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                      aiLevel === level
+                        ? "bg-indigo-50 border-indigo-500"
+                        : "bg-slate-50 border-slate-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold capitalize ${
+                        aiLevel === level ? "text-indigo-600" : "text-slate-400"
+                      }`}
+                    >
+                      {level}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+
+            <View className="gap-1.5">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                Number of Cards
+              </Text>
+              <View className="flex-row gap-2">
+                {[5, 10, 15, 20].map((count) => (
+                  <Pressable
+                    key={count}
+                    onPress={() => !aiLoading && setAiCardCount(count)}
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                      aiCardCount === count
+                        ? "bg-indigo-50 border-indigo-500"
+                        : "bg-slate-50 border-slate-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-sm font-bold ${
+                        aiCardCount === count ? "text-indigo-600" : "text-slate-400"
+                      }`}
+                    >
+                      {count}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View className="flex-row gap-3 mt-6">
+            <Pressable
+              onPress={() => setShowAiGenerate(false)}
+              className="flex-1 py-3 bg-slate-100 rounded-xl items-center"
+              disabled={aiLoading}
+            >
+              <Text className="text-slate-600 font-semibold">Cancel</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleAiGenerate}
+              className="flex-1 py-3 bg-indigo-600 rounded-xl flex-row items-center justify-center gap-2"
+              disabled={aiLoading}
+              style={{ opacity: aiLoading ? 0.7 : 1 }}
+            >
+              {aiLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Sparkles size={16} color="#fff" />
+              )}
+              <Text className="text-white font-semibold">
+                {aiLoading ? "Generating..." : "Generate"}
+              </Text>
             </Pressable>
           </View>
         </View>
