@@ -86,7 +86,8 @@ export default function WritingSessionScreen() {
         text1: "Failed to generate prompts",
         text2: "Please try again.",
       });
-      router.back();
+      if (router.canGoBack()) router.back();
+      else router.replace("/");
     }
   };
 
@@ -157,7 +158,8 @@ export default function WritingSessionScreen() {
   };
 
   const handleCancel = () => {
-    router.back();
+    if (router.canGoBack()) router.back();
+    else router.replace("/");
   };
 
   if (phase === "generating" || phase === "evaluating") {
