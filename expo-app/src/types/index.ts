@@ -130,3 +130,22 @@ export interface GrammarSessionResult {
   totalCount: number;
   scorePercent: number;
 }
+
+// Chat types
+
+export type ChatMessageRole = "user" | "assistant";
+
+export interface ChatMessage {
+  id: string;
+  role: ChatMessageRole;
+  content: string;
+  timestamp: string;
+}
+
+export interface ChatNote {
+  id: string;
+  text: string;
+  title?: string;
+  timestamp: string;
+  sourceMessageId?: string;
+}

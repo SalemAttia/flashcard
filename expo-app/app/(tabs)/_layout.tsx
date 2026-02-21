@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BookOpen, PenLine, GraduationCap } from "lucide-react-native";
+import { BookOpen, PenLine, GraduationCap, MessageCircle } from "lucide-react-native";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -47,6 +47,15 @@ export default function TabLayout() {
           title: "Grammar",
           tabBarIcon: ({ color, size }) => (
             <GraduationCap size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: "Chat",
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle size={size} color={color} />
           ),
         }}
       />
