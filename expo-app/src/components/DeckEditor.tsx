@@ -9,8 +9,10 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Image,
 } from "react-native";
-import { ChevronLeft, Plus, Trash2, Save, X, FileText, Sparkles } from "lucide-react-native";
+import { ChevronLeft, Plus, Trash2, Save, X, FileText, Sparkles, Camera, ImagePlus } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 import OpenAI from "openai";
 import { Deck, Card, Language } from "../types";
@@ -40,6 +42,11 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
   const [aiLevel, setAiLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
   const [aiCardCount, setAiCardCount] = useState(10);
   const [aiLoading, setAiLoading] = useState(false);
+  const [showImageGenerate, setShowImageGenerate] = useState(false);
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageBase64, setImageBase64] = useState<string | null>(null);
+  const [imageLevel, setImageLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [imageLoading, setImageLoading] = useState(false);
 
   const addCard = () => {
     setCards([
@@ -153,6 +160,128 @@ Guidelines:
     }
   };
 
+  const pickImageFromCamera = async () => {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+    if (!permission.granted) {
+      Toast.show({ type: "error", text1: "Camera permission is required" });
+      return;
+    }
+    const result = await ImagePicker.launchCameraAsync({
+      base64: true,
+      quality: 0.7,
+      allowsEditing: true,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+      setImageBase64(result.assets[0].base64 || null);
+    }
+  };
+
+  const pickImageFromGallery = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      Toast.show({ type: "error", text1: "Photo library permission is required" });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      base64: true,
+      quality: 0.7,
+      allowsEditing: true,
+    });
+    if (!result.canceled && result.assets[0]) {
+      setImageUri(result.assets[0].uri);
+      setImageBase64(result.assets[0].base64 || null);
+    }
+  };
+
+  const handleImageGenerate = async () => {
+    if (!imageBase64) {
+      Toast.show({ type: "error", text1: "Please select an image first" });
+      return;
+    }
+    if (!OPENAI_KEY || OPENAI_KEY === "your-api-key-here") {
+      Toast.show({ type: "error", text1: "OpenAI API key not configured" });
+      return;
+    }
+
+    setImageLoading(true);
+    try {
+      const openai = new OpenAI({
+        apiKey: OPENAI_KEY,
+        dangerouslyAllowBrowser: true,
+      });
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        temperature: 0.7,
+        max_tokens: 2000,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are an expert language educator. You analyze images and generate vocabulary flashcard pairs based on objects, scenes, actions, and concepts visible in the image. Always respond with valid JSON only, no markdown fences.",
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:image/jpeg;base64,${imageBase64}`,
+                  detail: "low",
+                },
+              },
+              {
+                type: "text",
+                text: `Analyze this image and generate vocabulary flashcard pairs at ${imageLevel} level.
+Front language: ${frontLang}
+Back language: ${backLang}
+
+Return a JSON array where each object has:
+{ "front": "word/phrase in ${frontLang}", "back": "translation in ${backLang}" }
+
+Guidelines:
+- Identify objects, actions, scenes, colors, materials, and concepts visible in the image
+- For beginner: common, everyday nouns and simple adjectives
+- For intermediate: more descriptive vocabulary, verbs, prepositions, short phrases
+- For advanced: nuanced descriptions, compound words, idioms related to the scene
+- Each card should relate to something actually visible in the image
+- Ensure variety - don't repeat similar words
+- Return ONLY the JSON array.`,
+              },
+            ],
+          },
+        ],
+      });
+
+      const content = response.choices[0]?.message?.content?.trim() || "[]";
+      const jsonStr = content
+        .replace(/^```(?:json)?\s*/i, "")
+        .replace(/\s*```$/, "");
+      const parsed: { front: string; back: string }[] = JSON.parse(jsonStr);
+
+      if (parsed.length === 0) {
+        throw new Error("AI returned no cards");
+      }
+
+      const newCards: Card[] = parsed.map((c) => ({
+        id: Math.random().toString(36).substr(2, 9),
+        front: c.front,
+        back: c.back,
+      }));
+
+      setCards([...cards.filter((c) => c.front || c.back), ...newCards]);
+      setShowImageGenerate(false);
+      setImageUri(null);
+      setImageBase64(null);
+      Toast.show({ type: "success", text1: `Generated ${newCards.length} cards from image` });
+    } catch (error) {
+      Toast.show({ type: "error", text1: "Failed to analyze image. Please try again." });
+    } finally {
+      setImageLoading(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (!title.trim()) return;
     onSave({
@@ -185,6 +314,13 @@ Guidelines:
           >
             <Sparkles size={16} color="#4f46e5" />
             <Text className="text-indigo-600 font-medium text-sm">AI</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setShowImageGenerate(true)}
+            className="flex-row items-center gap-1"
+          >
+            <Camera size={16} color="#4f46e5" />
+            <Text className="text-indigo-600 font-medium text-sm">Image</Text>
           </Pressable>
           <Pressable
             onPress={() => setShowBulk(true)}
@@ -450,6 +586,121 @@ Guidelines:
               )}
               <Text className="text-white font-semibold">
                 {aiLoading ? "Generating..." : "Generate"}
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Image Generate Modal */}
+      <Modal visible={showImageGenerate} transparent animationType="slide">
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => !imageLoading && setShowImageGenerate(false)}
+        />
+        <View className="bg-white rounded-t-3xl p-6 pb-10">
+          <View className="flex-row justify-between items-center mb-4">
+            <View className="flex-row items-center gap-2">
+              <Camera size={20} color="#4f46e5" />
+              <Text className="font-bold text-lg">Image to Cards</Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                if (!imageLoading) {
+                  setShowImageGenerate(false);
+                  setImageUri(null);
+                  setImageBase64(null);
+                }
+              }}
+              className="p-2"
+            >
+              <X size={20} color="#94a3b8" />
+            </Pressable>
+          </View>
+
+          <View className="gap-4">
+            <View className="flex-row gap-3">
+              <Pressable
+                onPress={pickImageFromCamera}
+                className="flex-1 py-4 bg-slate-50 rounded-2xl items-center border border-slate-100"
+                disabled={imageLoading}
+              >
+                <Camera size={24} color="#4f46e5" />
+                <Text className="text-xs font-semibold text-slate-600 mt-1">Take Photo</Text>
+              </Pressable>
+              <Pressable
+                onPress={pickImageFromGallery}
+                className="flex-1 py-4 bg-slate-50 rounded-2xl items-center border border-slate-100"
+                disabled={imageLoading}
+              >
+                <ImagePlus size={24} color="#4f46e5" />
+                <Text className="text-xs font-semibold text-slate-600 mt-1">Gallery</Text>
+              </Pressable>
+            </View>
+
+            {imageUri && (
+              <View className="items-center">
+                <Image
+                  source={{ uri: imageUri }}
+                  className="w-full h-40 rounded-2xl"
+                  resizeMode="cover"
+                />
+              </View>
+            )}
+
+            <View className="gap-1.5">
+              <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
+                Level
+              </Text>
+              <View className="flex-row gap-2">
+                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
+                  <Pressable
+                    key={level}
+                    onPress={() => !imageLoading && setImageLevel(level)}
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                      imageLevel === level
+                        ? "bg-indigo-50 border-indigo-500"
+                        : "bg-slate-50 border-slate-100"
+                    }`}
+                  >
+                    <Text
+                      className={`text-xs font-bold capitalize ${
+                        imageLevel === level ? "text-indigo-600" : "text-slate-400"
+                      }`}
+                    >
+                      {level}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View className="flex-row gap-3 mt-6">
+            <Pressable
+              onPress={() => {
+                setShowImageGenerate(false);
+                setImageUri(null);
+                setImageBase64(null);
+              }}
+              className="flex-1 py-3 bg-slate-100 rounded-xl items-center"
+              disabled={imageLoading}
+            >
+              <Text className="text-slate-600 font-semibold">Cancel</Text>
+            </Pressable>
+            <Pressable
+              onPress={handleImageGenerate}
+              className="flex-1 py-3 bg-indigo-600 rounded-xl flex-row items-center justify-center gap-2"
+              disabled={imageLoading || !imageBase64}
+              style={{ opacity: imageLoading || !imageBase64 ? 0.7 : 1 }}
+            >
+              {imageLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Camera size={16} color="#fff" />
+              )}
+              <Text className="text-white font-semibold">
+                {imageLoading ? "Analyzing..." : "Generate"}
               </Text>
             </Pressable>
           </View>

@@ -29,7 +29,14 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Flashcard to access your photos to generate vocabulary cards from images.",
+          "cameraPermission": "Allow Flashcard to use the camera to generate vocabulary cards from photos."
+        }
+      ]
     ]
   }
 }
