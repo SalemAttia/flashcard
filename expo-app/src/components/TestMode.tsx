@@ -198,6 +198,8 @@ Return ONLY the JSON array.`,
       const questionsWithIds: Question[] = parsed.map((q, i) => ({
         ...q,
         id: `q-${i}`,
+        // Force correct language code — AI may return "da" instead of "da-DK"
+        audioLang: q.type === "sound" ? deck.frontLang : q.audioLang,
       }));
 
       if (questionsWithIds.length === 0) {
