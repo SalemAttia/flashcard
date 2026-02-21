@@ -16,7 +16,7 @@ export default function RootLayout() {
             animation: "slide_from_right",
           }}
         >
-          <Stack.Screen name="index" options={{ animation: "fade" }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen
             name="editor"
             options={{ animation: "slide_from_bottom" }}
@@ -34,10 +34,6 @@ export default function RootLayout() {
           />
           <Stack.Screen
             name="summary"
-            options={{ animation: "slide_from_bottom" }}
-          />
-          <Stack.Screen
-            name="writing-test"
             options={{ animation: "slide_from_bottom" }}
           />
           <Stack.Screen
