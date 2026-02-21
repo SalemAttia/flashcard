@@ -33,7 +33,10 @@ export default function TestScreen() {
             `/summary?correct=${correct}&total=${total}&isTest=true&deckId=${deck.id}`
           );
         }}
-        onCancel={() => router.back()}
+        onCancel={() => {
+          if (router.canGoBack()) router.back();
+          else router.replace("/");
+        }}
       />
     </SafeAreaView>
   );
