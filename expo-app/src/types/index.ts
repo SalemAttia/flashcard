@@ -65,6 +65,17 @@ export interface WritingTestResult {
   passed: boolean;
 }
 
+// Custom Grammar Topics
+
+export interface SavedCustomTopic {
+  id: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  lastUsedAt?: string;
+  color: string;
+}
+
 // Grammar Quiz types
 
 export type GrammarTopicId =
