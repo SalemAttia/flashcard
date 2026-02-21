@@ -1,12 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { X, Check, RotateCcw } from "lucide-react-native";
 import * as Speech from "expo-speech";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-} from "react-native-reanimated";
 import { Deck, Language } from "../types";
 import { Flashcard } from "./Flashcard";
 
@@ -29,15 +24,6 @@ export function StudySession({
 
   const currentCard = deck.cards[currentIndex];
   const progress = (currentIndex / deck.cards.length) * 100;
-
-  const progressWidth = useSharedValue(0);
-  useEffect(() => {
-    progressWidth.value = withTiming(progress, { duration: 300 });
-  }, [progress]);
-
-  const progressStyle = useAnimatedStyle(() => ({
-    width: `${progressWidth.value}%`,
-  }));
 
   const handleSpeak = (text: string, lang: Language) => {
     Speech.speak(text, { language: lang });
@@ -87,8 +73,8 @@ export function StudySession({
           </Text>
         </View>
         <View className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-          <Animated.View
-            style={progressStyle}
+          <View
+            style={{ width: `${progress}%` }}
             className="h-full bg-indigo-500 rounded-full"
           />
         </View>
