@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, TextInput, ScrollView } from "react-native";
+import { View, Text, Pressable, TextInput, ScrollView, Platform } from "react-native";
 import {
   X,
   Check,
@@ -107,15 +107,51 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
     transform: [{ scale: speakingPulse.value }],
   }));
 
-  const speakAudio = (text: string, lang: Language) => {
+  const getVoicesAsync = (): Promise<SpeechSynthesisVoice[]> =>
+    new Promise((resolve) => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices.length > 0) return resolve(voices);
+      window.speechSynthesis.onvoiceschanged = () =>
+        resolve(window.speechSynthesis.getVoices());
+    });
+
+  const speakAudio = async (text: string, lang: Language) => {
     Speech.stop();
     setIsSpeaking(true);
-    Speech.speak(text, {
-      language: lang,
-      onDone: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-      onStopped: () => setIsSpeaking(false),
-    });
+
+    if (Platform.OS === "web" && typeof window !== "undefined" && window.speechSynthesis) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+
+      const voices = await getVoicesAsync();
+      const langPrefix = lang.split("-")[0];
+      const match = voices.find(
+        (v) => v.lang === lang || v.lang.startsWith(langPrefix + "-")
+      );
+
+      if (match) {
+        utterance.voice = match;
+      } else {
+        Toast.show({
+          type: "error",
+          text1: `No ${lang} voice found`,
+          text2: "Install a Danish voice: Settings → Accessibility → Spoken Content → Voices.",
+        });
+        setIsSpeaking(false);
+        return;
+      }
+
+      utterance.onend = () => setIsSpeaking(false);
+      utterance.onerror = () => setIsSpeaking(false);
+      window.speechSynthesis.speak(utterance);
+    } else {
+      Speech.speak(text, {
+        language: lang,
+        onDone: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+        onStopped: () => setIsSpeaking(false),
+      });
+    }
   };
 
   const generateQuestions = async () => {
