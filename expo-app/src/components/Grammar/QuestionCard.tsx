@@ -30,7 +30,12 @@ export function QuestionCard({
       </View>
 
       <View className="gap-3">
-        {question.options.map((option, index) => {
+        {(!question.options || question.options.length === 0) && (
+          <Text className="text-slate-400 text-sm text-center py-4">
+            No options available for this question.
+          </Text>
+        )}
+        {(question.options ?? []).map((option, index) => {
           const isSelected = selectedAnswer === option;
           const letter = String.fromCharCode(65 + index);
 
