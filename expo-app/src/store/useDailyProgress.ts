@@ -21,10 +21,30 @@ import {
 import { sanitize } from "../utils/firestore";
 
 const DEFAULT_ITEMS: ChecklistItem[] = [
-  { id: "study_deck", label: "Study a Deck", sublabel: "Review your flashcards", timeOfDay: "morning" },
-  { id: "grammar_quiz", label: "Grammar Quiz", sublabel: "Practice grammar rules", timeOfDay: "morning" },
-  { id: "writing_test", label: "Writing Practice", sublabel: "Write in Danish", timeOfDay: "afternoon" },
-  { id: "chat_session", label: "Chat in Danish", sublabel: "Have a conversation", timeOfDay: "afternoon" },
+  {
+    id: "study_deck",
+    label: "Study a Deck",
+    sublabel: "Review your flashcards",
+    timeOfDay: "morning",
+  },
+  {
+    id: "grammar_quiz",
+    label: "Grammar Quiz",
+    sublabel: "Practice grammar rules",
+    timeOfDay: "morning",
+  },
+  {
+    id: "writing_test",
+    label: "Writing Practice",
+    sublabel: "Write in Danish",
+    timeOfDay: "afternoon",
+  },
+  {
+    id: "chat_session",
+    label: "Chat in Danish",
+    sublabel: "Have a conversation",
+    timeOfDay: "afternoon",
+  },
 ];
 
 function getToday(): string {
@@ -52,11 +72,15 @@ function getDayOfWeek(dateStr: string): number {
 }
 
 /** Inject recurring tasks into a day's customItems if not already present */
-function injectRecurringTasks(day: DailyProgress, recurringTasks: CustomTask[], dateStr?: string): DailyProgress {
+function injectRecurringTasks(
+  day: DailyProgress,
+  recurringTasks: CustomTask[],
+  dateStr?: string,
+): DailyProgress {
   if (!recurringTasks || recurringTasks.length === 0) return day;
   const dayOfWeek = getDayOfWeek(dateStr ?? day.date);
   const existingRecurringIds = new Set(
-    day.customItems.filter((t) => t.recurring).map((t) => t.id)
+    day.customItems.filter((t) => t.recurring).map((t) => t.id),
   );
   const toInject = recurringTasks.filter((rt) => {
     if (existingRecurringIds.has(rt.id)) return false;
@@ -80,9 +104,13 @@ function injectRecurringTasks(day: DailyProgress, recurringTasks: CustomTask[], 
 export function useDailyProgress() {
   const { user } = useAuth();
   const [streakCount, setStreakCount] = useState(0);
-  const [lastCompletedDate, setLastCompletedDate] = useState<string | undefined>(undefined);
+  const [lastCompletedDate, setLastCompletedDate] = useState<
+    string | undefined
+  >(undefined);
   const [recurringTasks, setRecurringTasks] = useState<CustomTask[]>([]);
-  const [hiddenDefaultItems, setHiddenDefaultItems] = useState<ChecklistItemId[]>([]);
+  const [hiddenDefaultItems, setHiddenDefaultItems] = useState<
+    ChecklistItemId[]
+  >([]);
 
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [daysMap, setDaysMap] = useState<Record<string, DailyProgress>>({});
@@ -92,19 +120,23 @@ export function useDailyProgress() {
   useEffect(() => {
     if (!user) return;
     const ref = doc(db, "users", user.uid, "data", "progress");
-    const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setStreakCount(data.streakCount ?? 0);
-        setLastCompletedDate(data.lastCompletedDate);
-        setRecurringTasks(data.recurringTasks ?? []);
-        setHiddenDefaultItems(data.hiddenDefaultItems ?? []);
-      }
-      setLoaded(true);
-    }, (error) => {
-      console.error("Error in global progress listener:", error);
-      setLoaded(true);
-    });
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setStreakCount(data.streakCount ?? 0);
+          setLastCompletedDate(data.lastCompletedDate);
+          setRecurringTasks(data.recurringTasks ?? []);
+          setHiddenDefaultItems(data.hiddenDefaultItems ?? []);
+        }
+        setLoaded(true);
+      },
+      (error) => {
+        console.error("Error in global progress listener:", error);
+        setLoaded(true);
+      },
+    );
     return unsub;
   }, [user]);
 
@@ -112,15 +144,19 @@ export function useDailyProgress() {
   useEffect(() => {
     if (!user) return;
     const colRef = collection(db, "users", user.uid, "days");
-    const unsub = onSnapshot(colRef, (snap) => {
-      const map: Record<string, DailyProgress> = {};
-      snap.docs.forEach(d => {
-        map[d.id] = d.data() as DailyProgress;
-      });
-      setDaysMap(map);
-    }, (error) => {
-      console.error("Error in days collection listener:", error);
-    });
+    const unsub = onSnapshot(
+      colRef,
+      (snap) => {
+        const map: Record<string, DailyProgress> = {};
+        snap.docs.forEach((d) => {
+          map[d.id] = d.data() as DailyProgress;
+        });
+        setDaysMap(map);
+      },
+      (error) => {
+        console.error("Error in days collection listener:", error);
+      },
+    );
     return unsub;
   }, [user]);
 
@@ -135,31 +171,51 @@ export function useDailyProgress() {
       const now = new Date().toISOString();
       const autoCompleted: Partial<Record<ChecklistItemId, boolean>> = {};
 
-      const decksSnap = await getDocs(collection(db, "users", user.uid, "decks"));
-      if (decksSnap.docs.some(d => d.data().lastStudied?.startsWith(today))) {
+      const decksSnap = await getDocs(
+        collection(db, "users", user.uid, "decks"),
+      );
+      if (decksSnap.docs.some((d) => d.data().lastStudied?.startsWith(today))) {
         autoCompleted.study_deck = true;
       }
 
-      const grammarSnap = await getDoc(doc(db, "users", user.uid, "results", "grammar"));
-      if (grammarSnap.exists() && grammarSnap.data().completedAt?.startsWith(today)) {
+      const grammarSnap = await getDoc(
+        doc(db, "users", user.uid, "results", "grammar"),
+      );
+      if (
+        grammarSnap.exists() &&
+        grammarSnap.data().completedAt?.startsWith(today)
+      ) {
         autoCompleted.grammar_quiz = true;
       }
 
-      const writingSnap = await getDoc(doc(db, "users", user.uid, "results", "writing"));
-      if (writingSnap.exists() && writingSnap.data().completedAt?.startsWith(today)) {
+      const writingSnap = await getDoc(
+        doc(db, "users", user.uid, "results", "writing"),
+      );
+      if (
+        writingSnap.exists() &&
+        writingSnap.data().completedAt?.startsWith(today)
+      ) {
         autoCompleted.writing_test = true;
       }
 
       if (Object.keys(autoCompleted).length > 0) {
-        const updatedItems = dayProgress.items.map(item =>
+        const updatedItems = dayProgress.items.map((item) =>
           autoCompleted[item.id] && !item.completedAt
             ? { ...item, completedAt: now }
-            : item
+            : item,
         );
         const updatedDay = { ...dayProgress, items: updatedItems };
         // Avoid infinite loop by only updating if something actually changed
-        if (updatedItems.some((item, idx) => item.completedAt !== dayProgress.items[idx].completedAt)) {
-          await setDoc(doc(db, "users", user.uid, "days", today), sanitize(updatedDay));
+        if (
+          updatedItems.some(
+            (item, idx) =>
+              item.completedAt !== dayProgress.items[idx].completedAt,
+          )
+        ) {
+          await setDoc(
+            doc(db, "users", user.uid, "days", today),
+            sanitize(updatedDay),
+          );
         }
       }
     };
@@ -167,147 +223,260 @@ export function useDailyProgress() {
     checkAutoComplete();
   }, [user, loaded, selectedDate, daysMap]);
 
-  const dayProgressRaw = useMemo(() => daysMap[selectedDate] ?? freshDay(selectedDate), [daysMap, selectedDate]);
+  const dayProgressRaw = useMemo(
+    () => daysMap[selectedDate] ?? freshDay(selectedDate),
+    [daysMap, selectedDate],
+  );
   const dayProgress = useMemo(() => {
-    const withRec = injectRecurringTasks(dayProgressRaw, recurringTasks, selectedDate);
+    const withRec = injectRecurringTasks(
+      dayProgressRaw,
+      recurringTasks,
+      selectedDate,
+    );
     const hidden = new Set(hiddenDefaultItems);
     return {
       ...withRec,
-      items: withRec.items.filter(i => !hidden.has(i.id))
+      items: withRec.items.filter((i) => !hidden.has(i.id)),
     };
   }, [dayProgressRaw, recurringTasks, selectedDate, hiddenDefaultItems]);
 
-  const updateDayInFirestore = useCallback(async (day: DailyProgress) => {
-    if (!user) return;
-    const dayRef = doc(db, "users", user.uid, "days", day.date);
-    await setDoc(dayRef, sanitize(day));
+  const updateDayInFirestore = useCallback(
+    async (day: DailyProgress) => {
+      if (!user) return;
+      const dayRef = doc(db, "users", user.uid, "days", day.date);
+      await setDoc(dayRef, sanitize(day));
 
-    // Update streak if needed
-    const coreAllDone = day.items.every(i => i.completedAt);
-    if (coreAllDone && lastCompletedDate !== day.date) {
-      const streakContinues = lastCompletedDate && isConsecutiveDay(lastCompletedDate, day.date);
-      const newStreak = streakContinues ? streakCount + 1 : 1;
-      await setDoc(doc(db, "users", user.uid, "data", "progress"), sanitize({
-        streakCount: newStreak,
-        lastCompletedDate: day.date,
-        recurringTasks,
-        hiddenDefaultItems
-      }), { merge: true });
-    }
-  }, [user, streakCount, lastCompletedDate, recurringTasks, hiddenDefaultItems]);
+      // Update streak if needed
+      const coreAllDone = day.items.every((i) => i.completedAt);
+      if (coreAllDone && lastCompletedDate !== day.date) {
+        const streakContinues =
+          lastCompletedDate && isConsecutiveDay(lastCompletedDate, day.date);
+        const newStreak = streakContinues ? streakCount + 1 : 1;
+        await setDoc(
+          doc(db, "users", user.uid, "data", "progress"),
+          sanitize({
+            streakCount: newStreak,
+            lastCompletedDate: day.date,
+            recurringTasks,
+            hiddenDefaultItems,
+          }),
+          { merge: true },
+        );
+      }
+    },
+    [user, streakCount, lastCompletedDate, recurringTasks, hiddenDefaultItems],
+  );
 
-  const completeItem = useCallback(async (id: ChecklistItemId) => {
-    // Note: ChecklistItem completion still uses the raw storage to avoid saving injected items into the core items list unnecessarily
-    // but here we use dayProgress to ensure we have the right context.
-    const updatedItems = dayProgress.items.map(item =>
-      item.id === id ? { ...item, completedAt: new Date().toISOString() } : item
-    );
-    // Since dayProgress.items is already filtered, we need to be careful.
-    // Actually, it's better to update dayProgressRaw and save that.
-    const rawItems = dayProgressRaw.items.map(item =>
-      item.id === id ? { ...item, completedAt: new Date().toISOString() } : item
-    );
-    await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
-  }, [dayProgress, dayProgressRaw, updateDayInFirestore]);
+  const completeItem = useCallback(
+    async (id: ChecklistItemId) => {
+      // Note: ChecklistItem completion still uses the raw storage to avoid saving injected items into the core items list unnecessarily
+      // but here we use dayProgress to ensure we have the right context.
+      const updatedItems = dayProgress.items.map((item) =>
+        item.id === id
+          ? { ...item, completedAt: new Date().toISOString() }
+          : item,
+      );
+      // Since dayProgress.items is already filtered, we need to be careful.
+      // Actually, it's better to update dayProgressRaw and save that.
+      const rawItems = dayProgressRaw.items.map((item) =>
+        item.id === id
+          ? { ...item, completedAt: new Date().toISOString() }
+          : item,
+      );
+      await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
+    },
+    [dayProgress, dayProgressRaw, updateDayInFirestore],
+  );
 
-  const uncompleteItem = useCallback(async (id: ChecklistItemId) => {
-    const rawItems = dayProgressRaw.items.map(item =>
-      item.id === id ? { ...item, completedAt: undefined } : item
-    );
-    await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
-  }, [dayProgressRaw, updateDayInFirestore]);
+  const uncompleteItem = useCallback(
+    async (id: ChecklistItemId) => {
+      const rawItems = dayProgressRaw.items.map((item) =>
+        item.id === id ? { ...item, completedAt: undefined } : item,
+      );
+      await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
+    },
+    [dayProgressRaw, updateDayInFirestore],
+  );
 
-  const addCustomTask = useCallback(async (
-    label: string,
-    sublabel: string | undefined,
-    timeOfDay: TimeOfDay,
-    recurring?: boolean,
-    subChecklist?: SubCheckItem[],
-    activeDays?: number[]
-  ) => {
-    if (!user) return;
-    const task: CustomTask = {
-      id: Math.random().toString(36).substr(2, 9),
-      label,
-      sublabel,
-      timeOfDay,
-      recurring,
-      activeDays: recurring && activeDays?.length ? activeDays : undefined,
-      subChecklist: subChecklist?.length ? subChecklist : undefined,
-    };
-
-    const updatedDay = { ...dayProgress, customItems: [...dayProgress.customItems, task] };
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize(updatedDay));
-
-    if (recurring) {
-      const nextRecurring = [...recurringTasks, task];
-      await setDoc(doc(db, "users", user.uid, "data", "progress"), sanitize({ recurringTasks: nextRecurring }), { merge: true });
-    }
-  }, [user, dayProgress, selectedDate, recurringTasks]);
-
-  const removeCustomTask = useCallback(async (taskId: string) => {
-    if (!user) return;
-    const updatedCustom = dayProgress.customItems.filter(t => t.id !== taskId);
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize({ ...dayProgress, customItems: updatedCustom }));
-  }, [user, dayProgress, selectedDate]);
-
-  const removeRecurringTask = useCallback(async (taskId: string) => {
-    if (!user) return;
-    const nextRecurring = recurringTasks.filter(t => t.id !== taskId);
-    await setDoc(doc(db, "users", user.uid, "data", "progress"), sanitize({ recurringTasks: nextRecurring }), { merge: true });
-
-    const updatedCustom = dayProgress.customItems.filter(t => t.id !== taskId);
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize({ ...dayProgress, customItems: updatedCustom }));
-  }, [user, recurringTasks, dayProgress, selectedDate]);
-
-  const toggleCustomTask = useCallback(async (taskId: string) => {
-    if (!user) return;
-    const existsInRaw = dayProgressRaw.customItems.some(t => t.id === taskId);
-    const baseItems = existsInRaw ? dayProgressRaw.customItems : dayProgress.customItems;
-
-    const updatedCustom = baseItems.map(t =>
-      t.id === taskId ? { ...t, completedAt: t.completedAt ? undefined : new Date().toISOString() } : t
-    );
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize({ ...dayProgressRaw, customItems: updatedCustom }));
-  }, [user, dayProgressRaw, dayProgress, selectedDate]);
-
-  const toggleSubCheckItem = useCallback(async (taskId: string, subItemId: string) => {
-    if (!user) return;
-    const existsInRaw = dayProgressRaw.customItems.some(t => t.id === taskId);
-    const baseItems = existsInRaw ? dayProgressRaw.customItems : dayProgress.customItems;
-
-    const updatedCustom = baseItems.map(t => {
-      if (t.id !== taskId || !t.subChecklist) return t;
-      return {
-        ...t,
-        subChecklist: t.subChecklist.map(s =>
-          s.id === subItemId ? { ...s, checked: !s.checked } : s
-        ),
+  const addCustomTask = useCallback(
+    async (
+      label: string,
+      sublabel: string | undefined,
+      timeOfDay: TimeOfDay,
+      recurring?: boolean,
+      subChecklist?: SubCheckItem[],
+      activeDays?: number[],
+    ) => {
+      if (!user) return;
+      const task: CustomTask = {
+        id: Math.random().toString(36).substr(2, 9),
+        label,
+        sublabel,
+        timeOfDay,
+        recurring,
+        activeDays: recurring && activeDays?.length ? activeDays : undefined,
+        subChecklist: subChecklist?.length ? subChecklist : undefined,
       };
-    });
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize({ ...dayProgressRaw, customItems: updatedCustom }));
-  }, [user, dayProgressRaw, dayProgress, selectedDate]);
 
-  const editCustomTask = useCallback(async (taskId: string, updates: Partial<CustomTask>) => {
-    if (!user) return;
-    const existsInRaw = dayProgressRaw.customItems.some(t => t.id === taskId);
-    const baseItems = existsInRaw ? dayProgressRaw.customItems : dayProgress.customItems;
+      const updatedDay = {
+        ...dayProgress,
+        customItems: [...dayProgress.customItems, task],
+      };
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize(updatedDay),
+      );
 
-    const updatedCustom = baseItems.map(t => t.id === taskId ? { ...t, ...updates } : t);
-    await setDoc(doc(db, "users", user.uid, "days", selectedDate), sanitize({ ...dayProgressRaw, customItems: updatedCustom }));
+      if (recurring) {
+        const nextRecurring = [...recurringTasks, task];
+        await setDoc(
+          doc(db, "users", user.uid, "data", "progress"),
+          sanitize({ recurringTasks: nextRecurring }),
+          { merge: true },
+        );
+      }
+    },
+    [user, dayProgress, selectedDate, recurringTasks],
+  );
 
-    if (updates.recurring !== undefined || recurringTasks.some(t => t.id === taskId)) {
-      const nextRecurring = recurringTasks.map(t => t.id === taskId ? { ...t, ...updates } : t);
-      await setDoc(doc(db, "users", user.uid, "data", "progress"), sanitize({ recurringTasks: nextRecurring }), { merge: true });
-    }
-  }, [user, dayProgressRaw, dayProgress, selectedDate, recurringTasks]);
+  const removeCustomTask = useCallback(
+    async (taskId: string) => {
+      if (!user) return;
+      const updatedCustom = dayProgress.customItems.filter(
+        (t) => t.id !== taskId,
+      );
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize({ ...dayProgress, customItems: updatedCustom }),
+      );
+    },
+    [user, dayProgress, selectedDate],
+  );
 
-  const toggleDefaultItemVisibility = useCallback(async (itemId: ChecklistItemId) => {
-    if (!user) return;
-    const isHidden = hiddenDefaultItems.includes(itemId);
-    const nextHidden = isHidden ? hiddenDefaultItems.filter(id => id !== itemId) : [...hiddenDefaultItems, itemId];
-    await setDoc(doc(db, "users", user.uid, "data", "progress"), sanitize({ hiddenDefaultItems: nextHidden }), { merge: true });
-  }, [user, hiddenDefaultItems]);
+  const removeRecurringTask = useCallback(
+    async (taskId: string) => {
+      if (!user) return;
+      const nextRecurring = recurringTasks.filter((t) => t.id !== taskId);
+      await setDoc(
+        doc(db, "users", user.uid, "data", "progress"),
+        sanitize({ recurringTasks: nextRecurring }),
+        { merge: true },
+      );
+
+      const updatedCustom = dayProgress.customItems.filter(
+        (t) => t.id !== taskId,
+      );
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize({ ...dayProgress, customItems: updatedCustom }),
+      );
+    },
+    [user, recurringTasks, dayProgress, selectedDate],
+  );
+
+  const toggleCustomTask = useCallback(
+    async (taskId: string) => {
+      if (!user) return;
+      const existsInRaw = dayProgressRaw.customItems.some(
+        (t) => t.id === taskId,
+      );
+      const baseItems = existsInRaw
+        ? dayProgressRaw.customItems
+        : dayProgress.customItems;
+
+      const updatedCustom = baseItems.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              completedAt: t.completedAt ? undefined : new Date().toISOString(),
+            }
+          : t,
+      );
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize({ ...dayProgressRaw, customItems: updatedCustom }),
+      );
+    },
+    [user, dayProgressRaw, dayProgress, selectedDate],
+  );
+
+  const toggleSubCheckItem = useCallback(
+    async (taskId: string, subItemId: string) => {
+      if (!user) return;
+      const existsInRaw = dayProgressRaw.customItems.some(
+        (t) => t.id === taskId,
+      );
+      const baseItems = existsInRaw
+        ? dayProgressRaw.customItems
+        : dayProgress.customItems;
+
+      const updatedCustom = baseItems.map((t) => {
+        if (t.id !== taskId || !t.subChecklist) return t;
+        return {
+          ...t,
+          subChecklist: t.subChecklist.map((s) =>
+            s.id === subItemId ? { ...s, checked: !s.checked } : s,
+          ),
+        };
+      });
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize({ ...dayProgressRaw, customItems: updatedCustom }),
+      );
+    },
+    [user, dayProgressRaw, dayProgress, selectedDate],
+  );
+
+  const editCustomTask = useCallback(
+    async (taskId: string, updates: Partial<CustomTask>) => {
+      if (!user) return;
+      const existsInRaw = dayProgressRaw.customItems.some(
+        (t) => t.id === taskId,
+      );
+      const baseItems = existsInRaw
+        ? dayProgressRaw.customItems
+        : dayProgress.customItems;
+
+      const updatedCustom = baseItems.map((t) =>
+        t.id === taskId ? { ...t, ...updates } : t,
+      );
+      await setDoc(
+        doc(db, "users", user.uid, "days", selectedDate),
+        sanitize({ ...dayProgressRaw, customItems: updatedCustom }),
+      );
+
+      if (
+        updates.recurring !== undefined ||
+        recurringTasks.some((t) => t.id === taskId)
+      ) {
+        const nextRecurring = recurringTasks.map((t) =>
+          t.id === taskId ? { ...t, ...updates } : t,
+        );
+        await setDoc(
+          doc(db, "users", user.uid, "data", "progress"),
+          sanitize({ recurringTasks: nextRecurring }),
+          { merge: true },
+        );
+      }
+    },
+    [user, dayProgressRaw, dayProgress, selectedDate, recurringTasks],
+  );
+
+  const toggleDefaultItemVisibility = useCallback(
+    async (itemId: ChecklistItemId) => {
+      if (!user) return;
+      const isHidden = hiddenDefaultItems.includes(itemId);
+      const nextHidden = isHidden
+        ? hiddenDefaultItems.filter((id) => id !== itemId)
+        : [...hiddenDefaultItems, itemId];
+      await setDoc(
+        doc(db, "users", user.uid, "data", "progress"),
+        sanitize({ hiddenDefaultItems: nextHidden }),
+        { merge: true },
+      );
+    },
+    [user, hiddenDefaultItems],
+  );
 
   const hasTasksForDate = useCallback(
     (date: string): boolean => {
@@ -315,7 +484,7 @@ export function useDailyProgress() {
       if (!day) return (recurringTasks ?? []).length > 0;
       return day.items.some((i) => i.completedAt) || day.customItems.length > 0;
     },
-    [daysMap, recurringTasks]
+    [daysMap, recurringTasks],
   );
 
   const getDateProgress = useCallback(
@@ -323,10 +492,13 @@ export function useDailyProgress() {
       const hidden = new Set(hiddenDefaultItems);
       const base = daysMap[date];
       if (!base) {
-        const visibleCoreCount = DEFAULT_ITEMS.filter((i) => !hidden.has(i.id)).length;
+        const visibleCoreCount = DEFAULT_ITEMS.filter(
+          (i) => !hidden.has(i.id),
+        ).length;
         const dayOfWeek = getDayOfWeek(date);
         const recurringCount = (recurringTasks ?? []).filter((rt) => {
-          if (rt.activeDays && rt.activeDays.length > 0) return rt.activeDays.includes(dayOfWeek);
+          if (rt.activeDays && rt.activeDays.length > 0)
+            return rt.activeDays.includes(dayOfWeek);
           return true;
         }).length;
         return { completed: 0, total: visibleCoreCount + recurringCount };
@@ -334,23 +506,31 @@ export function useDailyProgress() {
       const day = injectRecurringTasks(base, recurringTasks, date);
       const visibleItems = day.items.filter((i) => !hidden.has(i.id));
       const coreCompleted = visibleItems.filter((i) => i.completedAt).length;
-      const customCompleted = day.customItems.filter((i) => i.completedAt).length;
+      const customCompleted = day.customItems.filter(
+        (i) => i.completedAt,
+      ).length;
       return {
         completed: coreCompleted + customCompleted,
         total: visibleItems.length + day.customItems.length,
       };
     },
-    [daysMap, recurringTasks, hiddenDefaultItems]
+    [daysMap, recurringTasks, hiddenDefaultItems],
   );
 
   const completedCount = useMemo(() => {
-    const core = dayProgress.items.filter(i => i.completedAt).length;
-    const custom = dayProgress.customItems.filter(i => i.completedAt).length;
+    const core = dayProgress.items.filter((i) => i.completedAt).length;
+    const custom = dayProgress.customItems.filter((i) => i.completedAt).length;
     return core + custom;
   }, [dayProgress]);
 
-  const totalCount = useMemo(() => dayProgress.items.length + dayProgress.customItems.length, [dayProgress]);
-  const allCoreDone = useMemo(() => dayProgress.items.every(i => i.completedAt), [dayProgress]);
+  const totalCount = useMemo(
+    () => dayProgress.items.length + dayProgress.customItems.length,
+    [dayProgress],
+  );
+  const allCoreDone = useMemo(
+    () => dayProgress.items.every((i) => i.completedAt),
+    [dayProgress],
+  );
   const allDone = completedCount === totalCount && totalCount > 0;
 
   return {

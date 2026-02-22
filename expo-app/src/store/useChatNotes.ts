@@ -19,17 +19,21 @@ export function useChatNotes() {
     }
 
     const ref = doc(db, "users", user.uid, "data", "chatNotes");
-    const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        setNotes((snap.data().notes as ChatNote[]) ?? []);
-      } else {
-        setNotes([]);
-      }
-      setLoaded(true);
-    }, (error) => {
-      console.error("Error in useChatNotes listener:", error);
-      setLoaded(true);
-    });
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          setNotes((snap.data().notes as ChatNote[]) ?? []);
+        } else {
+          setNotes([]);
+        }
+        setLoaded(true);
+      },
+      (error) => {
+        console.error("Error in useChatNotes listener:", error);
+        setLoaded(true);
+      },
+    );
 
     return unsub;
   }, [user]);
@@ -38,13 +42,19 @@ export function useChatNotes() {
   const persist = useCallback(
     async (next: ChatNote[]) => {
       if (!user) return;
-      await setDoc(doc(db, "users", user.uid, "data", "chatNotes"), sanitize({ notes: next }));
+      await setDoc(
+        doc(db, "users", user.uid, "data", "chatNotes"),
+        sanitize({ notes: next }),
+      );
     },
-    [user]
+    [user],
   );
 
   const addNote = useCallback(
-    async (text: string, options?: { title?: string; sourceMessageId?: string }) => {
+    async (
+      text: string,
+      options?: { title?: string; sourceMessageId?: string },
+    ) => {
       const newNote: ChatNote = {
         id: Math.random().toString(36).substr(2, 9),
         text,
@@ -56,7 +66,7 @@ export function useChatNotes() {
       setNotes(next);
       await persist(next);
     },
-    [notes, persist]
+    [notes, persist],
   );
 
   const deleteNote = useCallback(
@@ -65,7 +75,7 @@ export function useChatNotes() {
       setNotes(next);
       await persist(next);
     },
-    [notes, persist]
+    [notes, persist],
   );
 
   const updateNote = useCallback(
@@ -74,7 +84,7 @@ export function useChatNotes() {
       setNotes(next);
       await persist(next);
     },
-    [notes, persist]
+    [notes, persist],
   );
 
   return { notes, addNote, deleteNote, updateNote, loaded };

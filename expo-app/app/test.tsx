@@ -24,13 +24,16 @@ export default function TestScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
       <TestMode
         deck={deck}
         onComplete={(correct, total) => {
           markStudied(deck.id);
           router.replace(
-            `/summary?correct=${correct}&total=${total}&isTest=true&deckId=${deck.id}`
+            `/summary?correct=${correct}&total=${total}&isTest=true&deckId=${deck.id}`,
           );
         }}
         onCancel={() => {

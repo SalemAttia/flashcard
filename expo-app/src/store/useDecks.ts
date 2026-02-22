@@ -45,26 +45,30 @@ export function useDecks() {
     }
 
     const colRef = collection(db, "users", user.uid, "decks");
-    const unsub = onSnapshot(colRef, (snap) => {
-      const fetched: Deck[] = snap.docs.map((d) => ({
-        ...(d.data() as Omit<Deck, "id">),
-        id: d.id,
-      }));
-      setDecks(fetched);
-      setLoaded(true);
+    const unsub = onSnapshot(
+      colRef,
+      (snap) => {
+        const fetched: Deck[] = snap.docs.map((d) => ({
+          ...(d.data() as Omit<Deck, "id">),
+          id: d.id,
+        }));
+        setDecks(fetched);
+        setLoaded(true);
 
-      // Seed starter deck for brand-new users
-      if (!seeded && fetched.length === 0) {
-        setSeeded(true);
-        const starterRef = doc(colRef, "starter");
-        setDoc(starterRef, sanitize(INITIAL_DECKS[0])).catch(() => { });
-      } else {
-        setSeeded(true);
-      }
-    }, (error) => {
-      console.error("Error in useDecks listener:", error);
-      setLoaded(true);
-    });
+        // Seed starter deck for brand-new users
+        if (!seeded && fetched.length === 0) {
+          setSeeded(true);
+          const starterRef = doc(colRef, "starter");
+          setDoc(starterRef, sanitize(INITIAL_DECKS[0])).catch(() => {});
+        } else {
+          setSeeded(true);
+        }
+      },
+      (error) => {
+        console.error("Error in useDecks listener:", error);
+        setLoaded(true);
+      },
+    );
 
     return unsub;
   }, [user]);
@@ -80,7 +84,7 @@ export function useDecks() {
         await addDoc(colRef, sanitize(rest));
       }
     },
-    [user]
+    [user],
   );
 
   const deleteDeck = useCallback(
@@ -88,7 +92,7 @@ export function useDecks() {
       if (!user) return;
       await deleteDoc(doc(db, "users", user.uid, "decks", id));
     },
-    [user]
+    [user],
   );
 
   const markStudied = useCallback(
@@ -97,15 +101,18 @@ export function useDecks() {
       const ref = doc(db, "users", user.uid, "decks", id);
       const deck = decks.find((d) => d.id === id);
       if (deck) {
-        await setDoc(ref, sanitize({ ...deck, lastStudied: new Date().toISOString() }));
+        await setDoc(
+          ref,
+          sanitize({ ...deck, lastStudied: new Date().toISOString() }),
+        );
       }
     },
-    [user, decks]
+    [user, decks],
   );
 
   const getDeck = useCallback(
     (id: string) => decks.find((d) => d.id === id),
-    [decks]
+    [decks],
   );
 
   return { decks, saveDeck, deleteDeck, markStudied, getDeck, loaded };

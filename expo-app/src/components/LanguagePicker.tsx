@@ -10,7 +10,11 @@ interface LanguagePickerProps {
   label: string;
 }
 
-export function LanguagePicker({ value, onChange, label }: LanguagePickerProps) {
+export function LanguagePicker({
+  value,
+  onChange,
+  label,
+}: LanguagePickerProps) {
   const [open, setOpen] = useState(false);
   const selected = LANGUAGES.find((l) => l.value === value);
 

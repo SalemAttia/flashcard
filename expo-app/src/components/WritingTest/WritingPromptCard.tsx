@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
-import { Send, Lightbulb, Languages, ChevronDown, ChevronUp } from "lucide-react-native";
+import {
+  Send,
+  Lightbulb,
+  Languages,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react-native";
 import { WritingPrompt } from "../../types";
 import { LevelConfig } from "../../constants/writingLevels";
 
@@ -68,7 +74,10 @@ export function WritingPromptCard({
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {prompt.contextWords.map((word, i) => (
-                <View key={i} className="bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-900/50">
+                <View
+                  key={i}
+                  className="bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-900/50"
+                >
                   <Text className="text-amber-700 dark:text-amber-300 text-xs font-medium">
                     {word}
                   </Text>
@@ -98,7 +107,10 @@ export function WritingPromptCard({
             {showHints && (
               <View className="mt-2 gap-1">
                 {prompt.hints.map((hint, i) => (
-                  <Text key={i} className="text-xs text-slate-500 dark:text-slate-400 italic">
+                  <Text
+                    key={i}
+                    className="text-xs text-slate-500 dark:text-slate-400 italic"
+                  >
                     {hint}
                   </Text>
                 ))}
@@ -123,8 +135,9 @@ export function WritingPromptCard({
 
         <View className="flex-row items-center justify-between px-1">
           <Text
-            className={`text-xs font-medium ${meetsMinWords ? "text-emerald-600" : "text-slate-400"
-              }`}
+            className={`text-xs font-medium ${
+              meetsMinWords ? "text-emerald-600" : "text-slate-400"
+            }`}
           >
             {wordCount} / {prompt.minWords} words
           </Text>
@@ -138,8 +151,11 @@ export function WritingPromptCard({
         <Pressable
           onPress={onSubmit}
           disabled={isSubmitting || wordCount === 0}
-          className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${isSubmitting || wordCount === 0 ? "bg-slate-200 dark:bg-slate-800" : "bg-amber-500"
-            }`}
+          className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${
+            isSubmitting || wordCount === 0
+              ? "bg-slate-200 dark:bg-slate-800"
+              : "bg-amber-500"
+          }`}
           style={({ pressed }) => ({
             transform: [
               { scale: pressed && !isSubmitting && wordCount > 0 ? 0.98 : 1 },
@@ -154,8 +170,9 @@ export function WritingPromptCard({
             <>
               <Send size={16} color={wordCount === 0 ? "#94a3b8" : "#fff"} />
               <Text
-                className={`font-semibold ${wordCount === 0 ? "text-slate-400" : "text-white"
-                  }`}
+                className={`font-semibold ${
+                  wordCount === 0 ? "text-slate-400" : "text-white"
+                }`}
               >
                 Submit Answer
               </Text>

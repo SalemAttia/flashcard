@@ -26,7 +26,7 @@ interface SaveCardModalProps {
     deckId: string | null,
     newDeckTitle: string | null,
     front: string,
-    back: string
+    back: string,
   ) => void;
   onClose: () => void;
 }
@@ -45,13 +45,15 @@ export function SaveCardModal({
   const [front, setFront] = useState(initialFront);
   const [back, setBack] = useState(initialBack);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(
-    decks[0]?.id ?? null
+    decks[0]?.id ?? null,
   );
   const [isCreatingNew, setIsCreatingNew] = useState(false);
   const [newDeckTitle, setNewDeckTitle] = useState("");
 
-  const studyLabel = LANGUAGES.find((l) => l.value === studyLang)?.label ?? studyLang;
-  const nativeLabel = LANGUAGES.find((l) => l.value === nativeLang)?.label ?? nativeLang;
+  const studyLabel =
+    LANGUAGES.find((l) => l.value === studyLang)?.label ?? studyLang;
+  const nativeLabel =
+    LANGUAGES.find((l) => l.value === nativeLang)?.label ?? nativeLang;
 
   useEffect(() => {
     if (visible) {
@@ -98,7 +100,10 @@ export function SaveCardModal({
             <Text className="text-lg font-semibold text-slate-900 dark:text-white">
               Save Flashcard
             </Text>
-            <Pressable onPress={onClose} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
+            <Pressable
+              onPress={onClose}
+              className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800"
+            >
               <X size={18} color="#64748b" />
             </Pressable>
           </View>
@@ -114,7 +119,9 @@ export function SaveCardModal({
               placeholder={`Word in ${studyLabel}...`}
               placeholderTextColor="#94a3b8"
               className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white"
-              style={{ writingDirection: studyLang === "ar-SA" ? "rtl" : "ltr" }}
+              style={{
+                writingDirection: studyLang === "ar-SA" ? "rtl" : "ltr",
+              }}
             />
             {isExtracting && !front && (
               <ActivityIndicator
@@ -136,7 +143,9 @@ export function SaveCardModal({
               placeholder={`Translation in ${nativeLabel}...`}
               placeholderTextColor="#94a3b8"
               className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white"
-              style={{ writingDirection: nativeLang === "ar-SA" ? "rtl" : "ltr" }}
+              style={{
+                writingDirection: nativeLang === "ar-SA" ? "rtl" : "ltr",
+              }}
             />
             {isExtracting && !back && (
               <ActivityIndicator
@@ -186,8 +195,9 @@ export function SaveCardModal({
             >
               <Plus size={16} color={isCreatingNew ? "#4f46e5" : "#94a3b8"} />
               <Text
-                className={`text-sm font-medium ${isCreatingNew ? "text-indigo-600" : "text-slate-500"
-                  }`}
+                className={`text-sm font-medium ${
+                  isCreatingNew ? "text-indigo-600" : "text-slate-500"
+                }`}
               >
                 Create new deck
               </Text>
@@ -212,7 +222,9 @@ export function SaveCardModal({
               onPress={onClose}
               className="flex-1 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 items-center"
             >
-              <Text className="text-sm font-medium text-slate-600 dark:text-slate-300">Cancel</Text>
+              <Text className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                Cancel
+              </Text>
             </Pressable>
             <Pressable
               onPress={handleSave}

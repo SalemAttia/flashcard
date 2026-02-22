@@ -34,7 +34,7 @@ export function GrammarExplainer({
       spinRotation.value = withRepeat(
         withTiming(360, { duration: 2000, easing: Easing.linear }),
         -1,
-        false
+        false,
       );
       generateGrammarExplanation(topicLabel, topicLabelDa)
         .then((text) => {
@@ -118,10 +118,7 @@ export function GrammarExplainer({
             </View>
           </View>
         ) : (
-          <ScrollView
-            className="flex-1"
-            contentContainerClassName="p-6 gap-4"
-          >
+          <ScrollView className="flex-1" contentContainerClassName="p-6 gap-4">
             {explanation && <MarkdownText text={explanation} />}
 
             <Pressable
@@ -154,21 +151,30 @@ function MarkdownText({ text }: { text: string }) {
         // Headers
         if (trimmed.startsWith("### ")) {
           return (
-            <Text key={i} className="text-base font-bold text-slate-800 dark:text-white mt-2">
+            <Text
+              key={i}
+              className="text-base font-bold text-slate-800 dark:text-white mt-2"
+            >
               {cleanMarkdown(trimmed.slice(4))}
             </Text>
           );
         }
         if (trimmed.startsWith("## ")) {
           return (
-            <Text key={i} className="text-lg font-bold text-slate-800 dark:text-indigo-400 mt-3">
+            <Text
+              key={i}
+              className="text-lg font-bold text-slate-800 dark:text-indigo-400 mt-3"
+            >
               {cleanMarkdown(trimmed.slice(3))}
             </Text>
           );
         }
         if (trimmed.startsWith("# ")) {
           return (
-            <Text key={i} className="text-xl font-bold text-slate-800 dark:text-indigo-500 mt-3">
+            <Text
+              key={i}
+              className="text-xl font-bold text-slate-800 dark:text-indigo-500 mt-3"
+            >
               {cleanMarkdown(trimmed.slice(2))}
             </Text>
           );
@@ -216,10 +222,11 @@ function MarkdownText({ text }: { text: string }) {
               {cells.map((cell, ci) => (
                 <Text
                   key={ci}
-                  className={`flex-1 text-sm ${i === 0
+                  className={`flex-1 text-sm ${
+                    i === 0
                       ? "font-bold text-slate-700 dark:text-slate-200"
                       : "text-slate-600 dark:text-slate-400"
-                    }`}
+                  }`}
                 >
                   {cleanMarkdown(cell)}
                 </Text>
@@ -230,7 +237,10 @@ function MarkdownText({ text }: { text: string }) {
 
         // Regular paragraph
         return (
-          <Text key={i} className="text-sm text-slate-700 dark:text-slate-300 leading-5">
+          <Text
+            key={i}
+            className="text-sm text-slate-700 dark:text-slate-300 leading-5"
+          >
             {cleanMarkdown(trimmed)}
           </Text>
         );

@@ -11,10 +11,17 @@ interface ChatMessageProps {
 
 function formatTime(timestamp: string): string {
   const date = new Date(timestamp);
-  return date.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString("en-GB", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
-export function ChatMessageBubble({ message, onSaveCard, onAddNote }: ChatMessageProps) {
+export function ChatMessageBubble({
+  message,
+  onSaveCard,
+  onAddNote,
+}: ChatMessageProps) {
   const isUser = message.role === "user";
 
   return (
@@ -44,14 +51,18 @@ export function ChatMessageBubble({ message, onSaveCard, onAddNote }: ChatMessag
             className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
           >
             <BookmarkPlus size={13} color="#64748b" />
-            <Text className="text-xs text-slate-600 dark:text-slate-300 font-medium">Save Card</Text>
+            <Text className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Save Card
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => onAddNote(message)}
             className="flex-row items-center gap-1 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900"
           >
             <StickyNote size={13} color="#64748b" />
-            <Text className="text-xs text-slate-600 dark:text-slate-300 font-medium">Add Note</Text>
+            <Text className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+              Add Note
+            </Text>
           </Pressable>
         </View>
       )}

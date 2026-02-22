@@ -71,7 +71,10 @@ function DeckCard({
           <Text className="font-semibold text-lg text-slate-800 dark:text-white">
             {deck.title}
           </Text>
-          <Text className="text-slate-500 dark:text-slate-400 text-sm mt-0.5" numberOfLines={1}>
+          <Text
+            className="text-slate-500 dark:text-slate-400 text-sm mt-0.5"
+            numberOfLines={1}
+          >
             {deck.description || "No description"}
           </Text>
         </View>
@@ -113,7 +116,9 @@ function DeckCard({
           })}
         >
           <ClipboardCheck size={16} color="#334155" />
-          <Text className="text-slate-700 dark:text-slate-200 font-medium text-sm">Test</Text>
+          <Text className="text-slate-700 dark:text-slate-200 font-medium text-sm">
+            Test
+          </Text>
         </Pressable>
         <Pressable
           onPress={onEdit}

@@ -24,17 +24,21 @@ export function useChatLanguages() {
     }
 
     const ref = doc(db, "users", user.uid, "settings", "languages");
-    const unsub = onSnapshot(ref, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        setStudyLang((data.studyLang as Language) ?? DEFAULT_STUDY);
-        setNativeLang((data.nativeLang as Language) ?? DEFAULT_NATIVE);
-      }
-      setLoaded(true);
-    }, (error) => {
-      console.error("Error in useChatLanguages listener:", error);
-      setLoaded(true);
-    });
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setStudyLang((data.studyLang as Language) ?? DEFAULT_STUDY);
+          setNativeLang((data.nativeLang as Language) ?? DEFAULT_NATIVE);
+        }
+        setLoaded(true);
+      },
+      (error) => {
+        console.error("Error in useChatLanguages listener:", error);
+        setLoaded(true);
+      },
+    );
 
     return unsub;
   }, [user]);
@@ -45,7 +49,7 @@ export function useChatLanguages() {
     await setDoc(
       doc(db, "users", user.uid, "settings", "languages"),
       sanitize({ studyLang: lang, nativeLang }),
-      { merge: true }
+      { merge: true },
     );
   };
 
@@ -55,7 +59,7 @@ export function useChatLanguages() {
     await setDoc(
       doc(db, "users", user.uid, "settings", "languages"),
       sanitize({ studyLang, nativeLang: lang }),
-      { merge: true }
+      { merge: true },
     );
   };
 

@@ -45,10 +45,7 @@ function RootNavigator() {
           gestureEnabled: false,
         }}
       />
-      <Stack.Screen
-        name="test"
-        options={{ animation: "slide_from_right" }}
-      />
+      <Stack.Screen name="test" options={{ animation: "slide_from_right" }} />
       <Stack.Screen
         name="summary"
         options={{ animation: "slide_from_bottom" }}

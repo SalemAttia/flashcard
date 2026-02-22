@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  Modal,
-  FlatList,
-} from "react-native";
+import { View, Text, Pressable, Modal, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { X, Trash2, FileText } from "lucide-react-native";
 import { ChatNote } from "../../types";
@@ -43,7 +37,9 @@ export function NotesModal({
         {/* Header */}
         <View className="flex-row items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
           <View className="flex-row items-center gap-2">
-            <Text className="text-lg font-semibold text-slate-900 dark:text-white">Notes</Text>
+            <Text className="text-lg font-semibold text-slate-900 dark:text-white">
+              Notes
+            </Text>
             {notes.length > 0 && (
               <View className="bg-indigo-100 dark:bg-indigo-900 px-2 py-0.5 rounded-full">
                 <Text className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
@@ -52,7 +48,10 @@ export function NotesModal({
               </View>
             )}
           </View>
-          <Pressable onPress={onClose} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900">
+          <Pressable
+            onPress={onClose}
+            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900"
+          >
             <X size={18} color="#64748b" />
           </Pressable>
         </View>

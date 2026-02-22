@@ -1,7 +1,12 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { CheckCircle, XCircle, ChevronRight, BarChart3 } from "lucide-react-native";
+import {
+  CheckCircle,
+  XCircle,
+  ChevronRight,
+  BarChart3,
+} from "lucide-react-native";
 import { GrammarQuestion } from "../../types";
 
 interface AnswerFeedbackProps {
@@ -23,8 +28,11 @@ export function AnswerFeedback({
     <Animated.View entering={FadeInDown.duration(400)} className="gap-5">
       {/* Result banner */}
       <View
-        className={`p-5 rounded-2xl flex-row items-center gap-3 ${isCorrect ? "bg-emerald-50 dark:bg-emerald-950/20" : "bg-red-50 dark:bg-red-950/20"
-          }`}
+        className={`p-5 rounded-2xl flex-row items-center gap-3 ${
+          isCorrect
+            ? "bg-emerald-50 dark:bg-emerald-950/20"
+            : "bg-red-50 dark:bg-red-950/20"
+        }`}
       >
         {isCorrect ? (
           <CheckCircle size={28} color="#059669" />
@@ -33,8 +41,11 @@ export function AnswerFeedback({
         )}
         <View className="flex-1">
           <Text
-            className={`text-lg font-bold ${isCorrect ? "text-emerald-700 dark:text-emerald-300" : "text-red-700 dark:text-red-400"
-              }`}
+            className={`text-lg font-bold ${
+              isCorrect
+                ? "text-emerald-700 dark:text-emerald-300"
+                : "text-red-700 dark:text-red-400"
+            }`}
           >
             {isCorrect ? "Correct!" : "Incorrect"}
           </Text>
@@ -54,10 +65,7 @@ export function AnswerFeedback({
         </Text>
         <Text className="text-base text-slate-800 dark:text-white leading-6">
           {question.sentence.includes("___")
-            ? question.sentence.replace(
-              "___",
-              question.correctAnswer
-            )
+            ? question.sentence.replace("___", question.correctAnswer)
             : question.correctAnswer}
         </Text>
       </View>

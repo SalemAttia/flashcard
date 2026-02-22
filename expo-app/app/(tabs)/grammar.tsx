@@ -8,7 +8,7 @@ import { useCustomGrammarTopics } from "../../src/store/useCustomGrammarTopics";
 
 export default function GrammarScreen() {
   const [selectedTopic, setSelectedTopic] = useState<GrammarTopicId | null>(
-    null
+    null,
   );
   const [customTopic, setCustomTopic] = useState("");
   const [questionCount, setQuestionCount] = useState(10);
@@ -16,8 +16,12 @@ export default function GrammarScreen() {
     string | null
   >(null);
 
-  const { topics: savedTopics, saveTopic, deleteTopic, markTopicUsed } =
-    useCustomGrammarTopics();
+  const {
+    topics: savedTopics,
+    saveTopic,
+    deleteTopic,
+    markTopicUsed,
+  } = useCustomGrammarTopics();
 
   const handleSelectSavedTopic = (topic: SavedCustomTopic) => {
     setCustomTopic(topic.title);

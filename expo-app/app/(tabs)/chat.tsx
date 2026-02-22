@@ -30,7 +30,8 @@ import { SaveCardModal } from "../../src/components/Chat/SaveCardModal";
 import { NotesModal } from "../../src/components/Chat/NotesModal";
 
 export default function ChatScreen() {
-  const { messages, setMessages, addMessage, clearHistory, loaded } = useChatHistory();
+  const { messages, setMessages, addMessage, clearHistory, loaded } =
+    useChatHistory();
   const [isLoading, setIsLoading] = useState(false);
 
   const [showNotes, setShowNotes] = useState(false);
@@ -48,7 +49,7 @@ export default function ChatScreen() {
 
   const systemPrompt = useMemo(
     () => buildSystemPrompt(studyLang, nativeLang),
-    [studyLang, nativeLang]
+    [studyLang, nativeLang],
   );
 
   const scrollToEnd = useCallback(() => {
@@ -89,7 +90,7 @@ export default function ChatScreen() {
         scrollToEnd();
       }
     },
-    [messages, systemPrompt, scrollToEnd, addMessage]
+    [messages, systemPrompt, scrollToEnd, addMessage],
   );
 
   const handleOpenSaveCard = useCallback(
@@ -102,7 +103,7 @@ export default function ChatScreen() {
       const extracted = await extractFlashcardFromMessage(
         message.content,
         studyLang,
-        nativeLang
+        nativeLang,
       );
 
       setIsExtracting(false);
@@ -111,7 +112,7 @@ export default function ChatScreen() {
         setPrefilledBack(extracted.back);
       }
     },
-    [studyLang, nativeLang]
+    [studyLang, nativeLang],
   );
 
   const handleSaveCard = useCallback(
@@ -119,7 +120,7 @@ export default function ChatScreen() {
       deckId: string | null,
       newDeckTitle: string | null,
       front: string,
-      back: string
+      back: string,
     ) => {
       if (!front.trim() || !back.trim()) return;
 
@@ -134,7 +135,7 @@ export default function ChatScreen() {
         if (!existingDeck) return;
         saveDeck(
           { ...existingDeck, cards: [...existingDeck.cards, newCard] },
-          deckId
+          deckId,
         );
       } else if (newDeckTitle?.trim()) {
         const newDeck: Deck = {
@@ -151,7 +152,7 @@ export default function ChatScreen() {
       setShowSaveCard(false);
       Toast.show({ type: "success", text1: "Flashcard saved!" });
     },
-    [decks, saveDeck, studyLang, nativeLang]
+    [decks, saveDeck, studyLang, nativeLang],
   );
 
   const handleAddNote = useCallback(
@@ -159,7 +160,7 @@ export default function ChatScreen() {
       addNote(message.content, { sourceMessageId: message.id });
       Toast.show({ type: "success", text1: "Saved to notes" });
     },
-    [addNote]
+    [addNote],
   );
 
   const handleChangeStudyLang = useCallback(
@@ -168,7 +169,7 @@ export default function ChatScreen() {
       clearHistory();
       Toast.show({ type: "info", text1: "Language changed — starting fresh" });
     },
-    [changeStudyLang]
+    [changeStudyLang],
   );
 
   const handleChangeNativeLang = useCallback(
@@ -177,7 +178,7 @@ export default function ChatScreen() {
       clearHistory();
       Toast.show({ type: "info", text1: "Language changed — starting fresh" });
     },
-    [changeNativeLang]
+    [changeNativeLang],
   );
 
   const handleNewChat = useCallback(() => {
@@ -243,7 +244,8 @@ export default function ChatScreen() {
             <View className="flex-1 items-center justify-center gap-4 py-20">
               <MessageCircle size={48} color="#e2e8f0" />
               <Text className="text-slate-400 text-sm text-center px-8 leading-5">
-                Ask me about vocabulary, translations, grammar, or send a sentence for corrections.
+                Ask me about vocabulary, translations, grammar, or send a
+                sentence for corrections.
               </Text>
             </View>
           }

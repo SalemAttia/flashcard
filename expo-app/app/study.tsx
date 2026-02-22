@@ -24,13 +24,16 @@ export default function StudyScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
       <StudySession
         deck={deck}
         onComplete={(correct, total) => {
           markStudied(deck.id);
           router.replace(
-            `/summary?correct=${correct}&total=${total}&isTest=false&deckId=${deck.id}`
+            `/summary?correct=${correct}&total=${total}&isTest=false&deckId=${deck.id}`,
           );
         }}
         onCancel={() => {

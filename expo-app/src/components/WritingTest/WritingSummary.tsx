@@ -30,25 +30,37 @@ export function WritingSummary({
     >
       {/* Hero */}
       <View
-        className={`w-full p-8 rounded-3xl items-center gap-4 ${passed ? "bg-emerald-50 dark:bg-emerald-900/20" : "bg-red-50 dark:bg-red-900/20"
-          }`}
+        className={`w-full p-8 rounded-3xl items-center gap-4 ${
+          passed
+            ? "bg-emerald-50 dark:bg-emerald-900/20"
+            : "bg-red-50 dark:bg-red-900/20"
+        }`}
       >
         <View
-          className={`w-24 h-24 rounded-full items-center justify-center ${passed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"
-            }`}
+          className={`w-24 h-24 rounded-full items-center justify-center ${
+            passed
+              ? "bg-emerald-100 dark:bg-emerald-900/30"
+              : "bg-red-100 dark:bg-red-900/30"
+          }`}
         >
           <Award size={40} color={passed ? "#059669" : "#dc2626"} />
         </View>
         <View className="items-center gap-1">
           <Text
-            className={`text-3xl font-black ${passed ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-              }`}
+            className={`text-3xl font-black ${
+              passed
+                ? "text-emerald-700 dark:text-emerald-400"
+                : "text-red-700 dark:text-red-400"
+            }`}
           >
             {Math.round(result.overallScore)}%
           </Text>
           <Text
-            className={`text-sm font-bold uppercase tracking-widest ${passed ? "text-emerald-600 dark:text-emerald-300" : "text-red-600 dark:text-red-400"
-              }`}
+            className={`text-sm font-bold uppercase tracking-widest ${
+              passed
+                ? "text-emerald-600 dark:text-emerald-300"
+                : "text-red-600 dark:text-red-400"
+            }`}
           >
             {passed ? "Exam Passed!" : "Keep Practicing"}
           </Text>
@@ -81,18 +93,27 @@ export function WritingSummary({
                   Prompt {i + 1}
                 </Text>
                 <View
-                  className={`px-2 py-0.5 rounded-full ${evalPassed ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-red-100 dark:bg-red-900/30"
-                    }`}
+                  className={`px-2 py-0.5 rounded-full ${
+                    evalPassed
+                      ? "bg-emerald-100 dark:bg-emerald-900/30"
+                      : "bg-red-100 dark:bg-red-900/30"
+                  }`}
                 >
                   <Text
-                    className={`text-xs font-bold ${evalPassed ? "text-emerald-700 dark:text-emerald-400" : "text-red-700 dark:text-red-400"
-                      }`}
+                    className={`text-xs font-bold ${
+                      evalPassed
+                        ? "text-emerald-700 dark:text-emerald-400"
+                        : "text-red-700 dark:text-red-400"
+                    }`}
                   >
                     {resp.evaluation.score}%
                   </Text>
                 </View>
               </View>
-              <Text className="text-sm text-slate-700 dark:text-slate-200" numberOfLines={2}>
+              <Text
+                className="text-sm text-slate-700 dark:text-slate-200"
+                numberOfLines={2}
+              >
                 {prompt?.instruction}
               </Text>
               <Text className="text-xs text-slate-500">
@@ -102,8 +123,9 @@ export function WritingSummary({
               <View className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                 <View
                   style={{ width: `${resp.evaluation.score}%` }}
-                  className={`h-full rounded-full ${evalPassed ? "bg-emerald-400" : "bg-red-400"
-                    }`}
+                  className={`h-full rounded-full ${
+                    evalPassed ? "bg-emerald-400" : "bg-red-400"
+                  }`}
                 />
               </View>
             </View>
@@ -147,7 +169,9 @@ export function WritingSummary({
           })}
         >
           <Home size={18} color="#64748b" />
-          <Text className="text-slate-600 dark:text-slate-300 font-semibold">Back to Home</Text>
+          <Text className="text-slate-600 dark:text-slate-300 font-semibold">
+            Back to Home
+          </Text>
         </Pressable>
       </View>
     </ScrollView>

@@ -42,7 +42,9 @@ export function Summary({ results, deckTitle, onHome, onRetry }: SummaryProps) {
           </Text>
           <Text className="text-slate-500 dark:text-slate-400">
             You've finished studying{" "}
-            <Text className="font-semibold text-indigo-600 dark:text-indigo-400">{deckTitle}</Text>
+            <Text className="font-semibold text-indigo-600 dark:text-indigo-400">
+              {deckTitle}
+            </Text>
           </Text>
         </View>
 
@@ -95,7 +97,9 @@ export function Summary({ results, deckTitle, onHome, onRetry }: SummaryProps) {
           style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
         >
           <Home size={20} color="#475569" />
-          <Text className="text-slate-600 dark:text-slate-300 font-semibold">Back to Home</Text>
+          <Text className="text-slate-600 dark:text-slate-300 font-semibold">
+            Back to Home
+          </Text>
         </Pressable>
       </View>
     </View>

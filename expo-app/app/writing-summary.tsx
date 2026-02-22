@@ -19,7 +19,7 @@ export default function WritingSummaryScreen() {
       if (raw) {
         try {
           setResult(JSON.parse(raw));
-        } catch { }
+        } catch {}
       }
     });
   }, []);
@@ -35,9 +35,7 @@ export default function WritingSummaryScreen() {
   const levelConfig = getLevelConfig(result.level);
   const deck = result.deckId ? getDeck(result.deckId) : null;
 
-  const levelIndex = WRITING_LEVELS.findIndex(
-    (l) => l.value === result.level
-  );
+  const levelIndex = WRITING_LEVELS.findIndex((l) => l.value === result.level);
   const nextLevel =
     levelIndex < WRITING_LEVELS.length - 1
       ? WRITING_LEVELS[levelIndex + 1]
@@ -57,7 +55,10 @@ export default function WritingSummaryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
       <WritingSummary
         result={result}
         levelConfig={levelConfig}

@@ -1,7 +1,14 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Home, BookOpen, PenLine, GraduationCap, MessageCircle, User } from "lucide-react-native";
+import {
+  Home,
+  BookOpen,
+  PenLine,
+  GraduationCap,
+  MessageCircle,
+  User,
+} from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 
 export default function TabLayout() {
@@ -30,9 +37,7 @@ export default function TabLayout() {
         name="index"
         options={{
           title: "Home",
-          tabBarIcon: ({ color, size }) => (
-            <Home size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -75,9 +80,7 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
-          tabBarIcon: ({ color, size }) => (
-            <User size={size} color={color} />
-          ),
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />
     </Tabs>

@@ -57,7 +57,7 @@ export default function WritingSessionScreen() {
   const [currentText, setCurrentText] = useState("");
   const [startTimeMs, setStartTimeMs] = useState(0);
   const [responses, setResponses] = useState<WritingTestResult["responses"]>(
-    []
+    [],
   );
   const [currentEvaluation, setCurrentEvaluation] =
     useState<WritingEvaluation | null>(null);
@@ -68,7 +68,7 @@ export default function WritingSessionScreen() {
     spinRotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
     loadPrompts();
   }, []);
@@ -107,7 +107,7 @@ export default function WritingSessionScreen() {
       const evaluation = await evaluateWriting(
         prompt,
         currentText,
-        levelConfig
+        levelConfig,
       );
       setCurrentEvaluation(evaluation);
       setResponses((prev) => [
@@ -157,9 +157,11 @@ export default function WritingSessionScreen() {
         passed: overallScore >= levelConfig.passMark,
       };
 
-
       if (user) {
-        await setDoc(doc(db, "users", user.uid, "results", "writing"), sanitize(result));
+        await setDoc(
+          doc(db, "users", user.uid, "results", "writing"),
+          sanitize(result),
+        );
       }
       await AsyncStorage.setItem(WRITING_RESULT_KEY, JSON.stringify(result));
       router.replace("/writing-summary");
@@ -174,7 +176,10 @@ export default function WritingSessionScreen() {
   if (phase === "generating" || phase === "evaluating") {
     const isEvaluating = phase === "evaluating";
     return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-slate-950"
+        edges={["top"]}
+      >
         <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={handleCancel} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
@@ -233,7 +238,10 @@ export default function WritingSessionScreen() {
   const progressPercent = ((currentIndex + 1) / prompts.length) * 100;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
       {/* Header */}
       <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={handleCancel} className="p-2 -ml-2">

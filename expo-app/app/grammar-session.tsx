@@ -32,15 +32,22 @@ type SessionPhase = "generating" | "answering" | "feedback";
 const GRAMMAR_RESULT_KEY = "grammar_last_result";
 
 export default function GrammarSessionScreen() {
-  const { topicId, customTopic, questionCount: questionCountParam } =
-    useLocalSearchParams<{
-      topicId?: GrammarTopicId;
-      customTopic?: string;
-      questionCount?: string;
-    }>();
+  const {
+    topicId,
+    customTopic,
+    questionCount: questionCountParam,
+  } = useLocalSearchParams<{
+    topicId?: GrammarTopicId;
+    customTopic?: string;
+    questionCount?: string;
+  }>();
   const { user } = useAuth();
-  const topicConfig = topicId ? getTopicConfig(topicId as GrammarTopicId) : null;
-  const questionCount = questionCountParam ? parseInt(questionCountParam, 10) : 10;
+  const topicConfig = topicId
+    ? getTopicConfig(topicId as GrammarTopicId)
+    : null;
+  const questionCount = questionCountParam
+    ? parseInt(questionCountParam, 10)
+    : 10;
   const displayLabel = customTopic || topicConfig?.label || "Grammar Quiz";
 
   const [phase, setPhase] = useState<SessionPhase>("generating");
@@ -55,7 +62,7 @@ export default function GrammarSessionScreen() {
     spinRotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
     loadQuestions();
   }, []);
@@ -127,9 +134,11 @@ export default function GrammarSessionScreen() {
         scorePercent,
       };
 
-
       if (user) {
-        await setDoc(doc(db, "users", user.uid, "results", "grammar"), sanitize(result));
+        await setDoc(
+          doc(db, "users", user.uid, "results", "grammar"),
+          sanitize(result),
+        );
       }
       await AsyncStorage.setItem(GRAMMAR_RESULT_KEY, JSON.stringify(result));
       router.replace("/grammar-summary");
@@ -143,7 +152,10 @@ export default function GrammarSessionScreen() {
 
   if (phase === "generating") {
     return (
-      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-slate-950"
+        edges={["top"]}
+      >
         <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={handleCancel} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
@@ -197,7 +209,10 @@ export default function GrammarSessionScreen() {
   const isCorrect = currentAnswer?.isCorrect ?? false;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
       {/* Header */}
       <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={handleCancel} className="p-2 -ml-2">
@@ -236,10 +251,7 @@ export default function GrammarSessionScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        className="flex-1 p-6"
-        contentContainerClassName="pb-10"
-      >
+      <ScrollView className="flex-1 p-6" contentContainerClassName="pb-10">
         {phase === "answering" && (
           <QuestionCard
             question={currentQuestion}

@@ -18,7 +18,7 @@ export function StudySession({
 }: StudySessionProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<{ id: string; correct: boolean }[]>(
-    []
+    [],
   );
   const [isFlipped, setIsFlipped] = useState(false);
 
@@ -55,7 +55,10 @@ export function StudySession({
           <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest">
             Studying
           </Text>
-          <Text className="font-semibold text-sm text-slate-900 dark:text-white" numberOfLines={1}>
+          <Text
+            className="font-semibold text-sm text-slate-900 dark:text-white"
+            numberOfLines={1}
+          >
             {deck.title}
           </Text>
         </View>

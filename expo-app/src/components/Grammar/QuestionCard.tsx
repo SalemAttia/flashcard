@@ -44,28 +44,36 @@ export function QuestionCard({
               key={option}
               onPress={() => !disabled && onAnswer(option)}
               disabled={disabled}
-              className={`p-4 rounded-xl border-2 flex-row items-center gap-3 ${isSelected
+              className={`p-4 rounded-xl border-2 flex-row items-center gap-3 ${
+                isSelected
                   ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-400"
                   : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
-                }`}
+              }`}
               style={({ pressed }) => ({
                 transform: [{ scale: pressed && !disabled ? 0.98 : 1 }],
               })}
             >
               <View
-                className={`w-8 h-8 rounded-full items-center justify-center ${isSelected ? "bg-indigo-500" : "bg-slate-100 dark:bg-slate-800"
-                  }`}
+                className={`w-8 h-8 rounded-full items-center justify-center ${
+                  isSelected
+                    ? "bg-indigo-500"
+                    : "bg-slate-100 dark:bg-slate-800"
+                }`}
               >
                 <Text
-                  className={`text-sm font-bold ${isSelected ? "text-white" : "text-slate-500"
-                    }`}
+                  className={`text-sm font-bold ${
+                    isSelected ? "text-white" : "text-slate-500"
+                  }`}
                 >
                   {letter}
                 </Text>
               </View>
               <Text
-                className={`text-sm font-medium flex-1 ${isSelected ? "text-indigo-700 dark:text-indigo-300" : "text-slate-700 dark:text-slate-300"
-                  }`}
+                className={`text-sm font-medium flex-1 ${
+                  isSelected
+                    ? "text-indigo-700 dark:text-indigo-300"
+                    : "text-slate-700 dark:text-slate-300"
+                }`}
               >
                 {option}
               </Text>

@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { View, Text, Pressable, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { RotateCcw, Volume2 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -50,28 +56,24 @@ export function Flashcard({
   const frontStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(flipAnim.value, [0, 1], [0, 180]);
     return {
-      transform: [
-        { perspective: 1000 },
-        { rotateY: `${rotateY}deg` },
-      ],
+      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
       backfaceVisibility: "hidden" as const,
-      opacity: Platform.OS === "web"
-        ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [1, 1, 0, 0])
-        : 1,
+      opacity:
+        Platform.OS === "web"
+          ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [1, 1, 0, 0])
+          : 1,
     };
   });
 
   const backStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(flipAnim.value, [0, 1], [180, 360]);
     return {
-      transform: [
-        { perspective: 1000 },
-        { rotateY: `${rotateY}deg` },
-      ],
+      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
       backfaceVisibility: "hidden" as const,
-      opacity: Platform.OS === "web"
-        ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [0, 0, 1, 1])
-        : 1,
+      opacity:
+        Platform.OS === "web"
+          ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [0, 0, 1, 1])
+          : 1,
     };
   });
 
