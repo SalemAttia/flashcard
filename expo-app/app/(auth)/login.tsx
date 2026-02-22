@@ -13,6 +13,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { db } from "../../src/firebase/config";
 import { useAuth } from "../../src/context/AuthContext";
 import { getFriendlyAuthError } from "../../src/utils/authErrors";
+import { Sparkles } from "lucide-react-native";
 
 export default function LoginScreen() {
   const { email: initialEmail } = useLocalSearchParams<{ email: string }>();
@@ -30,7 +31,7 @@ export default function LoginScreen() {
 
       // Attempt login
       await signIn(email.trim(), password);
-      router.replace("/(tabs)");
+      // Layout guard handles routing based on approval status
     } catch (e: any) {
       Toast.show({
         type: "error",
@@ -49,7 +50,9 @@ export default function LoginScreen() {
       className="flex-1 bg-white dark:bg-slate-950 justify-center px-6"
     >
       <View className="bg-slate-50 dark:bg-slate-900 rounded-[32px] p-8 items-center border border-slate-100 dark:border-slate-800 shadow-sm">
-        <Text className="text-5xl mb-4">🧠</Text>
+        <View className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-3xl items-center justify-center mb-6 shadow-sm">
+          <Sparkles size={40} color="#4f46e5" />
+        </View>
         <Text className="text-2xl font-bold text-slate-900 dark:text-white mb-1.5">
           Welcome back
         </Text>

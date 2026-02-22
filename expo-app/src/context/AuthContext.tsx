@@ -29,29 +29,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let allowedUnsub: () => void;
 
     const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u);
-
       if (u) {
-        // Monitor the user's profile document
+        // Keep loading true until Firestore snapshot resolves approval status.
+        // Don't set user yet — setting user while isAllowed is stale causes
+        // the layout guard to briefly route to the waitlist page.
+        setLoading(true);
         const userRef = doc(db, "users", u.uid);
 
         allowedUnsub = onSnapshot(userRef, (docSnap: DocumentSnapshot) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            // isApproved: true means they can access the app
             setIsAllowed(data.isApproved === true);
           } else {
-            // No profile yet, not allowed
             setIsAllowed(false);
           }
+          // Set user and loading together so the guard never sees
+          // user=set + isAllowed=stale
+          setUser(u);
           setLoading(false);
         }, (error) => {
           console.error("Profile check error:", error);
           setIsAllowed(false);
+          setUser(u);
           setLoading(false);
         });
       } else {
         if (allowedUnsub) allowedUnsub();
+        setUser(null);
         setIsAllowed(false);
         setLoading(false);
       }
