@@ -230,25 +230,22 @@ function WeekCalendarStrip({
               className="items-center flex-1"
             >
               <Text
-                className={`text-xs font-medium mb-1 ${
-                  isSelected ? "text-indigo-600" : "text-slate-400"
-                }`}
+                className={`text-xs font-medium mb-1 ${isSelected ? "text-indigo-600" : "text-slate-400"
+                  }`}
               >
                 {DAY_NAMES[i]}
               </Text>
               <View
-                className={`w-9 h-9 rounded-full items-center justify-center ${
-                  isSelected ? "bg-indigo-600" : isToday ? "bg-indigo-50" : ""
-                }`}
+                className={`w-9 h-9 rounded-full items-center justify-center ${isSelected ? "bg-indigo-600" : isToday ? "bg-indigo-50" : ""
+                  }`}
               >
                 <Text
-                  className={`text-sm font-semibold ${
-                    isSelected
+                  className={`text-sm font-semibold ${isSelected
                       ? "text-white"
                       : isToday
                         ? "text-indigo-600 dark:text-indigo-400"
                         : "text-slate-700 dark:text-slate-300"
-                  }`}
+                    }`}
                 >
                   {dayNum}
                 </Text>
@@ -341,7 +338,7 @@ function ProgressBar({
 function MotivationalBanner({ completedCount }: { completedCount: number }) {
   const phrase =
     MOTIVATIONAL_PHRASES[
-      Math.min(completedCount, MOTIVATIONAL_PHRASES.length - 1)
+    Math.min(completedCount, MOTIVATIONAL_PHRASES.length - 1)
     ];
 
   return (
@@ -467,11 +464,10 @@ function ChecklistRow({
         </View>
         <View className="flex-1">
           <Text
-            className={`font-medium text-base ${
-              isCompleted
+            className={`font-medium text-base ${isCompleted
                 ? "text-slate-400 dark:text-slate-600 line-through"
                 : "text-slate-800 dark:text-white"
-            }`}
+              }`}
           >
             {item.label}
           </Text>
@@ -479,9 +475,8 @@ function ChecklistRow({
         </View>
         <Animated.View
           style={checkStyle}
-          className={`w-7 h-7 rounded-full items-center justify-center ${
-            isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
-          }`}
+          className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+            }`}
         >
           {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
         </Animated.View>
@@ -582,11 +577,10 @@ function CustomTaskRow({
         <View className="flex-1">
           <View className="flex-row items-center">
             <Text
-              className={`font-medium text-base ${
-                isCompleted
+              className={`font-medium text-base ${isCompleted
                   ? "text-slate-400 dark:text-slate-600 line-through"
                   : "text-slate-800 dark:text-white"
-              }`}
+                }`}
             >
               {task.label}
             </Text>
@@ -625,11 +619,10 @@ function CustomTaskRow({
         {!hasSubs && (
           <Animated.View
             style={checkStyle}
-            className={`w-7 h-7 rounded-full items-center justify-center ${
-              isCompleted
+            className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
                 ? "bg-emerald-500"
                 : "border-2 border-slate-200 dark:border-slate-800"
-            }`}
+              }`}
           >
             {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
           </Animated.View>
@@ -641,11 +634,10 @@ function CustomTaskRow({
             }}
           >
             <View
-              className={`w-7 h-7 rounded-full items-center justify-center ${
-                isCompleted
+              className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
                   ? "bg-emerald-500"
                   : "border-2 border-slate-200 dark:border-slate-800"
-              }`}
+                }`}
             >
               {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
             </View>
@@ -704,11 +696,10 @@ function CustomTaskRow({
                 <Square size={16} color="#cbd5e1" />
               )}
               <Text
-                className={`ml-2 text-sm ${
-                  sub.checked
+                className={`ml-2 text-sm ${sub.checked
                     ? "text-slate-400 dark:text-slate-600 line-through"
                     : "text-slate-700 dark:text-slate-300"
-                }`}
+                  }`}
               >
                 {sub.text}
               </Text>
@@ -739,11 +730,10 @@ function TimeOfDayPicker({
           <Pressable
             key={opt}
             onPress={() => onChange(opt)}
-            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${
-              selected
+            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${selected
                 ? "border-2"
                 : "border border-slate-200 dark:border-slate-800"
-            }`}
+              }`}
             style={
               selected
                 ? { borderColor: config.color, backgroundColor: config.bg }
@@ -752,9 +742,8 @@ function TimeOfDayPicker({
           >
             <Icon size={16} color={selected ? config.color : "#94a3b8"} />
             <Text
-              className={`ml-1.5 text-xs font-semibold ${
-                selected ? "" : "text-slate-400 dark:text-slate-500"
-              }`}
+              className={`ml-1.5 text-xs font-semibold ${selected ? "" : "text-slate-400 dark:text-slate-500"
+                }`}
               style={selected ? { color: config.color } : undefined}
             >
               {config.label}
@@ -798,9 +787,8 @@ function DayOfWeekPicker({
         </Text>
         <Pressable onPress={() => onChange([])}>
           <Text
-            className={`text-xs font-semibold ${
-              allSelected ? "text-indigo-600" : "text-slate-400"
-            }`}
+            className={`text-xs font-semibold ${allSelected ? "text-indigo-600" : "text-slate-400"
+              }`}
           >
             Every day
           </Text>
@@ -813,14 +801,12 @@ function DayOfWeekPicker({
             <Pressable
               key={idx}
               onPress={() => toggleDay(idx)}
-              className={`w-10 h-10 rounded-full items-center justify-center ${
-                selected ? "bg-indigo-600" : "bg-slate-100 dark:bg-slate-800"
-              }`}
+              className={`w-10 h-10 rounded-full items-center justify-center ${selected ? "bg-indigo-600" : "bg-slate-100 dark:bg-slate-800"
+                }`}
             >
               <Text
-                className={`text-sm font-semibold ${
-                  selected ? "text-white" : "text-slate-400"
-                }`}
+                className={`text-sm font-semibold ${selected ? "text-white" : "text-slate-400"
+                  }`}
               >
                 {lbl}
               </Text>
@@ -1085,11 +1071,10 @@ function TaskModal({
             <Pressable
               onPress={addSubItem}
               disabled={!newSubText.trim()}
-              className={`w-8 h-8 rounded-lg items-center justify-center ${
-                newSubText.trim()
+              className={`w-8 h-8 rounded-lg items-center justify-center ${newSubText.trim()
                   ? "bg-indigo-100 dark:bg-indigo-900/30"
                   : "bg-slate-100 dark:bg-slate-800"
-              }`}
+                }`}
             >
               <Plus
                 size={16}
@@ -1123,19 +1108,17 @@ function TaskModal({
           <Pressable
             onPress={handleSubmit}
             disabled={!label.trim()}
-            className={`py-3.5 rounded-2xl items-center ${
-              label.trim() ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-800"
-            }`}
+            className={`py-3.5 rounded-2xl items-center ${label.trim() ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-800"
+              }`}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.98 : 1 }],
             })}
           >
             <Text
-              className={`font-medium ${
-                label.trim()
+              className={`font-medium ${label.trim()
                   ? "text-white"
                   : "text-slate-400 dark:text-slate-600"
-              }`}
+                }`}
             >
               {isEditing ? "Save Changes" : "Add Task"}
             </Text>
@@ -1294,124 +1277,126 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
       <View className="flex-1 w-full max-w-2xl self-center">
-      <AllDoneBanner visible={showCelebration} />
+        <AllDoneBanner visible={showCelebration} />
 
-      {/* Header */}
-      <View className="p-6 pb-4 flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            Hej!
-          </Text>
-          <Text className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
-            {formatDateDisplay(selectedDate)}
-          </Text>
-        </View>
-        <View className="flex-row items-center">
-          {!isToday && (
+        {/* Header */}
+        <View className="p-6 pb-4 flex-row items-center justify-between">
+          <View>
+            <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              Hej!
+            </Text>
+            <Text className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+              {formatDateDisplay(selectedDate)}
+            </Text>
+          </View>
+          <View className="flex-row items-center">
+            {!isToday && (
+              <Pressable
+                onPress={() => {
+                  setWeekOffset(0);
+                  setSelectedDate(today);
+                }}
+                className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full mr-2"
+              >
+                <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                  Today
+                </Text>
+              </Pressable>
+            )}
+            <StreakBadge count={streakCount} />
             <Pressable
-              onPress={() => {
-                setWeekOffset(0);
-                setSelectedDate(today);
-              }}
-              className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full mr-2"
+              onPress={() => setShowSettings(true)}
+              className="w-9 h-9 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 ml-2"
             >
-              <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
-                Today
-              </Text>
+              <Settings size={18} color="#64748b" />
             </Pressable>
-          )}
-          <StreakBadge count={streakCount} />
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            className="w-9 h-9 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 ml-2"
-          >
-            <Settings size={18} color="#64748b" />
-          </Pressable>
+          </View>
         </View>
-      </View>
 
-      {/* Calendar Strip */}
-      <WeekCalendarStrip
-        weekDays={weekDays}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-        hasTasksForDate={hasTasksForDate}
-        onPrevWeek={() => setWeekOffset((o) => o - 1)}
-        onNextWeek={() => setWeekOffset((o) => o + 1)}
-        isCurrentWeek={isCurrentWeek}
-      />
-
-      {/* Week Summary */}
-      <WeekSummaryCard weekDays={weekDays} getDateProgress={getDateProgress} />
-
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Progress Bar */}
-        <ProgressBar
-          completed={completedCount}
-          total={totalCount}
-          allDone={allDone}
+        {/* Calendar Strip */}
+        <WeekCalendarStrip
+          weekDays={weekDays}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          hasTasksForDate={hasTasksForDate}
+          onPrevWeek={() => setWeekOffset((o) => o - 1)}
+          onNextWeek={() => setWeekOffset((o) => o + 1)}
+          isCurrentWeek={isCurrentWeek}
         />
 
-        {/* Motivational Banner (today only) */}
-        {isToday && <MotivationalBanner completedCount={completedCount} />}
+        {/* Week Summary - only show on Sunday */}
+        {selectedDate === weekDays[6] && (
+          <WeekSummaryCard weekDays={weekDays} getDateProgress={getDateProgress} />
+        )}
 
-        {/* Time-of-day sections */}
-        {grouped.map(({ timeOfDay, coreItems, customItems }) => (
-          <TimeSection
-            key={timeOfDay}
-            timeOfDay={timeOfDay}
-            coreItems={coreItems}
-            customItems={customItems}
-            completeItem={completeItem}
-            uncompleteItem={uncompleteItem}
-            toggleCustomTask={toggleCustomTask}
-            removeCustomTask={removeCustomTask}
-            removeRecurringTask={removeRecurringTask}
-            toggleSubCheckItem={toggleSubCheckItem}
-            onEditTask={(task) => {
-              setEditingTask(task);
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {/* Progress Bar */}
+          <ProgressBar
+            completed={completedCount}
+            total={totalCount}
+            allDone={allDone}
+          />
+
+          {/* Motivational Banner (today only) */}
+          {isToday && <MotivationalBanner completedCount={completedCount} />}
+
+          {/* Time-of-day sections */}
+          {grouped.map(({ timeOfDay, coreItems, customItems }) => (
+            <TimeSection
+              key={timeOfDay}
+              timeOfDay={timeOfDay}
+              coreItems={coreItems}
+              customItems={customItems}
+              completeItem={completeItem}
+              uncompleteItem={uncompleteItem}
+              toggleCustomTask={toggleCustomTask}
+              removeCustomTask={removeCustomTask}
+              removeRecurringTask={removeRecurringTask}
+              toggleSubCheckItem={toggleSubCheckItem}
+              onEditTask={(task) => {
+                setEditingTask(task);
+                setShowTaskModal(true);
+              }}
+              disabled={isFutureDate}
+            />
+          ))}
+
+          {/* Add Task Button */}
+          <Pressable
+            onPress={() => {
+              setEditingTask(null);
               setShowTaskModal(true);
             }}
-            disabled={isFutureDate}
-          />
-        ))}
+            className="mx-6 mt-2 mb-3 flex-row items-center justify-center py-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl"
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            })}
+          >
+            <Plus size={18} color="#94a3b8" />
+            <Text className="text-slate-400 font-medium ml-2">Add Task</Text>
+          </Pressable>
 
-        {/* Add Task Button */}
-        <Pressable
-          onPress={() => {
+          <View className="h-8" />
+        </ScrollView>
+
+        <TaskModal
+          visible={showTaskModal}
+          onClose={() => {
+            setShowTaskModal(false);
             setEditingTask(null);
-            setShowTaskModal(true);
           }}
-          className="mx-6 mt-2 mb-3 flex-row items-center justify-center py-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl"
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          })}
-        >
-          <Plus size={18} color="#94a3b8" />
-          <Text className="text-slate-400 font-medium ml-2">Add Task</Text>
-        </Pressable>
+          onAdd={addCustomTask}
+          onEdit={editCustomTask}
+          editingTask={editingTask}
+        />
 
-        <View className="h-8" />
-      </ScrollView>
-
-      <TaskModal
-        visible={showTaskModal}
-        onClose={() => {
-          setShowTaskModal(false);
-          setEditingTask(null);
-        }}
-        onAdd={addCustomTask}
-        onEdit={editCustomTask}
-        editingTask={editingTask}
-      />
-
-      <DefaultItemsSettingsModal
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        defaultItems={defaultItems}
-        hiddenItems={hiddenDefaultItems}
-        onToggle={toggleDefaultItemVisibility}
-      />
+        <DefaultItemsSettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+          defaultItems={defaultItems}
+          hiddenItems={hiddenDefaultItems}
+          onToggle={toggleDefaultItemVisibility}
+        />
       </View>
     </SafeAreaView>
   );
