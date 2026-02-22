@@ -1,7 +1,7 @@
 import { Tabs } from "expo-router";
 import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BookOpen, PenLine, GraduationCap, MessageCircle } from "lucide-react-native";
+import { Home, BookOpen, PenLine, GraduationCap, MessageCircle } from "lucide-react-native";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -25,6 +25,15 @@ export default function TabLayout() {
     >
       <Tabs.Screen
         name="index"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Home size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="decks"
         options={{
           title: "Decks",
           tabBarIcon: ({ color, size }) => (
