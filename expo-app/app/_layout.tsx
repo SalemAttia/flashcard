@@ -49,7 +49,7 @@ function RootNavigator() {
 
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <View style={{ flex: 1 }} className={colorScheme === "dark" ? "dark" : ""}>
+      <View style={{ flex: 1 }} className={colorScheme === "dark" ? "dark bg-slate-950" : "bg-white"}>
         <Stack
           screenOptions={{
             headerShown: false,

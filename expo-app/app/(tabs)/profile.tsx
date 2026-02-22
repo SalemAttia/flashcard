@@ -29,14 +29,7 @@ export default function ProfileScreen() {
   const { colorScheme, setColorScheme } = useColorScheme();
 
   const toggleDarkMode = () => {
-    const newScheme = colorScheme === "dark" ? "light" : "dark";
-    try {
-      setColorScheme(newScheme);
-    } catch {
-      // nativewind's setColorScheme can throw on native if the darkMode flag
-      // isn't registered yet — fall back to Appearance API directly
-      Appearance.setColorScheme(newScheme);
-    }
+    setColorScheme(colorScheme === "dark" ? "light" : "dark");
   };
 
   if (loading) {
