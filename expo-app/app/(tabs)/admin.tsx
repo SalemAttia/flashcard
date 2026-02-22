@@ -14,6 +14,8 @@ import {
   doc,
   setDoc,
   updateDoc,
+  query,
+  where,
 } from "firebase/firestore";
 import { db } from "../../src/firebase/config";
 import { useAuth } from "../../src/context/AuthContext";
@@ -27,20 +29,24 @@ type WaitlistUser = {
 };
 
 export default function AdminScreen() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [users, setUsers] = useState<WaitlistUser[]>([]);
+  const [updatingEmail, setUpdatingEmail] = useState<string | null>(null);
 
   // Safety check: redirect non-admins immediately.
   useEffect(() => {
+    if (authLoading) return;
+
     if (user?.email !== "salem.at.ibrahim@gmail.com") {
       router.replace("/(tabs)");
     }
-  }, [user]);
+  }, [user, authLoading]);
 
   const loadUsers = async () => {
-    setLoading(true);
+    // Only show full loader if we have no users yet
+    if (users.length === 0) setLoading(true);
     try {
       const waitlistSnap = await getDocs(collection(db, "waitlist"));
       const allowedSnap = await getDocs(collection(db, "allowed_users"));
@@ -88,6 +94,7 @@ export default function AdminScreen() {
     currentSource: string,
     waitlistId: string,
   ) => {
+    setUpdatingEmail(email);
     try {
       // Create or update the core allowed_users document (using email as ID for simpler lookups)
       await setDoc(
@@ -100,16 +107,33 @@ export default function AdminScreen() {
         { merge: true },
       );
 
-      // If they came from the waitlist, update that document too
+      // 2. If they came from the waitlist, update that document too
       if (currentSource === "waitlist" && waitlistId) {
         await updateDoc(doc(db, "waitlist", waitlistId), {
           status: newStatus,
         });
       }
 
+      // 3. Update the actual user profile if they have already registered
+      const usersQuery = query(
+        collection(db, "users"),
+        where("email", "==", email)
+      );
+      const userSnapshot = await getDocs(usersQuery);
+
+      if (!userSnapshot.empty) {
+        // They have a profile, update it
+        const userDoc = userSnapshot.docs[0];
+        await updateDoc(doc(db, "users", userDoc.id), {
+          isApproved: newStatus === "enabled"
+        });
+      }
+
+      setUpdatingEmail(null);
       await loadUsers(); // Refresh
       Alert.alert("Success", `${email} is now ${newStatus}`);
     } catch (e) {
+      setUpdatingEmail(null);
       console.error(e);
       Alert.alert("Action Failed", "Could not update the user status.");
     }
@@ -161,10 +185,11 @@ export default function AdminScreen() {
                       item.id,
                     )
                   }
-                  className="flex-1 bg-indigo-600 py-2 rounded-lg items-center"
+                  disabled={updatingEmail === item.email}
+                  className={`flex-1 bg-indigo-600 py-2 rounded-lg items-center ${updatingEmail === item.email ? "opacity-50" : ""}`}
                 >
                   <Text className="text-white font-medium text-sm">
-                    Enable Base Access
+                    {updatingEmail === item.email ? "Processing..." : "Enable Base Access"}
                   </Text>
                 </TouchableOpacity>
               )}
@@ -178,10 +203,11 @@ export default function AdminScreen() {
                       item.id,
                     )
                   }
-                  className="flex-1 border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/20 py-2 rounded-lg items-center"
+                  disabled={updatingEmail === item.email}
+                  className={`flex-1 border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950/20 py-2 rounded-lg items-center ${updatingEmail === item.email ? "opacity-50" : ""}`}
                 >
                   <Text className="text-rose-600 dark:text-rose-400 font-medium text-sm">
-                    Disable User
+                    {updatingEmail === item.email ? "..." : "Disable User"}
                   </Text>
                 </TouchableOpacity>
               )}

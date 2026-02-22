@@ -10,13 +10,13 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../src/firebase/config";
+import { collection, query, where, getDocs, addDoc, serverTimestamp, doc, setDoc } from "firebase/firestore";
+import { db, auth } from "../../src/firebase/config";
 import { useAuth } from "../../src/context/AuthContext";
 import { getFriendlyAuthError } from "../../src/utils/authErrors";
 
 export default function RegisterScreen() {
-  const { signUp } = useAuth();
+  const { signUp, signIn } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,42 +46,60 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
-      // 1. Check if email is allowed
       const cleanEmail = email.trim().toLowerCase();
-      const allowedQuery = query(
-        collection(db, "allowed_users"),
-        where("email", "==", cleanEmail),
-      );
 
-      const allowedSnapshot = await getDocs(allowedQuery);
-
-      let isAllowed = false;
-      allowedSnapshot.forEach((doc) => {
-        if (doc.data().status === "enabled") {
-          isAllowed = true;
-        }
-      });
-
-      if (!isAllowed) {
-        // Not allowed or not enabled, redirect to waitlist
-        setLoading(false);
-        router.replace({
-          pathname: "/(auth)/waitlist",
-          params: { email: cleanEmail },
-        });
-        return;
-      }
-
-      // 2. If allowed, register via Firebase Auth
+      // 1. Always create account
       await signUp(email.trim(), password);
-      router.replace("/(tabs)");
+
+      // 2. Create user profile and add to waitlist
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        // Create the user profile document
+        const userRef = doc(db, "users", currentUser.uid);
+        await setDoc(userRef, {
+          email: cleanEmail,
+          isApproved: false,
+          createdAt: serverTimestamp(),
+        });
+
+        // Also add to waitlist for redundancy/interest tracking
+        await addDoc(collection(db, "waitlist"), {
+          email: cleanEmail,
+          status: "pending",
+          userId: currentUser.uid,
+          createdAt: serverTimestamp(),
+        });
+      }
     } catch (e: any) {
-      Toast.show({
-        type: "error",
-        text1: "Registration failed",
-        text2: getFriendlyAuthError(e),
-        position: "bottom"
-      });
+      if (e?.code === "auth/email-already-in-use") {
+        try {
+          // Try to sign in instead
+          await signIn(email.trim(), password);
+          // router.replace("/(tabs)"); // Layout handles this now
+          return;
+        } catch (signInError: any) {
+          Toast.show({
+            type: "error",
+            text1: "Account already exists",
+            text2: "It looks like you already have an account. Please sign in with your password.",
+            position: "bottom",
+            onPress: () => {
+              router.replace({
+                pathname: "/(auth)/login",
+                params: { email: email.trim().toLowerCase() }
+              });
+              Toast.hide();
+            }
+          });
+        }
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Registration failed",
+          text2: getFriendlyAuthError(e),
+          position: "bottom"
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -95,10 +113,10 @@ export default function RegisterScreen() {
       <View className="bg-slate-50 dark:bg-slate-900 rounded-[32px] p-8 items-center border border-slate-100 dark:border-slate-800 shadow-sm">
         <Text className="text-5xl mb-4">🧠</Text>
         <Text className="text-2xl font-bold text-slate-900 dark:text-white mb-1.5">
-          Create account
+          Join the Beta
         </Text>
         <Text className="text-sm text-slate-500 dark:text-slate-400 mb-8">
-          Start your learning journey
+          Create an account to join the waitlist
         </Text>
 
         <TextInput

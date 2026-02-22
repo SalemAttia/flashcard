@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useAuth } from "../../src/context/AuthContext";
 import {
     collection,
     addDoc,
@@ -20,13 +21,25 @@ import {
 import { db } from "../../src/firebase/config";
 
 export default function WaitlistScreen() {
+    const { user, signOut } = useAuth();
     const router = useRouter();
-    const { email } = useLocalSearchParams<{ email: string }>();
+    const { email: paramEmail } = useLocalSearchParams<{ email: string }>();
+
+    // Prioritize auth email over param email
+    const email = user?.email || paramEmail;
+
     const [loading, setLoading] = useState(false);
     const [joined, setJoined] = useState(false);
     const [checking, setChecking] = useState(true);
 
     useEffect(() => {
+        if (user) {
+            // If authenticated and on this screen, they are definitely "on the list" (profile exists but not approved)
+            setJoined(true);
+            setChecking(false);
+            return;
+        }
+
         async function checkWaitlist() {
             if (!email) {
                 setChecking(false);
@@ -49,7 +62,7 @@ export default function WaitlistScreen() {
             }
         }
         checkWaitlist();
-    }, [email]);
+    }, [email, user]);
 
     async function handleJoinWaitlist() {
         if (!email) return;
@@ -73,6 +86,29 @@ export default function WaitlistScreen() {
         }
     }
 
+    const handleSignOut = async () => {
+        setLoading(true);
+        try {
+            await signOut();
+            router.replace("/(auth)/login");
+        } catch (e) {
+            console.error("Sign out error:", e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const navigateToLogin = () => {
+        if (user) {
+            handleSignOut();
+        } else {
+            router.replace({
+                pathname: "/(auth)/login",
+                params: { email: email?.trim().toLowerCase() }
+            });
+        }
+    };
+
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -93,18 +129,23 @@ export default function WaitlistScreen() {
                     </View>
                 ) : joined ? (
                     <View className="items-center">
-                        <Text className="text-base text-emerald-600 dark:text-emerald-400 text-center mb-8 font-medium">
-                            You're on the list! We'll email you when your account is ready.
+                        <Text className="text-base text-slate-600 dark:text-slate-400 text-center mb-8 font-medium">
+                            You are on the waiting list and we should approve you soon or send email to{" "}
+                            <Text className="text-indigo-600 font-bold">salem.at.ibrahim@gmail.com</Text>{" "}
+                            to be approved faster.
                         </Text>
 
-                        <TouchableOpacity
-                            onPress={() => router.replace("/(auth)/login")}
-                            className="w-full h-14 bg-slate-200 dark:bg-slate-800 rounded-2xl items-center justify-center px-8"
-                        >
-                            <Text className="text-slate-900 dark:text-white font-bold text-base">
-                                Return to Login
-                            </Text>
-                        </TouchableOpacity>
+                        {!user && (
+                            <TouchableOpacity
+                                onPress={navigateToLogin}
+                                disabled={loading}
+                                className={`w-full h-14 bg-slate-200 dark:bg-slate-800 rounded-2xl items-center justify-center px-8 ${loading ? "opacity-60" : ""}`}
+                            >
+                                <Text className="text-slate-900 dark:text-white font-bold text-base">
+                                    Return to Login
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
                 ) : (
                     <View className="items-center w-full">
@@ -135,11 +176,16 @@ export default function WaitlistScreen() {
                         </TouchableOpacity>
 
                         <TouchableOpacity
-                            onPress={() => router.replace("/(auth)/login")}
+                            onPress={navigateToLogin}
                             disabled={loading}
+                            className="py-2"
                         >
-                            <Text className="text-slate-500 font-medium py-2">
-                                Back to Login
+                            <Text className="text-slate-500 font-medium">
+                                {user ? (
+                                    <Text>Switch account? <Text className="text-indigo-600">Sign out</Text></Text>
+                                ) : (
+                                    <Text>Already have an account? <Text className="text-indigo-600">Sign in</Text></Text>
+                                )}
                             </Text>
                         </TouchableOpacity>
                     </View>

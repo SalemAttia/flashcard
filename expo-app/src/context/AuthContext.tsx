@@ -12,6 +12,7 @@ import { auth, db } from "../firebase/config";
 interface AuthContextValue {
   user: User | null;
   loading: boolean;
+  isAllowed: boolean;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -22,32 +23,38 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAllowed, setIsAllowed] = useState(false);
 
   useEffect(() => {
     let allowedUnsub: () => void;
 
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
 
-      if (u && u.email) {
-        // If logged in, monitor their allowed_users document
-        const cleanEmail = u.email.trim().toLowerCase();
-        const userRef = doc(db, "allowed_users", cleanEmail);
+      if (u) {
+        // Monitor the user's profile document
+        const userRef = doc(db, "users", u.uid);
 
         allowedUnsub = onSnapshot(userRef, (docSnap: DocumentSnapshot) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
-            if (data.status === "disabled") {
-              // User has been disabled by admin!
-              firebaseSignOut(auth).catch(console.error);
-            }
+            // isApproved: true means they can access the app
+            setIsAllowed(data.isApproved === true);
+          } else {
+            // No profile yet, not allowed
+            setIsAllowed(false);
           }
+          setLoading(false);
+        }, (error) => {
+          console.error("Profile check error:", error);
+          setIsAllowed(false);
+          setLoading(false);
         });
       } else {
         if (allowedUnsub) allowedUnsub();
+        setIsAllowed(false);
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     return () => {
@@ -69,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAllowed, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

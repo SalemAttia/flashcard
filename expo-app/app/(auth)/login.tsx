@@ -9,16 +9,16 @@ import {
   ActivityIndicator,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { useRouter } from "expo-router";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { db } from "../../src/firebase/config";
 import { useAuth } from "../../src/context/AuthContext";
 import { getFriendlyAuthError } from "../../src/utils/authErrors";
 
 export default function LoginScreen() {
+  const { email: initialEmail } = useLocalSearchParams<{ email: string }>();
   const { signIn } = useAuth();
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(initialEmail || "");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -32,32 +32,11 @@ export default function LoginScreen() {
       await signIn(email.trim(), password);
       router.replace("/(tabs)");
     } catch (e: any) {
-      try {
-        const cleanEmail = email.trim().toLowerCase();
-        const waitlistQuery = query(
-          collection(db, "waitlist"),
-          where("email", "==", cleanEmail),
-        );
-        const snapshot = await getDocs(waitlistQuery);
-
-        if (!snapshot.empty) {
-          Toast.show({
-            type: "info",
-            text1: "Account Pending",
-            text2: "You are on the waitlist but not yet approved. Please contact salem.at.ibrahim@gmail.com.",
-            position: "bottom"
-          });
-          return;
-        }
-      } catch (checkError) {
-        // Silently fail the check and fall through to the auth error
-      }
-
       Toast.show({
         type: "error",
         text1: "Login failed",
         text2: getFriendlyAuthError(e),
-        position: "bottom"
+        position: "bottom",
       });
     } finally {
       setLoading(false);
