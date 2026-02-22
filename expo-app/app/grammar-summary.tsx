@@ -6,12 +6,18 @@ import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { GrammarSummary } from "../src/components/Grammar/GrammarSummary";
 import { getTopicConfig, GRAMMAR_TOPICS } from "../src/constants/grammarTopics";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { GrammarSessionResult } from "../src/types";
 
 const GRAMMAR_RESULT_KEY = "grammar_last_result";
 
 export default function GrammarSummaryScreen() {
+  const { completeItem } = useDailyProgress();
   const [result, setResult] = useState<GrammarSessionResult | null>(null);
+
+  useEffect(() => {
+    completeItem("grammar_quiz");
+  }, [completeItem]);
 
   useEffect(() => {
     AsyncStorage.getItem(GRAMMAR_RESULT_KEY).then((raw) => {

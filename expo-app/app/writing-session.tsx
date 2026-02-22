@@ -16,6 +16,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "../src/firebase/config";
 import { useAuth } from "../src/context/AuthContext";
 import { sanitize } from "../src/utils/firestore";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { useDecks } from "../src/store/useDecks";
 import { WritingPromptCard } from "../src/components/WritingTest/WritingPromptCard";
 import { EvaluationFeedback } from "../src/components/WritingTest/EvaluationFeedback";
@@ -47,6 +48,7 @@ export default function WritingSessionScreen() {
     topic?: string;
   }>();
   const { user } = useAuth();
+  const { completeItem } = useDailyProgress();
   const { getDeck } = useDecks();
   const deck = deckId ? getDeck(deckId) : null;
   const levelConfig = getLevelConfig(level as WritingLevel);
@@ -164,6 +166,7 @@ export default function WritingSessionScreen() {
         );
       }
       await AsyncStorage.setItem(WRITING_RESULT_KEY, JSON.stringify(result));
+      completeItem("writing_test");
       router.replace("/writing-summary");
     }
   };

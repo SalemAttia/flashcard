@@ -16,6 +16,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { db } from "../src/firebase/config";
 import { useAuth } from "../src/context/AuthContext";
 import { sanitize } from "../src/utils/firestore";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { QuestionCard } from "../src/components/Grammar/QuestionCard";
 import { AnswerFeedback } from "../src/components/Grammar/AnswerFeedback";
 import { generateGrammarQuestions } from "../src/services/grammarService";
@@ -42,6 +43,7 @@ export default function GrammarSessionScreen() {
     questionCount?: string;
   }>();
   const { user } = useAuth();
+  const { completeItem } = useDailyProgress();
   const topicConfig = topicId
     ? getTopicConfig(topicId as GrammarTopicId)
     : null;
@@ -141,6 +143,7 @@ export default function GrammarSessionScreen() {
         );
       }
       await AsyncStorage.setItem(GRAMMAR_RESULT_KEY, JSON.stringify(result));
+      completeItem("grammar_quiz");
       router.replace("/grammar-summary");
     }
   };
