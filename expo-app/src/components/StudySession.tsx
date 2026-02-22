@@ -45,9 +45,9 @@ export function StudySession({
   };
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
+      <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={onCancel} className="p-2 -ml-2">
           <X size={24} color="#64748b" />
         </Pressable>
@@ -55,7 +55,7 @@ export function StudySession({
           <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest">
             Studying
           </Text>
-          <Text className="font-semibold text-sm" numberOfLines={1}>
+          <Text className="font-semibold text-sm text-slate-900 dark:text-white" numberOfLines={1}>
             {deck.title}
           </Text>
         </View>
@@ -63,7 +63,7 @@ export function StudySession({
       </View>
 
       {/* Progress */}
-      <View className="px-6 py-4 bg-white">
+      <View className="px-6 py-4 bg-white dark:bg-slate-900">
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
             Progress
@@ -72,7 +72,7 @@ export function StudySession({
             {currentIndex + 1} / {deck.cards.length}
           </Text>
         </View>
-        <View className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+        <View className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <View
             style={{ width: `${progress}%` }}
             className="h-full bg-indigo-500 rounded-full"
@@ -96,10 +96,10 @@ export function StudySession({
       </View>
 
       {/* Footer */}
-      <View className="p-8 flex-row gap-4 bg-white border-t border-slate-100">
+      <View className="p-8 flex-row gap-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
         <Pressable
           onPress={() => handleSwipe(false)}
-          className="flex-1 items-center justify-center gap-2 py-6 rounded-2xl bg-red-50 border border-red-100"
+          className="flex-1 items-center justify-center gap-2 py-6 rounded-2xl bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/50"
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.95 : 1 }],
           })}
@@ -111,7 +111,7 @@ export function StudySession({
         </Pressable>
         <Pressable
           onPress={() => handleSwipe(true)}
-          className="flex-1 items-center justify-center gap-2 py-6 rounded-2xl bg-green-50 border border-green-100"
+          className="flex-1 items-center justify-center gap-2 py-6 rounded-2xl bg-green-50 dark:bg-green-950/20 border border-green-100 dark:border-green-900/50"
           style={({ pressed }) => ({
             transform: [{ scale: pressed ? 0.95 : 1 }],
           })}

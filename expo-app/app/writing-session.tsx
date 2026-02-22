@@ -12,6 +12,10 @@ import Animated, {
 } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../src/firebase/config";
+import { useAuth } from "../src/context/AuthContext";
+import { sanitize } from "../src/utils/firestore";
 import { useDecks } from "../src/store/useDecks";
 import { WritingPromptCard } from "../src/components/WritingTest/WritingPromptCard";
 import { EvaluationFeedback } from "../src/components/WritingTest/EvaluationFeedback";
@@ -42,6 +46,7 @@ export default function WritingSessionScreen() {
     deckId?: string;
     topic?: string;
   }>();
+  const { user } = useAuth();
   const { getDeck } = useDecks();
   const deck = deckId ? getDeck(deckId) : null;
   const levelConfig = getLevelConfig(level as WritingLevel);
@@ -152,6 +157,10 @@ export default function WritingSessionScreen() {
         passed: overallScore >= levelConfig.passMark,
       };
 
+
+      if (user) {
+        await setDoc(doc(db, "users", user.uid, "results", "writing"), sanitize(result));
+      }
       await AsyncStorage.setItem(WRITING_RESULT_KEY, JSON.stringify(result));
       router.replace("/writing-summary");
     }
@@ -165,8 +174,8 @@ export default function WritingSessionScreen() {
   if (phase === "generating" || phase === "evaluating") {
     const isEvaluating = phase === "evaluating";
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-        <View className="p-4 flex-row items-center justify-between border-b border-slate-100">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+        <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={handleCancel} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
           </Pressable>
@@ -174,7 +183,7 @@ export default function WritingSessionScreen() {
             <Text className="text-xs font-bold text-amber-600 uppercase tracking-widest">
               Writing Exam
             </Text>
-            <Text className="text-sm font-semibold text-slate-800">
+            <Text className="text-sm font-semibold text-slate-800 dark:text-white">
               {levelConfig.label}
             </Text>
           </View>
@@ -204,7 +213,7 @@ export default function WritingSessionScreen() {
             </View>
           </View>
           <View className="items-center gap-2">
-            <Text className="text-xl font-bold text-slate-800">
+            <Text className="text-xl font-bold text-slate-800 dark:text-white">
               {isEvaluating
                 ? "Evaluating your writing..."
                 : "Preparing your exam..."}
@@ -224,9 +233,9 @@ export default function WritingSessionScreen() {
   const progressPercent = ((currentIndex + 1) / prompts.length) * 100;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
       {/* Header */}
-      <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
+      <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={handleCancel} className="p-2 -ml-2">
           <X size={24} color="#64748b" />
         </Pressable>
@@ -237,7 +246,7 @@ export default function WritingSessionScreen() {
               Writing Exam
             </Text>
           </View>
-          <Text className="text-sm font-semibold text-slate-800">
+          <Text className="text-sm font-semibold text-slate-800 dark:text-white">
             {levelConfig.label}
           </Text>
         </View>
@@ -245,7 +254,7 @@ export default function WritingSessionScreen() {
       </View>
 
       {/* Progress */}
-      <View className="px-6 py-4 bg-white border-b border-slate-100">
+      <View className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
             Progress
@@ -254,7 +263,7 @@ export default function WritingSessionScreen() {
             {currentIndex + 1} / {prompts.length}
           </Text>
         </View>
-        <View className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+        <View className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <View
             style={{ width: `${progressPercent}%` }}
             className="h-full bg-amber-500 rounded-full"

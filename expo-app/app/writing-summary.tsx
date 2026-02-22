@@ -19,14 +19,14 @@ export default function WritingSummaryScreen() {
       if (raw) {
         try {
           setResult(JSON.parse(raw));
-        } catch {}
+        } catch { }
       }
     });
   }, []);
 
   if (!result) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#f59e0b" />
       </SafeAreaView>
     );
@@ -57,7 +57,7 @@ export default function WritingSummaryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
       <WritingSummary
         result={result}
         levelConfig={levelConfig}

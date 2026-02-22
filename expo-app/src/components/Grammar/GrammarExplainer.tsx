@@ -65,21 +65,21 @@ export function GrammarExplainer({
       presentationStyle="pageSheet"
       onRequestClose={onClose}
     >
-      <View className="flex-1 bg-white">
+      <View className="flex-1 bg-white dark:bg-slate-950">
         {/* Header */}
-        <View className="p-4 flex-row items-center justify-between border-b border-slate-100">
+        <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={onClose} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
           </Pressable>
           <View className="items-center flex-1">
             <View className="flex-row items-center gap-1">
               <BookOpen size={12} color="#4f46e5" />
-              <Text className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
+              <Text className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">
                 Grammar Refresher
               </Text>
             </View>
             <Text
-              className="text-sm font-semibold text-slate-800"
+              className="text-sm font-semibold text-slate-800 dark:text-white"
               numberOfLines={1}
             >
               {topicLabel}
@@ -109,10 +109,10 @@ export function GrammarExplainer({
               </View>
             </View>
             <View className="items-center gap-2">
-              <Text className="text-lg font-bold text-slate-800">
+              <Text className="text-lg font-bold text-slate-800 dark:text-white">
                 Loading refresher...
               </Text>
-              <Text className="text-slate-500 text-sm text-center max-w-[240px]">
+              <Text className="text-slate-500 dark:text-slate-400 text-sm text-center max-w-[240px]">
                 AI is preparing a grammar explanation for you.
               </Text>
             </View>
@@ -154,21 +154,21 @@ function MarkdownText({ text }: { text: string }) {
         // Headers
         if (trimmed.startsWith("### ")) {
           return (
-            <Text key={i} className="text-base font-bold text-slate-800 mt-2">
+            <Text key={i} className="text-base font-bold text-slate-800 dark:text-white mt-2">
               {cleanMarkdown(trimmed.slice(4))}
             </Text>
           );
         }
         if (trimmed.startsWith("## ")) {
           return (
-            <Text key={i} className="text-lg font-bold text-slate-800 mt-3">
+            <Text key={i} className="text-lg font-bold text-slate-800 dark:text-indigo-400 mt-3">
               {cleanMarkdown(trimmed.slice(3))}
             </Text>
           );
         }
         if (trimmed.startsWith("# ")) {
           return (
-            <Text key={i} className="text-xl font-bold text-slate-800 mt-3">
+            <Text key={i} className="text-xl font-bold text-slate-800 dark:text-indigo-500 mt-3">
               {cleanMarkdown(trimmed.slice(2))}
             </Text>
           );
@@ -179,7 +179,7 @@ function MarkdownText({ text }: { text: string }) {
           return (
             <View key={i} className="flex-row gap-2 pl-2">
               <Text className="text-slate-400">•</Text>
-              <Text className="text-sm text-slate-700 leading-5 flex-1">
+              <Text className="text-sm text-slate-700 dark:text-slate-300 leading-5 flex-1">
                 {cleanMarkdown(trimmed.slice(2))}
               </Text>
             </View>
@@ -191,10 +191,10 @@ function MarkdownText({ text }: { text: string }) {
         if (numberedMatch) {
           return (
             <View key={i} className="flex-row gap-2 pl-2">
-              <Text className="text-sm text-indigo-500 font-bold min-w-[20px]">
+              <Text className="text-sm text-indigo-500 dark:text-indigo-400 font-bold min-w-[20px]">
                 {numberedMatch[1]}.
               </Text>
-              <Text className="text-sm text-slate-700 leading-5 flex-1">
+              <Text className="text-sm text-slate-700 dark:text-slate-300 leading-5 flex-1">
                 {cleanMarkdown(numberedMatch[2])}
               </Text>
             </View>
@@ -211,16 +211,15 @@ function MarkdownText({ text }: { text: string }) {
           return (
             <View
               key={i}
-              className="flex-row border-b border-slate-100 py-1 px-2"
+              className="flex-row border-b border-slate-100 dark:border-slate-800 py-1 px-2"
             >
               {cells.map((cell, ci) => (
                 <Text
                   key={ci}
-                  className={`flex-1 text-sm ${
-                    i === 0
-                      ? "font-bold text-slate-700"
-                      : "text-slate-600"
-                  }`}
+                  className={`flex-1 text-sm ${i === 0
+                      ? "font-bold text-slate-700 dark:text-slate-200"
+                      : "text-slate-600 dark:text-slate-400"
+                    }`}
                 >
                   {cleanMarkdown(cell)}
                 </Text>
@@ -231,7 +230,7 @@ function MarkdownText({ text }: { text: string }) {
 
         // Regular paragraph
         return (
-          <Text key={i} className="text-sm text-slate-700 leading-5">
+          <Text key={i} className="text-sm text-slate-700 dark:text-slate-300 leading-5">
             {cleanMarkdown(trimmed)}
           </Text>
         );

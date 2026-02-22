@@ -20,14 +20,14 @@ export function ChatInput({ onSend, disabled }: ChatInputProps) {
   const canSend = !disabled && text.trim().length > 0;
 
   return (
-    <View className="flex-row items-end gap-2 px-4 py-3 border-t border-slate-100 bg-white">
+    <View className="flex-row items-end gap-2 px-4 py-3 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
       <TextInput
         value={text}
         onChangeText={setText}
         placeholder="Ask anything..."
         placeholderTextColor="#94a3b8"
         multiline
-        className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900"
+        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white"
         style={{ maxHeight: 112 }}
         editable={!disabled}
         returnKeyType="send"

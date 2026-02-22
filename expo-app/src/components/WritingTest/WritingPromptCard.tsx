@@ -28,9 +28,9 @@ export function WritingPromptCard({
 
   return (
     <View className="gap-5">
-      <View className="bg-white rounded-2xl p-5 border border-slate-100 gap-4">
+      <View className="bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 gap-4">
         {/* Danish instruction */}
-        <Text className="text-lg font-bold text-slate-800 leading-relaxed">
+        <Text className="text-lg font-bold text-slate-800 dark:text-white leading-relaxed">
           {prompt.instruction}
         </Text>
 
@@ -52,8 +52,8 @@ export function WritingPromptCard({
               )}
             </Pressable>
             {showTranslation && (
-              <View className="mt-2 p-3 bg-indigo-50 rounded-xl border border-indigo-100">
-                <Text className="text-sm text-indigo-700 leading-relaxed">
+              <View className="mt-2 p-3 bg-indigo-50 dark:bg-indigo-950/30 rounded-xl border border-indigo-100 dark:border-indigo-900/50">
+                <Text className="text-sm text-indigo-700 dark:text-indigo-300 leading-relaxed">
                   {prompt.instructionDa}
                 </Text>
               </View>
@@ -68,8 +68,8 @@ export function WritingPromptCard({
             </Text>
             <View className="flex-row flex-wrap gap-2">
               {prompt.contextWords.map((word, i) => (
-                <View key={i} className="bg-amber-50 px-3 py-1 rounded-full">
-                  <Text className="text-amber-700 text-xs font-medium">
+                <View key={i} className="bg-amber-50 dark:bg-amber-950/30 px-3 py-1 rounded-full border border-amber-100 dark:border-amber-900/50">
+                  <Text className="text-amber-700 dark:text-amber-300 text-xs font-medium">
                     {word}
                   </Text>
                 </View>
@@ -98,7 +98,7 @@ export function WritingPromptCard({
             {showHints && (
               <View className="mt-2 gap-1">
                 {prompt.hints.map((hint, i) => (
-                  <Text key={i} className="text-xs text-slate-500 italic">
+                  <Text key={i} className="text-xs text-slate-500 dark:text-slate-400 italic">
                     {hint}
                   </Text>
                 ))}
@@ -118,14 +118,13 @@ export function WritingPromptCard({
           placeholder="Skriv dit svar på dansk..."
           placeholderTextColor="#94a3b8"
           textAlignVertical="top"
-          className="w-full p-4 rounded-2xl border-2 border-slate-200 bg-white text-base text-slate-900 min-h-[160px]"
+          className="w-full p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-base text-slate-900 dark:text-white min-h-[160px]"
         />
 
         <View className="flex-row items-center justify-between px-1">
           <Text
-            className={`text-xs font-medium ${
-              meetsMinWords ? "text-emerald-600" : "text-slate-400"
-            }`}
+            className={`text-xs font-medium ${meetsMinWords ? "text-emerald-600" : "text-slate-400"
+              }`}
           >
             {wordCount} / {prompt.minWords} words
           </Text>
@@ -139,9 +138,8 @@ export function WritingPromptCard({
         <Pressable
           onPress={onSubmit}
           disabled={isSubmitting || wordCount === 0}
-          className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${
-            isSubmitting || wordCount === 0 ? "bg-slate-200" : "bg-amber-500"
-          }`}
+          className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${isSubmitting || wordCount === 0 ? "bg-slate-200 dark:bg-slate-800" : "bg-amber-500"
+            }`}
           style={({ pressed }) => ({
             transform: [
               { scale: pressed && !isSubmitting && wordCount > 0 ? 0.98 : 1 },
@@ -149,16 +147,15 @@ export function WritingPromptCard({
           })}
         >
           {isSubmitting ? (
-            <Text className="text-slate-400 font-semibold">
+            <Text className="text-slate-400 dark:text-slate-500 font-semibold">
               Evaluating your writing...
             </Text>
           ) : (
             <>
               <Send size={16} color={wordCount === 0 ? "#94a3b8" : "#fff"} />
               <Text
-                className={`font-semibold ${
-                  wordCount === 0 ? "text-slate-400" : "text-white"
-                }`}
+                className={`font-semibold ${wordCount === 0 ? "text-slate-400" : "text-white"
+                  }`}
               >
                 Submit Answer
               </Text>

@@ -16,7 +16,7 @@ export default function SummaryScreen() {
   const deck = getDeck(deckId!);
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
       <Summary
         results={{
           correct: parseInt(correct || "0", 10),

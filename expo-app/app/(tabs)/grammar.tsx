@@ -47,12 +47,12 @@ export default function GrammarScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
       <View className="p-6 pb-2">
-        <Text className="text-2xl font-semibold tracking-tight text-slate-900">
+        <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           Grammar
         </Text>
-        <Text className="text-slate-500 text-sm mt-1">
+        <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           Choose a topic and test your grammar
         </Text>
       </View>

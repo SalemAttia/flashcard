@@ -92,13 +92,13 @@ export function SaveCardModal({
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        <View className="bg-white rounded-t-3xl px-6 pt-6 pb-10">
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl px-6 pt-6 pb-10">
           {/* Header */}
           <View className="flex-row items-center justify-between mb-6">
-            <Text className="text-lg font-semibold text-slate-900">
+            <Text className="text-lg font-semibold text-slate-900 dark:text-white">
               Save Flashcard
             </Text>
-            <Pressable onPress={onClose} className="p-2 rounded-xl bg-slate-50">
+            <Pressable onPress={onClose} className="p-2 rounded-xl bg-slate-50 dark:bg-slate-800">
               <X size={18} color="#64748b" />
             </Pressable>
           </View>
@@ -113,7 +113,7 @@ export function SaveCardModal({
               onChangeText={setFront}
               placeholder={`Word in ${studyLabel}...`}
               placeholderTextColor="#94a3b8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white"
               style={{ writingDirection: studyLang === "ar-SA" ? "rtl" : "ltr" }}
             />
             {isExtracting && !front && (
@@ -135,7 +135,7 @@ export function SaveCardModal({
               onChangeText={setBack}
               placeholder={`Translation in ${nativeLabel}...`}
               placeholderTextColor="#94a3b8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white"
               style={{ writingDirection: nativeLang === "ar-SA" ? "rtl" : "ltr" }}
             />
             {isExtracting && !back && (
@@ -160,10 +160,10 @@ export function SaveCardModal({
                   setSelectedDeckId(deck.id);
                   setIsCreatingNew(false);
                 }}
-                className="flex-row items-center justify-between py-3 border-b border-slate-100"
+                className="flex-row items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800"
               >
                 <View>
-                  <Text className="text-sm font-medium text-slate-900">
+                  <Text className="text-sm font-medium text-slate-900 dark:text-white">
                     {deck.title}
                   </Text>
                   <Text className="text-xs text-slate-400">
@@ -186,9 +186,8 @@ export function SaveCardModal({
             >
               <Plus size={16} color={isCreatingNew ? "#4f46e5" : "#94a3b8"} />
               <Text
-                className={`text-sm font-medium ${
-                  isCreatingNew ? "text-indigo-600" : "text-slate-500"
-                }`}
+                className={`text-sm font-medium ${isCreatingNew ? "text-indigo-600" : "text-slate-500"
+                  }`}
               >
                 Create new deck
               </Text>
@@ -202,7 +201,7 @@ export function SaveCardModal({
               onChangeText={setNewDeckTitle}
               placeholder="New deck name..."
               placeholderTextColor="#94a3b8"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 mb-4"
+              className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white mb-4"
               autoFocus
             />
           )}
@@ -211,9 +210,9 @@ export function SaveCardModal({
           <View className="flex-row gap-3">
             <Pressable
               onPress={onClose}
-              className="flex-1 py-3.5 rounded-xl border border-slate-200 items-center"
+              className="flex-1 py-3.5 rounded-xl border border-slate-200 dark:border-slate-800 items-center"
             >
-              <Text className="text-sm font-medium text-slate-600">Cancel</Text>
+              <Text className="text-sm font-medium text-slate-600 dark:text-slate-300">Cancel</Text>
             </Pressable>
             <Pressable
               onPress={handleSave}

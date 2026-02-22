@@ -17,14 +17,14 @@ export default function GrammarSummaryScreen() {
       if (raw) {
         try {
           setResult(JSON.parse(raw));
-        } catch {}
+        } catch { }
       }
     });
   }, []);
 
   if (!result) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
@@ -48,7 +48,7 @@ export default function GrammarSummaryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-slate-50 dark:bg-slate-950" edges={["top"]}>
       <GrammarSummary
         result={result}
         topicConfig={topicConfig}

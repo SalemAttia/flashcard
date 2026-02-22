@@ -29,23 +29,23 @@ interface TopicSelectorProps {
 }
 
 const TOPIC_COLORS: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  emerald: { bg: "bg-emerald-50", border: "border-emerald-300", text: "text-emerald-700", badge: "bg-emerald-100" },
-  blue: { bg: "bg-blue-50", border: "border-blue-300", text: "text-blue-700", badge: "bg-blue-100" },
-  violet: { bg: "bg-violet-50", border: "border-violet-300", text: "text-violet-700", badge: "bg-violet-100" },
-  rose: { bg: "bg-rose-50", border: "border-rose-300", text: "text-rose-700", badge: "bg-rose-100" },
-  amber: { bg: "bg-amber-50", border: "border-amber-300", text: "text-amber-700", badge: "bg-amber-100" },
-  cyan: { bg: "bg-cyan-50", border: "border-cyan-300", text: "text-cyan-700", badge: "bg-cyan-100" },
-  indigo: { bg: "bg-indigo-50", border: "border-indigo-300", text: "text-indigo-700", badge: "bg-indigo-100" },
-  pink: { bg: "bg-pink-50", border: "border-pink-300", text: "text-pink-700", badge: "bg-pink-100" },
-  teal: { bg: "bg-teal-50", border: "border-teal-300", text: "text-teal-700", badge: "bg-teal-100" },
-  orange: { bg: "bg-orange-50", border: "border-orange-300", text: "text-orange-700", badge: "bg-orange-100" },
-  lime: { bg: "bg-lime-50", border: "border-lime-300", text: "text-lime-700", badge: "bg-lime-100" },
-  sky: { bg: "bg-sky-50", border: "border-sky-300", text: "text-sky-700", badge: "bg-sky-100" },
-  fuchsia: { bg: "bg-fuchsia-50", border: "border-fuchsia-300", text: "text-fuchsia-700", badge: "bg-fuchsia-100" },
-  red: { bg: "bg-red-50", border: "border-red-300", text: "text-red-700", badge: "bg-red-100" },
-  yellow: { bg: "bg-yellow-50", border: "border-yellow-300", text: "text-yellow-700", badge: "bg-yellow-100" },
-  stone: { bg: "bg-stone-50", border: "border-stone-300", text: "text-stone-700", badge: "bg-stone-100" },
-  purple: { bg: "bg-purple-50", border: "border-purple-300", text: "text-purple-700", badge: "bg-purple-100" },
+  emerald: { bg: "bg-emerald-50 dark:bg-emerald-950/20", border: "border-emerald-300 dark:border-emerald-800", text: "text-emerald-700 dark:text-emerald-400", badge: "bg-emerald-100 dark:bg-emerald-900/40" },
+  blue: { bg: "bg-blue-50 dark:bg-blue-950/20", border: "border-blue-300 dark:border-blue-800", text: "text-blue-700 dark:text-blue-400", badge: "bg-blue-100 dark:bg-blue-900/40" },
+  violet: { bg: "bg-violet-50 dark:bg-violet-950/20", border: "border-violet-300 dark:border-violet-800", text: "text-violet-700 dark:text-violet-400", badge: "bg-violet-100 dark:bg-violet-900/40" },
+  rose: { bg: "bg-rose-50 dark:bg-rose-950/20", border: "border-rose-300 dark:border-rose-800", text: "text-rose-700 dark:text-rose-400", badge: "bg-rose-100 dark:bg-rose-900/40" },
+  amber: { bg: "bg-amber-50 dark:bg-amber-950/20", border: "border-amber-300 dark:border-amber-800", text: "text-amber-700 dark:text-amber-400", badge: "bg-amber-100 dark:bg-amber-900/40" },
+  cyan: { bg: "bg-cyan-50 dark:bg-cyan-950/20", border: "border-cyan-300 dark:border-cyan-800", text: "text-cyan-700 dark:text-cyan-400", badge: "bg-cyan-100 dark:bg-cyan-900/40" },
+  indigo: { bg: "bg-indigo-50 dark:bg-indigo-950/20", border: "border-indigo-300 dark:border-indigo-800", text: "text-indigo-700 dark:text-indigo-400", badge: "bg-indigo-100 dark:bg-indigo-900/40" },
+  pink: { bg: "bg-pink-50 dark:bg-pink-950/20", border: "border-pink-300 dark:border-pink-800", text: "text-pink-700 dark:text-pink-400", badge: "bg-pink-100 dark:bg-pink-900/40" },
+  teal: { bg: "bg-teal-50 dark:bg-teal-950/20", border: "border-teal-300 dark:border-teal-800", text: "text-teal-700 dark:text-teal-400", badge: "bg-teal-100 dark:bg-teal-900/40" },
+  orange: { bg: "bg-orange-50 dark:bg-orange-950/20", border: "border-orange-300 dark:border-orange-800", text: "text-orange-700 dark:text-orange-400", badge: "bg-orange-100 dark:bg-orange-900/40" },
+  lime: { bg: "bg-lime-50 dark:bg-lime-950/20", border: "border-lime-300 dark:border-lime-800", text: "text-lime-700 dark:text-lime-400", badge: "bg-lime-100 dark:bg-lime-900/40" },
+  sky: { bg: "bg-sky-50 dark:bg-sky-950/20", border: "border-sky-300 dark:border-sky-800", text: "text-sky-700 dark:text-sky-400", badge: "bg-sky-100 dark:bg-sky-900/40" },
+  fuchsia: { bg: "bg-fuchsia-50 dark:bg-fuchsia-950/20", border: "border-fuchsia-300 dark:border-fuchsia-800", text: "text-fuchsia-700 dark:text-fuchsia-400", badge: "bg-fuchsia-100 dark:bg-fuchsia-900/40" },
+  red: { bg: "bg-red-50 dark:bg-red-950/20", border: "border-red-300 dark:border-red-800", text: "text-red-700 dark:text-red-400", badge: "bg-red-100 dark:bg-red-900/40" },
+  yellow: { bg: "bg-yellow-50 dark:bg-yellow-950/20", border: "border-yellow-300 dark:border-yellow-800", text: "text-yellow-700 dark:text-yellow-400", badge: "bg-yellow-100 dark:bg-yellow-900/40" },
+  stone: { bg: "bg-stone-50 dark:bg-stone-950/20", border: "border-stone-300 dark:border-stone-800", text: "text-stone-700 dark:text-stone-400", badge: "bg-stone-100 dark:bg-stone-900/40" },
+  purple: { bg: "bg-purple-50 dark:bg-purple-950/20", border: "border-purple-300 dark:border-purple-800", text: "text-purple-700 dark:text-purple-400", badge: "bg-purple-100 dark:bg-purple-900/40" },
 };
 
 const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20];
@@ -132,16 +132,15 @@ export function TopicSelector({
             }}
             placeholder="e.g. possessive pronouns, conjunctions..."
             placeholderTextColor="#94a3b8"
-            className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 bg-white text-sm text-slate-800"
+            className="flex-1 px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-white"
           />
           <Pressable
             onPress={handleGenerateTitle}
             disabled={customTopic.trim().length < 4 || isGeneratingTitle}
-            className={`px-3 py-3 rounded-xl border-2 flex-row items-center gap-1.5 ${
-              customTopic.trim().length >= 4 && !isGeneratingTitle
-                ? "bg-indigo-50 border-indigo-300"
-                : "bg-slate-50 border-slate-200"
-            }`}
+            className={`px-3 py-3 rounded-xl border-2 flex-row items-center gap-1.5 ${customTopic.trim().length >= 4 && !isGeneratingTitle
+                ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-800"
+                : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+              }`}
           >
             {isGeneratingTitle ? (
               <ActivityIndicator size="small" color="#4f46e5" />
@@ -152,11 +151,10 @@ export function TopicSelector({
               />
             )}
             <Text
-              className={`text-xs font-semibold ${
-                customTopic.trim().length >= 4 && !isGeneratingTitle
+              className={`text-xs font-semibold ${customTopic.trim().length >= 4 && !isGeneratingTitle
                   ? "text-indigo-600"
                   : "text-slate-400"
-              }`}
+                }`}
             >
               AI Title
             </Text>
@@ -165,12 +163,12 @@ export function TopicSelector({
 
         {/* Suggested title row */}
         {suggestedTitle && (
-          <View className="mt-2 p-3 rounded-xl bg-indigo-50 border border-indigo-200">
+          <View className="mt-2 p-3 rounded-xl bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-800">
             <Text className="text-xs text-indigo-500 mb-1 font-medium">
               Suggested title:
             </Text>
             <View className="flex-row items-center justify-between gap-2">
-              <Text className="flex-1 text-sm font-semibold text-indigo-800">
+              <Text className="flex-1 text-sm font-semibold text-indigo-800 dark:text-indigo-300">
                 {suggestedTitle}
               </Text>
               <Pressable
@@ -190,20 +188,18 @@ export function TopicSelector({
           <Pressable
             onPress={handleSaveTopic}
             disabled={savedFeedback}
-            className={`mt-2 flex-row items-center gap-2 px-4 py-2.5 rounded-xl border-2 self-start ${
-              savedFeedback
-                ? "bg-emerald-50 border-emerald-300"
-                : "bg-white border-slate-200"
-            }`}
+            className={`mt-2 flex-row items-center gap-2 px-4 py-2.5 rounded-xl border-2 self-start ${savedFeedback
+                ? "bg-emerald-50 dark:bg-emerald-900/20 border-emerald-300 dark:border-emerald-800"
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+              }`}
           >
             <Bookmark
               size={14}
               color={savedFeedback ? "#059669" : "#64748b"}
             />
             <Text
-              className={`text-xs font-semibold ${
-                savedFeedback ? "text-emerald-600" : "text-slate-500"
-              }`}
+              className={`text-xs font-semibold ${savedFeedback ? "text-emerald-600" : "text-slate-500"
+                }`}
             >
               {savedFeedback ? "Saved!" : "Save Topic"}
             </Text>
@@ -225,20 +221,18 @@ export function TopicSelector({
                 <Pressable
                   key={topic.id}
                   onPress={() => onSelectSavedTopic(topic)}
-                  className={`p-3 rounded-xl border-2 flex-row items-center justify-between ${
-                    isSelected
+                  className={`p-3 rounded-xl border-2 flex-row items-center justify-between ${isSelected
                       ? `${colors.bg} ${colors.border}`
-                      : "bg-white border-slate-100"
-                  }`}
+                      : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                    }`}
                   style={({ pressed }) => ({
                     transform: [{ scale: pressed ? 0.98 : 1 }],
                   })}
                 >
                   <View className="flex-1 mr-2">
                     <Text
-                      className={`text-sm font-bold ${
-                        isSelected ? colors.text : "text-slate-800"
-                      }`}
+                      className={`text-sm font-bold ${isSelected ? colors.text : "text-slate-800 dark:text-white"
+                        }`}
                     >
                       {topic.title}
                     </Text>
@@ -293,11 +287,10 @@ export function TopicSelector({
                   onSelectTopic(topic.id);
                   onChangeCustomTopic("");
                 }}
-                className={`p-4 rounded-2xl border-2 ${
-                  isSelected
+                className={`p-4 rounded-2xl border-2 ${isSelected
                     ? `${colors.bg} ${colors.border}`
-                    : "bg-white border-slate-100"
-                }`}
+                    : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                  }`}
                 style={({ pressed }) => ({
                   transform: [{ scale: pressed ? 0.98 : 1 }],
                 })}
@@ -306,21 +299,18 @@ export function TopicSelector({
                   <View className="flex-1 gap-1">
                     <View className="flex-row items-center gap-2">
                       <Text
-                        className={`font-bold ${
-                          isSelected ? colors.text : "text-slate-800"
-                        }`}
+                        className={`font-bold ${isSelected ? colors.text : "text-slate-800 dark:text-white"
+                          }`}
                       >
                         {topic.label}
                       </Text>
                       <View
-                        className={`px-2 py-0.5 rounded-full ${
-                          isSelected ? colors.badge : "bg-slate-100"
-                        }`}
+                        className={`px-2 py-0.5 rounded-full ${isSelected ? colors.badge : "bg-slate-100"
+                          }`}
                       >
                         <Text
-                          className={`text-[10px] font-bold ${
-                            isSelected ? colors.text : "text-slate-500"
-                          }`}
+                          className={`text-[10px] font-bold ${isSelected ? colors.text : "text-slate-500"
+                            }`}
                         >
                           {topic.labelDa}
                         </Text>
@@ -362,19 +352,17 @@ export function TopicSelector({
               <Pressable
                 key={count}
                 onPress={() => onChangeQuestionCount(count)}
-                className={`flex-1 py-3 rounded-xl border-2 items-center ${
-                  isSelected
-                    ? "bg-indigo-50 border-indigo-400"
-                    : "bg-white border-slate-100"
-                }`}
+                className={`flex-1 py-3 rounded-xl border-2 items-center ${isSelected
+                    ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-400 dark:border-indigo-700"
+                    : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                  }`}
                 style={({ pressed }) => ({
                   transform: [{ scale: pressed ? 0.96 : 1 }],
                 })}
               >
                 <Text
-                  className={`text-base font-bold ${
-                    isSelected ? "text-indigo-600" : "text-slate-600"
-                  }`}
+                  className={`text-base font-bold ${isSelected ? "text-indigo-600" : "text-slate-600"
+                    }`}
                 >
                   {count}
                 </Text>
@@ -388,17 +376,15 @@ export function TopicSelector({
       <Pressable
         onPress={onStart}
         disabled={!canStart}
-        className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${
-          canStart ? "bg-indigo-500" : "bg-slate-200"
-        }`}
+        className={`w-full py-4 rounded-2xl items-center flex-row justify-center gap-2 ${canStart ? "bg-indigo-500" : "bg-slate-200 dark:bg-slate-800"
+          }`}
         style={({ pressed }) => ({
           transform: [{ scale: pressed && canStart ? 0.98 : 1 }],
         })}
       >
         <Text
-          className={`font-semibold ${
-            canStart ? "text-white" : "text-slate-400"
-          }`}
+          className={`font-semibold ${canStart ? "text-white" : "text-slate-400"
+            }`}
         >
           Start Quiz ({questionCount} questions)
         </Text>
