@@ -6,6 +6,7 @@ import {
   Calendar,
   Layout,
   ClipboardCheck,
+  Trash2,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -22,6 +23,7 @@ interface DeckListProps {
   onEdit: (deck: Deck) => void;
   onStudy: (deck: Deck) => void;
   onTest: (deck: Deck) => void;
+  onDelete: (deck: Deck) => void;
 }
 
 function DeckCard({
@@ -30,12 +32,14 @@ function DeckCard({
   onEdit,
   onStudy,
   onTest,
+  onDelete,
 }: {
   deck: Deck;
   index: number;
   onEdit: () => void;
   onStudy: () => void;
   onTest: () => void;
+  onDelete: () => void;
 }) {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(10);
@@ -132,12 +136,21 @@ function DeckCard({
         >
           <Edit2 size={16} color="#475569" />
         </Pressable>
+        <Pressable
+          onPress={onDelete}
+          className="px-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl items-center justify-center"
+          style={({ pressed }) => ({
+            transform: [{ scale: pressed ? 0.98 : 1 }],
+          })}
+        >
+          <Trash2 size={16} color="#e11d48" />
+        </Pressable>
       </View>
     </Animated.View>
   );
 }
 
-export function DeckList({ decks, onEdit, onStudy, onTest }: DeckListProps) {
+export function DeckList({ decks, onEdit, onStudy, onTest, onDelete }: DeckListProps) {
   if (decks.length === 0) {
     return (
       <View className="items-center justify-center h-64 gap-4">
@@ -161,6 +174,7 @@ export function DeckList({ decks, onEdit, onStudy, onTest }: DeckListProps) {
           onEdit={() => onEdit(deck)}
           onStudy={() => onStudy(deck)}
           onTest={() => onTest(deck)}
+          onDelete={() => onDelete(deck)}
         />
       ))}
     </View>
