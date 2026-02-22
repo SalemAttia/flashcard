@@ -3,11 +3,13 @@ import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useDecks } from "../src/store/useDecks";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { StudySession } from "../src/components/StudySession";
 
 export default function StudyScreen() {
   const { deckId } = useLocalSearchParams<{ deckId: string }>();
   const { getDeck, markStudied, loaded } = useDecks();
+  const { completeItem } = useDailyProgress();
 
   if (!loaded) {
     return (
@@ -33,6 +35,7 @@ export default function StudyScreen() {
         deck={deck}
         onComplete={(correct, total) => {
           markStudied(deck.id);
+          completeItem("study_deck");
           router.replace(
             `/summary?correct=${correct}&total=${total}&isTest=false&deckId=${deck.id}`,
           );

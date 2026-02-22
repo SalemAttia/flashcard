@@ -168,79 +168,89 @@ export function useDailyProgress() {
     return unsub;
   }, [user]);
 
-  // 3. Cross-reference auto-complete (Today only)
-  useEffect(() => {
-    if (!user || !loaded || selectedDate !== getToday()) return;
-
-    let isCancelled = false;
+  // 3. Cross-reference auto-complete — runs on mount and can be triggered on demand
+  const recheckAutoComplete = useCallback(async () => {
+    if (!user || !loaded) return;
     const today = getToday();
-    const currentDayState = daysMap[today] ?? freshDay(today);
+    if (selectedDate !== today) return;
 
-    const checkAutoComplete = async () => {
+    try {
+      // Read the day doc directly from Firestore to avoid stale daysMap state
+      const [daySnap, decksSnap, grammarSnap, writingSnap, chatHistorySnap] = await Promise.all([
+        getDoc(doc(db, "users", user.uid, "days", today)),
+        getDocs(collection(db, "users", user.uid, "decks")),
+        getDoc(doc(db, "users", user.uid, "results", "grammar")),
+        getDoc(doc(db, "users", user.uid, "results", "writing")),
+        getDoc(doc(db, "users", user.uid, "data", "chatHistory")),
+      ]);
+
+      const currentDayState: DailyProgress = daySnap.exists()
+        ? (daySnap.data() as DailyProgress)
+        : freshDay(today);
+
       const now = new Date().toISOString();
       const autoCompleted: Partial<Record<ChecklistItemId, boolean>> = {};
 
-      try {
-        const [decksSnap, grammarSnap, writingSnap] = await Promise.all([
-          getDocs(collection(db, "users", user.uid, "decks")),
-          getDoc(doc(db, "users", user.uid, "results", "grammar")),
-          getDoc(doc(db, "users", user.uid, "results", "writing")),
-        ]);
-
-        if (isCancelled) return;
-
-        if (decksSnap.docs.some((d) => d.data().lastStudied?.startsWith(today))) {
-          autoCompleted.study_deck = true;
-        }
-
-        if (
-          grammarSnap.exists() &&
-          grammarSnap.data().completedAt?.startsWith(today)
-        ) {
-          autoCompleted.grammar_quiz = true;
-        }
-
-        if (
-          writingSnap.exists() &&
-          writingSnap.data().completedAt?.startsWith(today)
-        ) {
-          autoCompleted.writing_test = true;
-        }
-
-        if (Object.keys(autoCompleted).length > 0) {
-          const updatedItems = currentDayState.items.map((item) =>
-            autoCompleted[item.id] &&
-              !item.completedAt &&
-              !item.manuallyUncompleted
-              ? { ...item, completedAt: now }
-              : item,
-          );
-
-          // Only update if something actually changed to avoid infinite loops
-          const hasChanges = updatedItems.some(
-            (item, idx) =>
-              item.completedAt !== currentDayState.items[idx].completedAt,
-          );
-
-          if (hasChanges && !isCancelled) {
-            const updatedDay = { ...currentDayState, items: updatedItems };
-            await setDoc(
-              doc(db, "users", user.uid, "days", today),
-              sanitize(updatedDay),
-            );
-          }
-        }
-      } catch (err) {
-        console.error("Auto-complete check failed:", err);
+      if (decksSnap.docs.some((d) => d.data().lastStudied?.startsWith(today))) {
+        autoCompleted.study_deck = true;
       }
-    };
 
-    checkAutoComplete();
+      if (
+        grammarSnap.exists() &&
+        grammarSnap.data().completedAt?.startsWith(today)
+      ) {
+        autoCompleted.grammar_quiz = true;
+      }
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [user, loaded, selectedDate, daysMap[getToday()]]);
+      if (
+        writingSnap.exists() &&
+        writingSnap.data().completedAt?.startsWith(today)
+      ) {
+        autoCompleted.writing_test = true;
+      }
+
+      const chatData = chatHistorySnap.data();
+      if (
+        chatHistorySnap.exists() &&
+        chatData &&
+        chatData.updatedAt?.startsWith(today) &&
+        (chatData.messages?.length ?? 0) > 0
+      ) {
+        autoCompleted.chat_session = true;
+      }
+
+      if (Object.keys(autoCompleted).length > 0) {
+        const updatedItems = currentDayState.items.map((item) =>
+          autoCompleted[item.id] &&
+            !item.completedAt &&
+            !item.manuallyUncompleted
+            ? { ...item, completedAt: now }
+            : item,
+        );
+
+        const hasChanges = updatedItems.some(
+          (item, idx) =>
+            item.completedAt !== currentDayState.items[idx].completedAt,
+        );
+
+        if (hasChanges) {
+          const updatedDay = { ...currentDayState, items: updatedItems };
+          await setDoc(
+            doc(db, "users", user.uid, "days", today),
+            sanitize(updatedDay),
+          );
+        }
+      }
+    } catch (err) {
+      console.error("Auto-complete check failed:", err);
+    }
+  }, [user, loaded, selectedDate]);
+
+  // Run auto-complete once on initial load
+  useEffect(() => {
+    if (!user || !loaded || selectedDate !== getToday()) return;
+    recheckAutoComplete();
+  }, [user, loaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dayProgressRaw = useMemo(
     () => daysMap[selectedDate] ?? freshDay(selectedDate),
@@ -609,5 +619,6 @@ export function useDailyProgress() {
     finishOnboarding,
     bannersDismissed,
     dismissBanner,
+    recheckAutoComplete,
   };
 }

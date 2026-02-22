@@ -6,13 +6,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { WritingSummary } from "../src/components/WritingTest/WritingSummary";
 import { getLevelConfig, WRITING_LEVELS } from "../src/constants/writingLevels";
 import { useDecks } from "../src/store/useDecks";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { WritingTestResult, WritingLevel } from "../src/types";
 
 const WRITING_RESULT_KEY = "writing_test_last_result";
 
 export default function WritingSummaryScreen() {
+  const { completeItem } = useDailyProgress();
   const [result, setResult] = useState<WritingTestResult | null>(null);
   const { getDeck } = useDecks();
+
+  useEffect(() => {
+    completeItem("writing_test");
+  }, [completeItem]);
 
   useEffect(() => {
     AsyncStorage.getItem(WRITING_RESULT_KEY).then((raw) => {

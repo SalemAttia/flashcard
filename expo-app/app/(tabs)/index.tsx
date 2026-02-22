@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useFocusEffect } from "expo-router";
 import {
   BookOpen,
   GraduationCap,
@@ -531,6 +532,25 @@ function ChecklistRow({
       <Pressable
         onPress={() => {
           if (disabled) return;
+
+          // Always navigate to the corresponding page (completed or not)
+          if (item.id === "study_deck") {
+            router.push("/(tabs)/decks");
+            return;
+          }
+          if (item.id === "grammar_quiz") {
+            router.push("/(tabs)/grammar");
+            return;
+          }
+          if (item.id === "writing_test") {
+            router.push("/(tabs)/writing-test");
+            return;
+          }
+          if (item.id === "chat_session") {
+            router.push("/(tabs)/chat");
+            return;
+          }
+
           if (isCompleted) {
             onUncomplete();
           } else {
@@ -560,13 +580,20 @@ function ChecklistRow({
           </Text>
           <Text className="text-slate-400 text-xs mt-0.5">{item.sublabel}</Text>
         </View>
-        <Animated.View
-          style={checkStyle}
+        <Pressable
+          onPress={(e) => {
+            e.stopPropagation();
+            if (disabled) return;
+            if (isCompleted) onUncomplete();
+            else onComplete();
+          }}
           className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
             }`}
         >
-          {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
-        </Animated.View>
+          <Animated.View style={checkStyle}>
+            {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
+          </Animated.View>
+        </Pressable>
       </Pressable>
     </Animated.View>
   );
@@ -1325,7 +1352,16 @@ export default function HomeScreen() {
     finishOnboarding,
     bannersDismissed,
     dismissBanner,
+    recheckAutoComplete,
   } = useDailyProgress();
+
+  // Re-run auto-complete whenever the home tab comes into focus
+  // (e.g. after returning from a deck study, grammar, writing, or chat session)
+  useFocusEffect(
+    useCallback(() => {
+      recheckAutoComplete();
+    }, [recheckAutoComplete]),
+  );
 
   const [celebrationShown, setCelebrationShown] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
