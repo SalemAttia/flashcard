@@ -59,14 +59,16 @@ export default function WritingSummaryScreen() {
       className="flex-1 bg-slate-50 dark:bg-slate-950"
       edges={["top"]}
     >
-      <WritingSummary
-        result={result}
-        levelConfig={levelConfig}
-        deckTitle={deck?.title}
-        onHome={() => router.replace("/")}
-        onRetry={handleRetry}
-        onNextLevel={nextLevel ? handleNextLevel : null}
-      />
+      <View className="flex-1 w-full max-w-2xl self-center">
+        <WritingSummary
+          result={result}
+          levelConfig={levelConfig}
+          deckTitle={deck?.title}
+          onHome={() => router.replace("/")}
+          onRetry={handleRetry}
+          onNextLevel={nextLevel ? handleNextLevel : null}
+        />
+      </View>
     </SafeAreaView>
   );
 }

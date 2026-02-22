@@ -52,6 +52,7 @@ export default function GrammarScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <View className="p-6 pb-2">
         <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           Grammar
@@ -81,6 +82,7 @@ export default function GrammarScreen() {
         onSelectSavedTopic={handleSelectSavedTopic}
         selectedSavedTopicId={selectedSavedTopicId}
       />
+      </View>
     </SafeAreaView>
   );
 }

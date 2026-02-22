@@ -156,6 +156,7 @@ export default function GrammarSessionScreen() {
         className="flex-1 bg-white dark:bg-slate-950"
         edges={["top"]}
       >
+      <View className="flex-1 w-full max-w-2xl self-center">
         <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={handleCancel} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
@@ -199,6 +200,7 @@ export default function GrammarSessionScreen() {
             </Text>
           </View>
         </View>
+      </View>
       </SafeAreaView>
     );
   }
@@ -213,6 +215,7 @@ export default function GrammarSessionScreen() {
       className="flex-1 bg-slate-50 dark:bg-slate-950"
       edges={["top"]}
     >
+      <View className="flex-1 w-full max-w-2xl self-center">
       {/* Header */}
       <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={handleCancel} className="p-2 -ml-2">
@@ -271,6 +274,7 @@ export default function GrammarSessionScreen() {
           />
         )}
       </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

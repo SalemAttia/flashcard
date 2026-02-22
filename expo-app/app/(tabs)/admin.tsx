@@ -149,6 +149,7 @@ export default function AdminScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-slate-950 px-4 pt-4">
+      <View className="flex-1 w-full max-w-2xl self-center">
       <Text className="text-2xl font-bold text-slate-900 dark:text-white mb-6">
         Beta Management
       </Text>
@@ -215,6 +216,7 @@ export default function AdminScreen() {
           </View>
         )}
       />
+      </View>
     </SafeAreaView>
   );
 }

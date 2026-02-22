@@ -195,6 +195,7 @@ export default function ChatScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       {/* Header */}
       <View className="px-6 py-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
         <View>
@@ -292,6 +293,7 @@ export default function ChatScreen() {
         onDeleteNote={deleteNote}
         onClose={() => setShowNotes(false)}
       />
+      </View>
     </SafeAreaView>
   );
 }

@@ -22,6 +22,7 @@ export default function EditorScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <DeckEditor
         deck={deck}
         onSave={(deckData) => {
@@ -39,6 +40,7 @@ export default function EditorScreen() {
           router.replace("/");
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

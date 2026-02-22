@@ -348,7 +348,8 @@ function MotivationalBanner({ completedCount }: { completedCount: number }) {
     <Animated.View
       key={completedCount}
       entering={FadeInDown.duration(400)}
-      className="mx-6 mb-5 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3"
+      style={{ marginHorizontal: 24, marginBottom: 20 }}
+      className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3"
     >
       <Text className="text-indigo-700 dark:text-indigo-300 font-medium text-center">
         {phrase}
@@ -442,7 +443,7 @@ function ChecklistRow({
   }));
 
   return (
-    <Animated.View style={rowStyle} className="mx-6 mb-3">
+    <Animated.View style={[rowStyle, { marginHorizontal: 24, marginBottom: 12 }]}>
       <Pressable
         onPress={() => {
           if (disabled) return;
@@ -553,7 +554,7 @@ function CustomTaskRow({
   };
 
   return (
-    <Animated.View style={rowStyle} className="mx-6 mb-3">
+    <Animated.View style={[rowStyle, { marginHorizontal: 24, marginBottom: 12 }]}>
       <Pressable
         onPress={() => {
           if (showDeleteOptions) {
@@ -1292,6 +1293,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <AllDoneBanner visible={showCelebration} />
 
       {/* Header */}
@@ -1410,6 +1412,7 @@ export default function HomeScreen() {
         hiddenItems={hiddenDefaultItems}
         onToggle={toggleDefaultItemVisibility}
       />
+      </View>
     </SafeAreaView>
   );
 }

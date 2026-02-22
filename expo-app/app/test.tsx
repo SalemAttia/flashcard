@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useDecks } from "../src/store/useDecks";
@@ -28,6 +28,7 @@ export default function TestScreen() {
       className="flex-1 bg-slate-50 dark:bg-slate-950"
       edges={["top"]}
     >
+      <View className="flex-1 w-full max-w-2xl self-center">
       <TestMode
         deck={deck}
         onComplete={(correct, total) => {
@@ -41,6 +42,7 @@ export default function TestScreen() {
           else router.replace("/");
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

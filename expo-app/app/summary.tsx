@@ -1,4 +1,5 @@
 import React from "react";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useDecks } from "../src/store/useDecks";
@@ -17,6 +18,7 @@ export default function SummaryScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <Summary
         results={{
           correct: parseInt(correct || "0", 10),
@@ -29,6 +31,7 @@ export default function SummaryScreen() {
           router.replace(`${route}?deckId=${deckId}`);
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }
