@@ -34,6 +34,7 @@ import {
   Square,
   CheckSquare,
   Pencil,
+  Settings,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -219,29 +220,26 @@ function WeekCalendarStrip({
               className="items-center flex-1"
             >
               <Text
-                className={`text-xs font-medium mb-1 ${
-                  isSelected ? "text-indigo-600" : "text-slate-400"
-                }`}
+                className={`text-xs font-medium mb-1 ${isSelected ? "text-indigo-600" : "text-slate-400"
+                  }`}
               >
                 {DAY_NAMES[i]}
               </Text>
               <View
-                className={`w-9 h-9 rounded-full items-center justify-center ${
-                  isSelected
-                    ? "bg-indigo-600"
-                    : isToday
-                      ? "bg-indigo-50"
-                      : ""
-                }`}
+                className={`w-9 h-9 rounded-full items-center justify-center ${isSelected
+                  ? "bg-indigo-600"
+                  : isToday
+                    ? "bg-indigo-50"
+                    : ""
+                  }`}
               >
                 <Text
-                  className={`text-sm font-semibold ${
-                    isSelected
-                      ? "text-white"
-                      : isToday
-                        ? "text-indigo-600"
-                        : "text-slate-700"
-                  }`}
+                  className={`text-sm font-semibold ${isSelected
+                    ? "text-white"
+                    : isToday
+                      ? "text-indigo-600"
+                      : "text-slate-700"
+                    }`}
                 >
                   {dayNum}
                 </Text>
@@ -449,9 +447,8 @@ function ChecklistRow({
         </View>
         <View className="flex-1">
           <Text
-            className={`font-medium text-base ${
-              isCompleted ? "text-slate-400 line-through" : "text-slate-800"
-            }`}
+            className={`font-medium text-base ${isCompleted ? "text-slate-400 line-through" : "text-slate-800"
+              }`}
           >
             {item.label}
           </Text>
@@ -459,9 +456,8 @@ function ChecklistRow({
         </View>
         <Animated.View
           style={checkStyle}
-          className={`w-7 h-7 rounded-full items-center justify-center ${
-            isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
-          }`}
+          className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+            }`}
         >
           {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
         </Animated.View>
@@ -562,9 +558,8 @@ function CustomTaskRow({
         <View className="flex-1">
           <View className="flex-row items-center">
             <Text
-              className={`font-medium text-base ${
-                isCompleted ? "text-slate-400 line-through" : "text-slate-800"
-              }`}
+              className={`font-medium text-base ${isCompleted ? "text-slate-400 line-through" : "text-slate-800"
+                }`}
             >
               {task.label}
             </Text>
@@ -601,9 +596,8 @@ function CustomTaskRow({
         {!hasSubs && (
           <Animated.View
             style={checkStyle}
-            className={`w-7 h-7 rounded-full items-center justify-center ${
-              isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
-            }`}
+            className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+              }`}
           >
             {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
           </Animated.View>
@@ -611,9 +605,8 @@ function CustomTaskRow({
         {hasSubs && (
           <Pressable onPress={() => { if (!disabled) onToggle(); }}>
             <View
-              className={`w-7 h-7 rounded-full items-center justify-center ${
-                isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
-              }`}
+              className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+                }`}
             >
               {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
             </View>
@@ -668,9 +661,8 @@ function CustomTaskRow({
                 <Square size={16} color="#cbd5e1" />
               )}
               <Text
-                className={`ml-2 text-sm ${
-                  sub.checked ? "text-slate-400 line-through" : "text-slate-700"
-                }`}
+                className={`ml-2 text-sm ${sub.checked ? "text-slate-400 line-through" : "text-slate-700"
+                  }`}
               >
                 {sub.text}
               </Text>
@@ -701,16 +693,14 @@ function TimeOfDayPicker({
           <Pressable
             key={opt}
             onPress={() => onChange(opt)}
-            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${
-              selected ? "border-2" : "border border-slate-200"
-            }`}
+            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${selected ? "border-2" : "border border-slate-200"
+              }`}
             style={selected ? { borderColor: config.color, backgroundColor: config.bg } : undefined}
           >
             <Icon size={16} color={selected ? config.color : "#94a3b8"} />
             <Text
-              className={`ml-1.5 text-xs font-semibold ${
-                selected ? "" : "text-slate-400"
-              }`}
+              className={`ml-1.5 text-xs font-semibold ${selected ? "" : "text-slate-400"
+                }`}
               style={selected ? { color: config.color } : undefined}
             >
               {config.label}
@@ -719,6 +709,131 @@ function TimeOfDayPicker({
         );
       })}
     </View>
+  );
+}
+
+const DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+
+function DayOfWeekPicker({
+  activeDays,
+  onChange,
+}: {
+  activeDays: number[];
+  onChange: (days: number[]) => void;
+}) {
+  const allSelected = activeDays.length === 0 || activeDays.length === 7;
+
+  const toggleDay = (day: number) => {
+    if (allSelected) {
+      // Switching from "every day" to specific: select all except this one
+      onChange([0, 1, 2, 3, 4, 5, 6].filter((d) => d !== day));
+    } else if (activeDays.includes(day)) {
+      const next = activeDays.filter((d) => d !== day);
+      onChange(next.length === 0 ? [] : next); // empty = every day
+    } else {
+      const next = [...activeDays, day].sort();
+      onChange(next.length === 7 ? [] : next);
+    }
+  };
+
+  return (
+    <View className="mb-5">
+      <View className="flex-row items-center justify-between mb-2">
+        <Text className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Active Days
+        </Text>
+        <Pressable onPress={() => onChange([])}>
+          <Text
+            className={`text-xs font-semibold ${allSelected ? "text-indigo-600" : "text-slate-400"
+              }`}
+          >
+            Every day
+          </Text>
+        </Pressable>
+      </View>
+      <View className="flex-row justify-between">
+        {DAY_LABELS.map((lbl, idx) => {
+          const selected = allSelected || activeDays.includes(idx);
+          return (
+            <Pressable
+              key={idx}
+              onPress={() => toggleDay(idx)}
+              className={`w-10 h-10 rounded-full items-center justify-center ${selected ? "bg-indigo-600" : "bg-slate-100"
+                }`}
+            >
+              <Text
+                className={`text-sm font-semibold ${selected ? "text-white" : "text-slate-400"
+                  }`}
+              >
+                {lbl}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function DefaultItemsSettingsModal({
+  visible,
+  onClose,
+  defaultItems,
+  hiddenItems,
+  onToggle,
+}: {
+  visible: boolean;
+  onClose: () => void;
+  defaultItems: { id: ChecklistItemId; label: string; sublabel: string }[];
+  hiddenItems: ChecklistItemId[];
+  onToggle: (id: ChecklistItemId) => void;
+}) {
+  const hiddenSet = new Set(hiddenItems);
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <Pressable className="flex-1 bg-black/40" onPress={onClose} />
+      <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <View className="flex-row items-center justify-between mb-5">
+          <Text className="text-lg font-semibold text-slate-900">Default Tasks</Text>
+          <Pressable onPress={onClose} hitSlop={8}>
+            <X size={20} color="#94a3b8" />
+          </Pressable>
+        </View>
+        <Text className="text-slate-400 text-xs mb-4">
+          Toggle which default tasks appear in your daily checklist.
+        </Text>
+        {defaultItems.map((item) => {
+          const config = CHECKLIST_CONFIG[item.id];
+          const Icon = config.icon;
+          const enabled = !hiddenSet.has(item.id);
+          return (
+            <View
+              key={item.id}
+              className="flex-row items-center justify-between py-3 border-b border-slate-100"
+            >
+              <View className="flex-row items-center flex-1 mr-3">
+                <View
+                  className="w-9 h-9 rounded-xl items-center justify-center mr-3"
+                  style={{ backgroundColor: config.bg }}
+                >
+                  <Icon size={18} color={config.color} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-medium text-slate-800">{item.label}</Text>
+                  <Text className="text-slate-400 text-xs">{item.sublabel}</Text>
+                </View>
+              </View>
+              <Switch
+                value={enabled}
+                onValueChange={() => onToggle(item.id)}
+                trackColor={{ false: "#e2e8f0", true: "#c7d2fe" }}
+                thumbColor={enabled ? "#4f46e5" : "#f4f4f5"}
+              />
+            </View>
+          );
+        })}
+      </View>
+    </Modal>
   );
 }
 
@@ -736,7 +851,8 @@ function TaskModal({
     sublabel: string | undefined,
     timeOfDay: TimeOfDay,
     recurring?: boolean,
-    subChecklist?: SubCheckItem[]
+    subChecklist?: SubCheckItem[],
+    activeDays?: number[]
   ) => void;
   onEdit?: (
     taskId: string,
@@ -746,6 +862,7 @@ function TaskModal({
       timeOfDay?: TimeOfDay;
       recurring?: boolean;
       subChecklist?: SubCheckItem[];
+      activeDays?: number[];
     }
   ) => void;
   editingTask?: CustomTask | null;
@@ -755,6 +872,7 @@ function TaskModal({
   const [sublabel, setSublabel] = useState("");
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("morning");
   const [recurring, setRecurring] = useState(false);
+  const [activeDays, setActiveDays] = useState<number[]>([]);
   const [subItems, setSubItems] = useState<{ id: string; text: string }[]>([]);
   const [newSubText, setNewSubText] = useState("");
 
@@ -765,6 +883,7 @@ function TaskModal({
       setSublabel(editingTask.sublabel ?? "");
       setTimeOfDay(editingTask.timeOfDay);
       setRecurring(!!editingTask.recurring);
+      setActiveDays(editingTask.activeDays ?? []);
       setSubItems(
         (editingTask.subChecklist ?? []).map((s) => ({ id: s.id, text: s.text }))
       );
@@ -773,6 +892,7 @@ function TaskModal({
       setSublabel("");
       setTimeOfDay("morning");
       setRecurring(false);
+      setActiveDays([]);
       setSubItems([]);
     }
     setNewSubText("");
@@ -792,6 +912,7 @@ function TaskModal({
         timeOfDay,
         recurring: recurring || undefined,
         subChecklist: subChecklist.length > 0 ? subChecklist : undefined,
+        activeDays: recurring && activeDays.length > 0 ? activeDays : undefined,
       });
     } else {
       onAdd(
@@ -799,13 +920,15 @@ function TaskModal({
         sublabel.trim() || undefined,
         timeOfDay,
         recurring || undefined,
-        subChecklist.length > 0 ? subChecklist : undefined
+        subChecklist.length > 0 ? subChecklist : undefined,
+        recurring && activeDays.length > 0 ? activeDays : undefined
       );
     }
     setLabel("");
     setSublabel("");
     setTimeOfDay("morning");
     setRecurring(false);
+    setActiveDays([]);
     setSubItems([]);
     setNewSubText("");
     onClose();
@@ -893,16 +1016,15 @@ function TaskModal({
             <Pressable
               onPress={addSubItem}
               disabled={!newSubText.trim()}
-              className={`w-8 h-8 rounded-lg items-center justify-center ${
-                newSubText.trim() ? "bg-indigo-100" : "bg-slate-100"
-              }`}
+              className={`w-8 h-8 rounded-lg items-center justify-center ${newSubText.trim() ? "bg-indigo-100" : "bg-slate-100"
+                }`}
             >
               <Plus size={16} color={newSubText.trim() ? "#4f46e5" : "#94a3b8"} />
             </Pressable>
           </View>
 
           {/* Recurring toggle */}
-          <View className="flex-row items-center justify-between mb-5 bg-slate-50 rounded-xl px-4 py-3">
+          <View className="flex-row items-center justify-between mb-3 bg-slate-50 rounded-xl px-4 py-3">
             <View className="flex-row items-center">
               <Repeat size={16} color="#64748b" />
               <Text className="text-sm font-medium text-slate-700 ml-2">
@@ -917,21 +1039,27 @@ function TaskModal({
             />
           </View>
 
+          {/* Day-of-week picker (visible when recurring is ON) */}
+          {recurring && (
+            <DayOfWeekPicker
+              activeDays={activeDays}
+              onChange={setActiveDays}
+            />
+          )}
+
           {/* Submit button */}
           <Pressable
             onPress={handleSubmit}
             disabled={!label.trim()}
-            className={`py-3.5 rounded-2xl items-center ${
-              label.trim() ? "bg-indigo-600" : "bg-slate-200"
-            }`}
+            className={`py-3.5 rounded-2xl items-center ${label.trim() ? "bg-indigo-600" : "bg-slate-200"
+              }`}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.98 : 1 }],
             })}
           >
             <Text
-              className={`font-medium ${
-                label.trim() ? "text-white" : "text-slate-400"
-              }`}
+              className={`font-medium ${label.trim() ? "text-white" : "text-slate-400"
+                }`}
             >
               {isEditing ? "Save Changes" : "Add Task"}
             </Text>
@@ -1038,11 +1166,15 @@ export default function HomeScreen() {
     allDone,
     hasTasksForDate,
     getDateProgress,
+    hiddenDefaultItems,
+    toggleDefaultItemVisibility,
+    defaultItems,
   } = useDailyProgress();
 
   const [celebrationShown, setCelebrationShown] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingTask, setEditingTask] = useState<CustomTask | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
 
@@ -1103,6 +1235,13 @@ export default function HomeScreen() {
               <Text className="text-indigo-600 font-semibold text-xs">Today</Text>
             </Pressable>
           )}
+          <Pressable
+            onPress={() => setShowSettings(true)}
+            hitSlop={8}
+            className="mr-2"
+          >
+            <Settings size={20} color="#94a3b8" />
+          </Pressable>
           <StreakBadge count={streakCount} />
         </View>
       </View>
@@ -1180,6 +1319,14 @@ export default function HomeScreen() {
         onAdd={addCustomTask}
         onEdit={editCustomTask}
         editingTask={editingTask}
+      />
+
+      <DefaultItemsSettingsModal
+        visible={showSettings}
+        onClose={() => setShowSettings(false)}
+        defaultItems={defaultItems}
+        hiddenItems={hiddenDefaultItems}
+        onToggle={toggleDefaultItemVisibility}
       />
     </SafeAreaView>
   );

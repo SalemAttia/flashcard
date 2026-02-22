@@ -180,6 +180,7 @@ export interface CustomTask {
   sublabel?: string;
   timeOfDay: TimeOfDay;
   recurring?: boolean;
+  activeDays?: number[]; // 0=Sun, 1=Mon, ..., 6=Sat; undefined = every day
   subChecklist?: SubCheckItem[];
   completedAt?: string;
 }
@@ -195,4 +196,5 @@ export interface ProgressStore {
   streakCount: number;
   lastCompletedDate?: string; // YYYY-MM-DD when all 4 core items were last completed
   recurringTasks?: CustomTask[]; // recurring task templates
+  hiddenDefaultItems?: ChecklistItemId[]; // default items the user chose to hide
 }

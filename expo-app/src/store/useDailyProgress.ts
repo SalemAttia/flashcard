@@ -40,7 +40,12 @@ function freshDay(date: string): DailyProgress {
 }
 
 function emptyStore(): ProgressStore {
-  return { days: {}, streakCount: 0, recurringTasks: [] };
+  return { days: {}, streakCount: 0, recurringTasks: [], hiddenDefaultItems: [] };
+}
+
+/** Get JS day-of-week number (0=Sun..6=Sat) for a YYYY-MM-DD string */
+function getDayOfWeek(dateStr: string): number {
+  return new Date(dateStr + "T00:00:00").getDay();
 }
 
 /** Ensure ChecklistItem has timeOfDay (migration) */
@@ -77,6 +82,7 @@ function migrateIfNeeded(raw: any): ProgressStore {
       streakCount: raw.streakCount ?? 0,
       lastCompletedDate: raw.lastCompletedDate,
       recurringTasks: (raw.recurringTasks ?? []).map(migrateCustomTask),
+      hiddenDefaultItems: raw.hiddenDefaultItems ?? [],
     };
   }
   // Old format: { date, items, streakCount, lastCompletedDate }
@@ -115,14 +121,23 @@ function updateStreakIfNeeded(
 }
 
 /** Inject recurring tasks into a day's customItems if not already present */
-function injectRecurringTasks(day: DailyProgress, recurringTasks: CustomTask[]): DailyProgress {
+function injectRecurringTasks(day: DailyProgress, recurringTasks: CustomTask[], dateStr?: string): DailyProgress {
   if (!recurringTasks || recurringTasks.length === 0) return day;
+
+  const dayOfWeek = getDayOfWeek(dateStr ?? day.date);
 
   const existingRecurringIds = new Set(
     day.customItems.filter((t) => t.recurring).map((t) => t.id)
   );
 
-  const toInject = recurringTasks.filter((rt) => !existingRecurringIds.has(rt.id));
+  const toInject = recurringTasks.filter((rt) => {
+    if (existingRecurringIds.has(rt.id)) return false;
+    // Filter by active days if specified
+    if (rt.activeDays && rt.activeDays.length > 0) {
+      return rt.activeDays.includes(dayOfWeek);
+    }
+    return true; // undefined/empty = every day
+  });
   if (toInject.length === 0) return day;
 
   const freshRecurring = toInject.map((rt) => ({
@@ -180,7 +195,7 @@ export function useDailyProgress() {
           if (decks.some((d) => d.lastStudied && d.lastStudied.startsWith(today))) {
             autoCompleted.study_deck = true;
           }
-        } catch {}
+        } catch { }
       }
 
       if (grammarRaw) {
@@ -189,7 +204,7 @@ export function useDailyProgress() {
           if (result.completedAt && result.completedAt.startsWith(today)) {
             autoCompleted.grammar_quiz = true;
           }
-        } catch {}
+        } catch { }
       }
 
       if (writingRaw) {
@@ -198,7 +213,7 @@ export function useDailyProgress() {
           if (result.completedAt && result.completedAt.startsWith(today)) {
             autoCompleted.writing_test = true;
           }
-        } catch {}
+        } catch { }
       }
 
       if (Object.keys(autoCompleted).length > 0) {
@@ -228,11 +243,22 @@ export function useDailyProgress() {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(store));
   }, [store, loaded]);
 
-  // Get day for selected date with recurring tasks injected
+  const hiddenDefaultItems = useMemo(
+    () => store.hiddenDefaultItems ?? [],
+    [store.hiddenDefaultItems]
+  );
+
+  // Get day for selected date with recurring tasks injected & hidden items filtered
   const dayProgress = useMemo((): DailyProgress => {
     const base = store.days[selectedDate] ?? freshDay(selectedDate);
-    return injectRecurringTasks(base, store.recurringTasks ?? []);
-  }, [store.days, store.recurringTasks, selectedDate]);
+    const withRecurring = injectRecurringTasks(base, store.recurringTasks ?? [], selectedDate);
+    // Filter out hidden default items
+    const hidden = new Set(store.hiddenDefaultItems ?? []);
+    return {
+      ...withRecurring,
+      items: withRecurring.items.filter((i) => !hidden.has(i.id)),
+    };
+  }, [store.days, store.recurringTasks, store.hiddenDefaultItems, selectedDate]);
 
   const completeItem = useCallback(
     (id: ChecklistItemId) => {
@@ -282,7 +308,8 @@ export function useDailyProgress() {
       sublabel: string | undefined,
       timeOfDay: TimeOfDay,
       recurring?: boolean,
-      subChecklist?: SubCheckItem[]
+      subChecklist?: SubCheckItem[],
+      activeDays?: number[]
     ) => {
       setStore((prev) => {
         const day = prev.days[selectedDate] ?? freshDay(selectedDate);
@@ -292,6 +319,7 @@ export function useDailyProgress() {
           sublabel,
           timeOfDay,
           recurring,
+          activeDays: recurring && activeDays?.length ? activeDays : undefined,
           subChecklist: subChecklist?.length ? subChecklist : undefined,
         };
 
@@ -358,7 +386,7 @@ export function useDailyProgress() {
     (taskId: string) => {
       setStore((prev) => {
         const base = prev.days[selectedDate] ?? freshDay(selectedDate);
-        const day = injectRecurringTasks(base, prev.recurringTasks ?? []);
+        const day = injectRecurringTasks(base, prev.recurringTasks ?? [], selectedDate);
         const updatedCustom = day.customItems.map((t) =>
           t.id === taskId
             ? { ...t, completedAt: t.completedAt ? undefined : new Date().toISOString() }
@@ -381,7 +409,7 @@ export function useDailyProgress() {
     (taskId: string, subItemId: string) => {
       setStore((prev) => {
         const base = prev.days[selectedDate] ?? freshDay(selectedDate);
-        const day = injectRecurringTasks(base, prev.recurringTasks ?? []);
+        const day = injectRecurringTasks(base, prev.recurringTasks ?? [], selectedDate);
         const updatedCustom = day.customItems.map((t) => {
           if (t.id !== taskId || !t.subChecklist) return t;
           return {
@@ -403,7 +431,7 @@ export function useDailyProgress() {
     [selectedDate]
   );
 
-  /** Edit a custom task's label, sublabel, timeOfDay, recurring, and subChecklist */
+  /** Edit a custom task's label, sublabel, timeOfDay, recurring, subChecklist, and activeDays */
   const editCustomTask = useCallback(
     (
       taskId: string,
@@ -413,11 +441,12 @@ export function useDailyProgress() {
         timeOfDay?: TimeOfDay;
         recurring?: boolean;
         subChecklist?: SubCheckItem[];
+        activeDays?: number[];
       }
     ) => {
       setStore((prev) => {
         const base = prev.days[selectedDate] ?? freshDay(selectedDate);
-        const day = injectRecurringTasks(base, prev.recurringTasks ?? []);
+        const day = injectRecurringTasks(base, prev.recurringTasks ?? [], selectedDate);
         const updatedCustom = day.customItems.map((t) =>
           t.id === taskId ? { ...t, ...updates } : t
         );
@@ -481,22 +510,45 @@ export function useDailyProgress() {
     [store.days, store.recurringTasks]
   );
 
+  const toggleDefaultItemVisibility = useCallback(
+    (itemId: ChecklistItemId) => {
+      setStore((prev) => {
+        const hidden = prev.hiddenDefaultItems ?? [];
+        const isHidden = hidden.includes(itemId);
+        return {
+          ...prev,
+          hiddenDefaultItems: isHidden
+            ? hidden.filter((id) => id !== itemId)
+            : [...hidden, itemId],
+        };
+      });
+    },
+    []
+  );
+
   const getDateProgress = useCallback(
     (date: string): { completed: number; total: number } => {
+      const hidden = new Set(store.hiddenDefaultItems ?? []);
       const base = store.days[date];
       if (!base) {
-        const recurringCount = (store.recurringTasks ?? []).length;
-        return { completed: 0, total: 4 + recurringCount };
+        const visibleCoreCount = DEFAULT_ITEMS.filter((i) => !hidden.has(i.id)).length;
+        const dayOfWeek = getDayOfWeek(date);
+        const recurringCount = (store.recurringTasks ?? []).filter((rt) => {
+          if (rt.activeDays && rt.activeDays.length > 0) return rt.activeDays.includes(dayOfWeek);
+          return true;
+        }).length;
+        return { completed: 0, total: visibleCoreCount + recurringCount };
       }
-      const day = injectRecurringTasks(base, store.recurringTasks ?? []);
-      const coreCompleted = day.items.filter((i) => i.completedAt).length;
+      const day = injectRecurringTasks(base, store.recurringTasks ?? [], date);
+      const visibleItems = day.items.filter((i) => !hidden.has(i.id));
+      const coreCompleted = visibleItems.filter((i) => i.completedAt).length;
       const customCompleted = day.customItems.filter((i) => i.completedAt).length;
       return {
         completed: coreCompleted + customCompleted,
-        total: day.items.length + day.customItems.length,
+        total: visibleItems.length + day.customItems.length,
       };
     },
-    [store.days, store.recurringTasks]
+    [store.days, store.recurringTasks, store.hiddenDefaultItems]
   );
 
   return {
@@ -519,5 +571,8 @@ export function useDailyProgress() {
     allCoreDone,
     hasTasksForDate,
     getDateProgress,
+    hiddenDefaultItems,
+    toggleDefaultItemVisibility,
+    defaultItems: DEFAULT_ITEMS,
   };
 }
