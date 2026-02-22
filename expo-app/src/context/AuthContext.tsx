@@ -6,7 +6,8 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { auth } from "../firebase/config";
+import { doc, onSnapshot, DocumentSnapshot } from "firebase/firestore";
+import { auth, db } from "../firebase/config";
 
 interface AuthContextValue {
   user: User | null;
@@ -23,11 +24,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let allowedUnsub: () => void;
+
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u);
+
+      if (u && u.email) {
+        // If logged in, monitor their allowed_users document
+        const cleanEmail = u.email.trim().toLowerCase();
+        const userRef = doc(db, "allowed_users", cleanEmail);
+
+        allowedUnsub = onSnapshot(userRef, (docSnap: DocumentSnapshot) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.status === "disabled") {
+              // User has been disabled by admin!
+              firebaseSignOut(auth).catch(console.error);
+            }
+          }
+        });
+      } else {
+        if (allowedUnsub) allowedUnsub();
+      }
+
       setLoading(false);
     });
-    return unsub;
+
+    return () => {
+      unsub();
+      if (allowedUnsub) allowedUnsub();
+    };
   }, []);
 
   const signUp = async (email: string, password: string) => {

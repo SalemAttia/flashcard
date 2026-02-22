@@ -10,8 +10,10 @@ import {
   User,
 } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
+import { useAuth } from "../../src/context/AuthContext";
 
 export default function TabLayout() {
+  const { user } = useAuth();
   const insets = useSafeAreaInsets();
   const { colorScheme } = useColorScheme();
   const isDark = colorScheme === "dark";
@@ -80,6 +82,14 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: "Profile",
+          tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: "Admin",
+          href: null,
           tabBarIcon: ({ color, size }) => <User size={size} color={color} />,
         }}
       />

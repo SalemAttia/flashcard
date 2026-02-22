@@ -42,6 +42,20 @@ export function Flashcard({
     flipAnim.value = withTiming(isFlipped ? 1 : 0, { duration: 500 });
   }, [isFlipped]);
 
+  const cardShadow = Platform.select({
+    ios: {
+      shadowColor: "#94a3b8",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+    },
+    android: { elevation: 6 },
+    web: {
+      boxShadow: "0px 8px 16px rgba(148, 163, 184, 0.15)",
+    },
+    default: {},
+  });
+
   // On web, backfaceVisibility in animated styles doesn't work reliably.
   // Use opacity to hide/show faces instead: front visible when < 90deg, back when >= 90deg.
   const sharedFaceStyle = {
@@ -87,13 +101,7 @@ export function Flashcard({
         style={[
           sharedFaceStyle,
           frontStyle,
-          {
-            shadowColor: "#94a3b8",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.15,
-            shadowRadius: 16,
-            elevation: 6,
-          },
+          cardShadow,
         ]}
         className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[32px] p-8 items-center justify-center"
       >
@@ -129,13 +137,7 @@ export function Flashcard({
         style={[
           sharedFaceStyle,
           backStyle,
-          {
-            shadowColor: "#94a3b8",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.15,
-            shadowRadius: 16,
-            elevation: 6,
-          },
+          cardShadow,
         ]}
         className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[32px] p-8 items-center justify-center"
       >

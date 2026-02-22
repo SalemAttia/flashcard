@@ -58,6 +58,9 @@ function DeckCard({
       shadowRadius: 8,
     },
     android: { elevation: 2 },
+    web: {
+      boxShadow: "0px 2px 8px rgba(148, 163, 184, 0.08)"
+    },
     default: {},
   });
 

@@ -20,8 +20,11 @@ import {
 } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
 
+import { useRouter } from "expo-router";
+
 export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
+  const router = useRouter();
 
   if (loading) {
     return (
@@ -31,20 +34,30 @@ export default function ProfileScreen() {
     );
   }
 
-  const { colorScheme, toggleColorScheme } = useColorScheme();
+  const { colorScheme, setColorScheme } = useColorScheme();
 
-  const menuItems = [
+  const menuItems: any[] = [
     {
       icon: colorScheme === "dark" ? Sun : Moon,
       label: "Dark Mode",
       color: "#6366F1",
-      onPress: toggleColorScheme,
+      onPress: () => setColorScheme(colorScheme === "dark" ? "light" : "dark"),
       value: colorScheme === "dark",
     },
     { icon: Shield, label: "Privacy & Security", color: "#3B82F6" },
     { icon: Bell, label: "Notifications", color: "#F59E0B" },
     { icon: CircleHelp, label: "Help & Support", color: "#10B981" },
   ];
+
+  if (user?.email === "salem.at.ibrahim@gmail.com") {
+    menuItems.unshift({
+      icon: Shield,
+      label: "Admin Dashboard",
+      color: "#E11D48",
+      onPress: () => router.push("/(tabs)/admin"),
+      value: undefined,
+    });
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50 dark:bg-slate-950">

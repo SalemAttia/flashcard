@@ -4,13 +4,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
+import Toast from "react-native-toast-message";
 import { useRouter } from "expo-router";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../src/firebase/config";
 import { useAuth } from "../../src/context/AuthContext";
 import { getFriendlyAuthError } from "../../src/utils/authErrors";
 
@@ -25,25 +26,62 @@ export default function RegisterScreen() {
   async function handleRegister() {
     if (!email.trim() || !password) return;
     if (password !== confirm) {
-      Alert.alert(
-        "Passwords don't match",
-        "Please make sure both passwords are identical.",
-      );
+      Toast.show({
+        type: "error",
+        text1: "Passwords don't match",
+        text2: "Please make sure both passwords are identical.",
+        position: "bottom"
+      });
       return;
     }
     if (password.length < 6) {
-      Alert.alert(
-        "Password too short",
-        "Password must be at least 6 characters.",
-      );
+      Toast.show({
+        type: "error",
+        text1: "Password too short",
+        text2: "Password must be at least 6 characters.",
+        position: "bottom"
+      });
       return;
     }
+
     setLoading(true);
     try {
+      // 1. Check if email is allowed
+      const cleanEmail = email.trim().toLowerCase();
+      const allowedQuery = query(
+        collection(db, "allowed_users"),
+        where("email", "==", cleanEmail),
+      );
+
+      const allowedSnapshot = await getDocs(allowedQuery);
+
+      let isAllowed = false;
+      allowedSnapshot.forEach((doc) => {
+        if (doc.data().status === "enabled") {
+          isAllowed = true;
+        }
+      });
+
+      if (!isAllowed) {
+        // Not allowed or not enabled, redirect to waitlist
+        setLoading(false);
+        router.replace({
+          pathname: "/(auth)/waitlist",
+          params: { email: cleanEmail },
+        });
+        return;
+      }
+
+      // 2. If allowed, register via Firebase Auth
       await signUp(email.trim(), password);
       router.replace("/(tabs)");
     } catch (e: any) {
-      Alert.alert("Registration failed", getFriendlyAuthError(e));
+      Toast.show({
+        type: "error",
+        text1: "Registration failed",
+        text2: getFriendlyAuthError(e),
+        position: "bottom"
+      });
     } finally {
       setLoading(false);
     }
