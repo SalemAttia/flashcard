@@ -149,3 +149,52 @@ export interface ChatNote {
   timestamp: string;
   sourceMessageId?: string;
 }
+
+// Daily Checklist types
+
+export type ChecklistItemId =
+  | "study_deck"
+  | "grammar_quiz"
+  | "writing_test"
+  | "chat_session";
+
+export type TimeOfDay = "morning" | "afternoon" | "evening";
+
+export interface SubCheckItem {
+  id: string;
+  text: string;
+  checked: boolean;
+}
+
+export interface ChecklistItem {
+  id: ChecklistItemId;
+  label: string;
+  sublabel: string;
+  timeOfDay: TimeOfDay;
+  completedAt?: string;
+}
+
+export interface CustomTask {
+  id: string;
+  label: string;
+  sublabel?: string;
+  timeOfDay: TimeOfDay;
+  recurring?: boolean;
+  activeDays?: number[]; // 0=Sun, 1=Mon, ..., 6=Sat; undefined = every day
+  subChecklist?: SubCheckItem[];
+  completedAt?: string;
+}
+
+export interface DailyProgress {
+  date: string; // YYYY-MM-DD
+  items: ChecklistItem[];
+  customItems: CustomTask[];
+}
+
+export interface ProgressStore {
+  days: Record<string, DailyProgress>; // keyed by YYYY-MM-DD
+  streakCount: number;
+  lastCompletedDate?: string; // YYYY-MM-DD when all 4 core items were last completed
+  recurringTasks?: CustomTask[]; // recurring task templates
+  hiddenDefaultItems?: ChecklistItemId[]; // default items the user chose to hide
+}
