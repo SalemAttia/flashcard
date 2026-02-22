@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ActivityIndicator } from "react-native";
+import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -24,7 +25,7 @@ export default function GrammarSummaryScreen() {
 
   if (!result) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
@@ -48,13 +49,18 @@ export default function GrammarSummaryScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
+      <View className="flex-1 w-full max-w-2xl self-center">
       <GrammarSummary
         result={result}
         topicConfig={topicConfig}
         onHome={() => router.replace("/")}
         onRetry={handleRetry}
       />
+      </View>
     </SafeAreaView>
   );
 }

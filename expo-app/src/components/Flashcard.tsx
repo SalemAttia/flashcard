@@ -1,5 +1,11 @@
 import React, { useEffect } from "react";
-import { View, Text, Pressable, useWindowDimensions, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  useWindowDimensions,
+  Platform,
+} from "react-native";
 import { RotateCcw, Volume2 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -36,6 +42,20 @@ export function Flashcard({
     flipAnim.value = withTiming(isFlipped ? 1 : 0, { duration: 500 });
   }, [isFlipped]);
 
+  const cardShadow = Platform.select({
+    ios: {
+      shadowColor: "#94a3b8",
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.15,
+      shadowRadius: 16,
+    },
+    android: { elevation: 6 },
+    web: {
+      boxShadow: "0px 8px 16px rgba(148, 163, 184, 0.15)",
+    },
+    default: {},
+  });
+
   // On web, backfaceVisibility in animated styles doesn't work reliably.
   // Use opacity to hide/show faces instead: front visible when < 90deg, back when >= 90deg.
   const sharedFaceStyle = {
@@ -50,28 +70,24 @@ export function Flashcard({
   const frontStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(flipAnim.value, [0, 1], [0, 180]);
     return {
-      transform: [
-        { perspective: 1000 },
-        { rotateY: `${rotateY}deg` },
-      ],
+      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
       backfaceVisibility: "hidden" as const,
-      opacity: Platform.OS === "web"
-        ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [1, 1, 0, 0])
-        : 1,
+      opacity:
+        Platform.OS === "web"
+          ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [1, 1, 0, 0])
+          : 1,
     };
   });
 
   const backStyle = useAnimatedStyle(() => {
     const rotateY = interpolate(flipAnim.value, [0, 1], [180, 360]);
     return {
-      transform: [
-        { perspective: 1000 },
-        { rotateY: `${rotateY}deg` },
-      ],
+      transform: [{ perspective: 1000 }, { rotateY: `${rotateY}deg` }],
       backfaceVisibility: "hidden" as const,
-      opacity: Platform.OS === "web"
-        ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [0, 0, 1, 1])
-        : 1,
+      opacity:
+        Platform.OS === "web"
+          ? interpolate(flipAnim.value, [0, 0.5, 0.5, 1], [0, 0, 1, 1])
+          : 1,
     };
   });
 
@@ -85,29 +101,23 @@ export function Flashcard({
         style={[
           sharedFaceStyle,
           frontStyle,
-          {
-            shadowColor: "#94a3b8",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.15,
-            shadowRadius: 16,
-            elevation: 6,
-          },
+          cardShadow,
         ]}
-        className="bg-white border-2 border-slate-100 rounded-[32px] p-8 items-center justify-center"
+        className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[32px] p-8 items-center justify-center"
       >
         <View className="absolute top-6 left-6">
-          <Text className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+          <Text className="text-[10px] font-bold text-slate-300 dark:text-slate-500 uppercase tracking-widest">
             Term ({frontLang})
           </Text>
         </View>
         <Pressable
           onPress={() => onSpeak(card.front, frontLang)}
-          className="absolute top-6 right-6 p-2 bg-indigo-50 rounded-full"
+          className="absolute top-6 right-6 p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-full"
         >
           <Volume2 size={20} color="#818cf8" />
         </Pressable>
         <Text
-          className="text-2xl font-medium text-slate-800 text-center leading-relaxed"
+          className="text-2xl font-medium text-slate-800 dark:text-white text-center leading-relaxed"
           style={{
             writingDirection: frontLang === "ar-SA" ? "rtl" : "ltr",
           }}
@@ -116,7 +126,7 @@ export function Flashcard({
         </Text>
         <View className="absolute bottom-8 flex-row items-center gap-2">
           <RotateCcw size={12} color="#cbd5e1" />
-          <Text className="text-slate-300 text-xs font-medium">
+          <Text className="text-slate-300 dark:text-slate-500 text-xs font-medium">
             Tap to flip
           </Text>
         </View>
@@ -127,29 +137,23 @@ export function Flashcard({
         style={[
           sharedFaceStyle,
           backStyle,
-          {
-            shadowColor: "#94a3b8",
-            shadowOffset: { width: 0, height: 8 },
-            shadowOpacity: 0.15,
-            shadowRadius: 16,
-            elevation: 6,
-          },
+          cardShadow,
         ]}
-        className="bg-white border-2 border-slate-100 rounded-[32px] p-8 items-center justify-center"
+        className="bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 rounded-[32px] p-8 items-center justify-center"
       >
         <View className="absolute top-6 left-6">
-          <Text className="text-[10px] font-bold text-slate-300 uppercase tracking-widest">
+          <Text className="text-[10px] font-bold text-slate-300 dark:text-slate-500 uppercase tracking-widest">
             Definition ({backLang})
           </Text>
         </View>
         <Pressable
           onPress={() => onSpeak(card.back, backLang)}
-          className="absolute top-6 right-6 p-2 bg-indigo-50 rounded-full"
+          className="absolute top-6 right-6 p-2 bg-indigo-50 dark:bg-indigo-950/30 rounded-full"
         >
           <Volume2 size={20} color="#818cf8" />
         </Pressable>
         <Text
-          className="text-xl font-medium text-slate-800 text-center leading-relaxed"
+          className="text-xl font-medium text-slate-800 dark:text-white text-center leading-relaxed"
           style={{
             writingDirection: backLang === "ar-SA" ? "rtl" : "ltr",
           }}
@@ -158,7 +162,7 @@ export function Flashcard({
         </Text>
         <View className="absolute bottom-8 flex-row items-center gap-2">
           <RotateCcw size={12} color="#cbd5e1" />
-          <Text className="text-slate-300 text-xs font-medium">
+          <Text className="text-slate-300 dark:text-slate-500 text-xs font-medium">
             Tap to flip back
           </Text>
         </View>

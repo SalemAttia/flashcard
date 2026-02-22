@@ -11,7 +11,7 @@ function getOpenAIClient(): OpenAI | null {
 
 export function buildSystemPrompt(
   studyLang: Language,
-  nativeLang: Language
+  nativeLang: Language,
 ): string {
   const study = LANGUAGES.find((l) => l.value === studyLang);
   const native = LANGUAGES.find((l) => l.value === nativeLang);
@@ -43,7 +43,7 @@ Formatting rules:
 
 export async function sendChatMessage(
   history: ChatMessage[],
-  systemPrompt: string
+  systemPrompt: string,
 ): Promise<string> {
   const openai = getOpenAIClient();
 
@@ -79,7 +79,7 @@ export async function sendChatMessage(
 export async function extractFlashcardFromMessage(
   messageContent: string,
   studyLang: Language,
-  nativeLang: Language
+  nativeLang: Language,
 ): Promise<{ front: string; back: string } | null> {
   const openai = getOpenAIClient();
   if (!openai) return null;
@@ -95,9 +95,9 @@ export async function extractFlashcardFromMessage(
         {
           role: "system",
           content:
-            'You extract flashcard word pairs from language tutor messages. ' +
+            "You extract flashcard word pairs from language tutor messages. " +
             'Respond ONLY with a JSON object: { "front": string, "back": string }. ' +
-            'No markdown fences.',
+            "No markdown fences.",
         },
         {
           role: "user",

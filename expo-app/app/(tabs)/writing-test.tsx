@@ -21,12 +21,13 @@ export default function WritingTestScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <View className="p-6 pb-2">
-        <Text className="text-2xl font-semibold tracking-tight text-slate-900">
+        <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           Writing
         </Text>
-        <Text className="text-slate-500 text-sm mt-1">
+        <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           🇩🇰 Choose your level and start writing
         </Text>
       </View>
@@ -41,6 +42,7 @@ export default function WritingTestScreen() {
         onChangeTopic={setTopic}
         onStart={handleStart}
       />
+      </View>
     </SafeAreaView>
   );
 }

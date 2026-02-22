@@ -1,12 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  collection,
+  doc,
+  onSnapshot,
+  setDoc,
+  addDoc,
+  deleteDoc,
+} from "firebase/firestore";
+import { db } from "../firebase/config";
+import { useAuth } from "../context/AuthContext";
 import { Deck } from "../types";
 
-const STORAGE_KEY = "mindset_decks";
+import { sanitize } from "../utils/firestore";
 
 const INITIAL_DECKS: Deck[] = [
   {
-    id: "1",
+    id: "starter",
     title: "Basic Phrases",
     description: "Multi-language starter set.",
     frontLang: "en-US",
@@ -22,56 +31,88 @@ const INITIAL_DECKS: Deck[] = [
 ];
 
 export function useDecks() {
-  const [decks, setDecks] = useState<Deck[]>(INITIAL_DECKS);
+  const { user } = useAuth();
+  const [decks, setDecks] = useState<Deck[]>([]);
   const [loaded, setLoaded] = useState(false);
+  const [seeded, setSeeded] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
-      if (raw) {
-        try {
-          setDecks(JSON.parse(raw));
-        } catch {}
-      }
-      setLoaded(true);
-    });
-  }, []);
+    if (!user) {
+      setDecks([]);
+      setLoaded(false);
+      setSeeded(false);
+      return;
+    }
 
-  useEffect(() => {
-    if (!loaded) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(decks));
-  }, [decks, loaded]);
+    const colRef = collection(db, "users", user.uid, "decks");
+    const unsub = onSnapshot(
+      colRef,
+      (snap) => {
+        const fetched: Deck[] = snap.docs.map((d) => ({
+          ...(d.data() as Omit<Deck, "id">),
+          id: d.id,
+        }));
+        setDecks(fetched);
+        setLoaded(true);
+
+        // Seed starter deck for brand-new users
+        if (!seeded && fetched.length === 0) {
+          setSeeded(true);
+          const starterRef = doc(colRef, "starter");
+          setDoc(starterRef, sanitize(INITIAL_DECKS[0])).catch(() => {});
+        } else {
+          setSeeded(true);
+        }
+      },
+      (error) => {
+        console.error("Error in useDecks listener:", error);
+        setLoaded(true);
+      },
+    );
+
+    return unsub;
+  }, [user]);
 
   const saveDeck = useCallback(
-    (deckData: Deck, existingId?: string | null) => {
+    async (deckData: Deck, existingId?: string | null) => {
+      if (!user) return;
+      const colRef = collection(db, "users", user.uid, "decks");
       if (existingId) {
-        setDecks((prev) =>
-          prev.map((d) => (d.id === existingId ? deckData : d))
-        );
+        await setDoc(doc(colRef, existingId), sanitize(deckData));
       } else {
-        setDecks((prev) => [
-          ...prev,
-          { ...deckData, id: Math.random().toString(36).substr(2, 9) },
-        ]);
+        const { id: _ignore, ...rest } = deckData;
+        await addDoc(colRef, sanitize(rest));
       }
     },
-    []
+    [user],
   );
 
-  const deleteDeck = useCallback((id: string) => {
-    setDecks((prev) => prev.filter((d) => d.id !== id));
-  }, []);
+  const deleteDeck = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      await deleteDoc(doc(db, "users", user.uid, "decks", id));
+    },
+    [user],
+  );
 
-  const markStudied = useCallback((id: string) => {
-    setDecks((prev) =>
-      prev.map((d) =>
-        d.id === id ? { ...d, lastStudied: new Date().toISOString() } : d
-      )
-    );
-  }, []);
+  const markStudied = useCallback(
+    async (id: string) => {
+      if (!user) return;
+      const ref = doc(db, "users", user.uid, "decks", id);
+      const deck = decks.find((d) => d.id === id);
+      if (deck) {
+        await setDoc(
+          ref,
+          sanitize({ ...deck, lastStudied: new Date().toISOString() }),
+        );
+      }
+    },
+    [user, decks],
+  );
 
   const getDeck = useCallback(
     (id: string) => decks.find((d) => d.id === id),
-    [decks]
+    [decks],
   );
 
   return { decks, saveDeck, deleteDeck, markStudied, getDeck, loaded };

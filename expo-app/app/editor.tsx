@@ -12,7 +12,7 @@ export default function EditorScreen() {
 
   if (!loaded) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
@@ -21,7 +21,8 @@ export default function EditorScreen() {
   const deck = deckId ? getDeck(deckId) : undefined;
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <DeckEditor
         deck={deck}
         onSave={(deckData) => {
@@ -39,6 +40,7 @@ export default function EditorScreen() {
           router.replace("/");
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

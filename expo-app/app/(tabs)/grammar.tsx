@@ -8,7 +8,7 @@ import { useCustomGrammarTopics } from "../../src/store/useCustomGrammarTopics";
 
 export default function GrammarScreen() {
   const [selectedTopic, setSelectedTopic] = useState<GrammarTopicId | null>(
-    null
+    null,
   );
   const [customTopic, setCustomTopic] = useState("");
   const [questionCount, setQuestionCount] = useState(10);
@@ -16,8 +16,12 @@ export default function GrammarScreen() {
     string | null
   >(null);
 
-  const { topics: savedTopics, saveTopic, deleteTopic, markTopicUsed } =
-    useCustomGrammarTopics();
+  const {
+    topics: savedTopics,
+    saveTopic,
+    deleteTopic,
+    markTopicUsed,
+  } = useCustomGrammarTopics();
 
   const handleSelectSavedTopic = (topic: SavedCustomTopic) => {
     setCustomTopic(topic.title);
@@ -47,12 +51,13 @@ export default function GrammarScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <View className="p-6 pb-2">
-        <Text className="text-2xl font-semibold tracking-tight text-slate-900">
+        <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           Grammar
         </Text>
-        <Text className="text-slate-500 text-sm mt-1">
+        <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           Choose a topic and test your grammar
         </Text>
       </View>
@@ -77,6 +82,7 @@ export default function GrammarScreen() {
         onSelectSavedTopic={handleSelectSavedTopic}
         selectedSavedTopicId={selectedSavedTopicId}
       />
+      </View>
     </SafeAreaView>
   );
 }

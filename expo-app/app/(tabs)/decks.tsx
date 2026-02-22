@@ -1,5 +1,11 @@
 import React from "react";
-import { View, Text, Pressable, ScrollView, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { Plus } from "lucide-react-native";
@@ -12,19 +18,20 @@ export default function HomeScreen() {
 
   if (!loaded) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       <View className="p-6 pb-2">
-        <Text className="text-2xl font-semibold tracking-tight text-slate-900">
+        <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
           Decks
         </Text>
-        <Text className="text-slate-500 text-sm mt-1">
+        <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
           Master your learning, card by card.
         </Text>
       </View>
@@ -56,7 +63,7 @@ export default function HomeScreen() {
         />
       </ScrollView>
 
-      <View className="p-6 border-t border-slate-100 bg-white">
+      <View className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
         <Pressable
           onPress={() => router.push("/editor")}
           className="w-full bg-indigo-600 py-4 rounded-2xl flex-row items-center justify-center gap-2"
@@ -67,6 +74,7 @@ export default function HomeScreen() {
           <Plus size={20} color="#fff" />
           <Text className="text-white font-medium">New Study Set</Text>
         </Pressable>
+      </View>
       </View>
     </SafeAreaView>
   );

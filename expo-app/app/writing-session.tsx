@@ -12,6 +12,10 @@ import Animated, {
 } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../src/firebase/config";
+import { useAuth } from "../src/context/AuthContext";
+import { sanitize } from "../src/utils/firestore";
 import { useDecks } from "../src/store/useDecks";
 import { WritingPromptCard } from "../src/components/WritingTest/WritingPromptCard";
 import { EvaluationFeedback } from "../src/components/WritingTest/EvaluationFeedback";
@@ -42,6 +46,7 @@ export default function WritingSessionScreen() {
     deckId?: string;
     topic?: string;
   }>();
+  const { user } = useAuth();
   const { getDeck } = useDecks();
   const deck = deckId ? getDeck(deckId) : null;
   const levelConfig = getLevelConfig(level as WritingLevel);
@@ -52,7 +57,7 @@ export default function WritingSessionScreen() {
   const [currentText, setCurrentText] = useState("");
   const [startTimeMs, setStartTimeMs] = useState(0);
   const [responses, setResponses] = useState<WritingTestResult["responses"]>(
-    []
+    [],
   );
   const [currentEvaluation, setCurrentEvaluation] =
     useState<WritingEvaluation | null>(null);
@@ -63,7 +68,7 @@ export default function WritingSessionScreen() {
     spinRotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
     loadPrompts();
   }, []);
@@ -102,7 +107,7 @@ export default function WritingSessionScreen() {
       const evaluation = await evaluateWriting(
         prompt,
         currentText,
-        levelConfig
+        levelConfig,
       );
       setCurrentEvaluation(evaluation);
       setResponses((prev) => [
@@ -152,6 +157,12 @@ export default function WritingSessionScreen() {
         passed: overallScore >= levelConfig.passMark,
       };
 
+      if (user) {
+        await setDoc(
+          doc(db, "users", user.uid, "results", "writing"),
+          sanitize(result),
+        );
+      }
       await AsyncStorage.setItem(WRITING_RESULT_KEY, JSON.stringify(result));
       router.replace("/writing-summary");
     }
@@ -165,55 +176,60 @@ export default function WritingSessionScreen() {
   if (phase === "generating" || phase === "evaluating") {
     const isEvaluating = phase === "evaluating";
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-        <View className="p-4 flex-row items-center justify-between border-b border-slate-100">
-          <Pressable onPress={handleCancel} className="p-2 -ml-2">
-            <X size={24} color="#64748b" />
-          </Pressable>
-          <View className="items-center">
-            <Text className="text-xs font-bold text-amber-600 uppercase tracking-widest">
-              Writing Exam
-            </Text>
-            <Text className="text-sm font-semibold text-slate-800">
-              {levelConfig.label}
-            </Text>
-          </View>
-          <View className="w-10" />
-        </View>
-        <View className="flex-1 items-center justify-center p-8 gap-6">
-          <View className="relative items-center justify-center">
-            <Animated.View
-              style={[
-                spinStyle,
-                {
-                  width: 80,
-                  height: 80,
-                  borderRadius: 40,
-                  borderWidth: 4,
-                  borderColor: "#fef3c7",
-                  borderTopColor: "#f59e0b",
-                },
-              ]}
-            />
-            <View className="absolute">
-              {isEvaluating ? (
-                <Sparkles size={32} color="#f59e0b" />
-              ) : (
-                <PenLine size={32} color="#f59e0b" />
-              )}
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-slate-950"
+        edges={["top"]}
+      >
+        <View className="flex-1 w-full max-w-2xl self-center">
+          <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
+            <Pressable onPress={handleCancel} className="p-2 -ml-2">
+              <X size={24} color="#64748b" />
+            </Pressable>
+            <View className="items-center">
+              <Text className="text-xs font-bold text-amber-600 uppercase tracking-widest">
+                Writing Exam
+              </Text>
+              <Text className="text-sm font-semibold text-slate-800 dark:text-white">
+                {levelConfig.label}
+              </Text>
             </View>
+            <View className="w-10" />
           </View>
-          <View className="items-center gap-2">
-            <Text className="text-xl font-bold text-slate-800">
-              {isEvaluating
-                ? "Evaluating your writing..."
-                : "Preparing your exam..."}
-            </Text>
-            <Text className="text-slate-500 text-sm text-center max-w-[240px]">
-              {isEvaluating
-                ? "AI is analyzing your grammar, vocabulary, and fluency."
-                : "Generating writing prompts for your level."}
-            </Text>
+          <View className="flex-1 items-center justify-center p-8 gap-6">
+            <View className="relative items-center justify-center">
+              <Animated.View
+                style={[
+                  spinStyle,
+                  {
+                    width: 80,
+                    height: 80,
+                    borderRadius: 40,
+                    borderWidth: 4,
+                    borderColor: "#fef3c7",
+                    borderTopColor: "#f59e0b",
+                  },
+                ]}
+              />
+              <View className="absolute">
+                {isEvaluating ? (
+                  <Sparkles size={32} color="#f59e0b" />
+                ) : (
+                  <PenLine size={32} color="#f59e0b" />
+                )}
+              </View>
+            </View>
+            <View className="items-center gap-2">
+              <Text className="text-xl font-bold text-slate-800 dark:text-white">
+                {isEvaluating
+                  ? "Evaluating your writing..."
+                  : "Preparing your exam..."}
+              </Text>
+              <Text className="text-slate-500 text-sm text-center max-w-[240px]">
+                {isEvaluating
+                  ? "AI is analyzing your grammar, vocabulary, and fluency."
+                  : "Generating writing prompts for your level."}
+              </Text>
+            </View>
           </View>
         </View>
       </SafeAreaView>
@@ -224,71 +240,76 @@ export default function WritingSessionScreen() {
   const progressPercent = ((currentIndex + 1) / prompts.length) * 100;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
-      {/* Header */}
-      <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
-        <Pressable onPress={handleCancel} className="p-2 -ml-2">
-          <X size={24} color="#64748b" />
-        </Pressable>
-        <View className="items-center">
-          <View className="flex-row items-center gap-1">
-            <PenLine size={10} color="#d97706" />
-            <Text className="text-xs font-bold text-amber-600 uppercase tracking-widest">
-              Writing Exam
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
+      <View className="flex-1 w-full max-w-2xl self-center">
+        {/* Header */}
+        <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <Pressable onPress={handleCancel} className="p-2 -ml-2">
+            <X size={24} color="#64748b" />
+          </Pressable>
+          <View className="items-center">
+            <View className="flex-row items-center gap-1">
+              <PenLine size={10} color="#d97706" />
+              <Text className="text-xs font-bold text-amber-600 uppercase tracking-widest">
+                Writing Exam
+              </Text>
+            </View>
+            <Text className="text-sm font-semibold text-slate-800 dark:text-white">
+              {levelConfig.label}
             </Text>
           </View>
-          <Text className="text-sm font-semibold text-slate-800">
-            {levelConfig.label}
-          </Text>
+          <View className="w-10" />
         </View>
-        <View className="w-10" />
+
+        {/* Progress */}
+        <View className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+              Progress
+            </Text>
+            <Text className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">
+              {currentIndex + 1} / {prompts.length}
+            </Text>
+          </View>
+          <View className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+            <View
+              style={{ width: `${progressPercent}%` }}
+              className="h-full bg-amber-500 rounded-full"
+            />
+          </View>
+        </View>
+
+        {/* Content */}
+        <ScrollView
+          className="flex-1 p-6"
+          keyboardShouldPersistTaps="handled"
+          contentContainerClassName="pb-10"
+        >
+          {phase === "writing" && (
+            <WritingPromptCard
+              prompt={currentPrompt}
+              levelConfig={levelConfig}
+              userText={currentText}
+              onChangeText={setCurrentText}
+              onSubmit={handleSubmit}
+              isSubmitting={false}
+            />
+          )}
+
+          {phase === "feedback" && currentEvaluation && (
+            <EvaluationFeedback
+              evaluation={currentEvaluation}
+              userText={currentText}
+              levelConfig={levelConfig}
+              isLast={currentIndex + 1 >= prompts.length}
+              onNext={handleNext}
+            />
+          )}
+        </ScrollView>
       </View>
-
-      {/* Progress */}
-      <View className="px-6 py-4 bg-white border-b border-slate-100">
-        <View className="flex-row justify-between items-center mb-2">
-          <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
-            Progress
-          </Text>
-          <Text className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">
-            {currentIndex + 1} / {prompts.length}
-          </Text>
-        </View>
-        <View className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
-          <View
-            style={{ width: `${progressPercent}%` }}
-            className="h-full bg-amber-500 rounded-full"
-          />
-        </View>
-      </View>
-
-      {/* Content */}
-      <ScrollView
-        className="flex-1 p-6"
-        keyboardShouldPersistTaps="handled"
-        contentContainerClassName="pb-10"
-      >
-        {phase === "writing" && (
-          <WritingPromptCard
-            prompt={currentPrompt}
-            levelConfig={levelConfig}
-            userText={currentText}
-            onChangeText={setCurrentText}
-            onSubmit={handleSubmit}
-            isSubmitting={false}
-          />
-        )}
-
-        {phase === "feedback" && currentEvaluation && (
-          <EvaluationFeedback
-            evaluation={currentEvaluation}
-            userText={currentText}
-            levelConfig={levelConfig}
-            isLast={currentIndex + 1 >= prompts.length}
-            onNext={handleNext}
-          />
-        )}
-      </ScrollView>
     </SafeAreaView>
   );
 }

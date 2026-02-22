@@ -21,6 +21,7 @@ import {
 import { useChatLanguages } from "../../src/store/useChatLanguages";
 import { useChatNotes } from "../../src/store/useChatNotes";
 import { useDecks } from "../../src/store/useDecks";
+import { useChatHistory } from "../../src/store/useChatHistory";
 
 import { LanguageSelector } from "../../src/components/Chat/LanguageSelector";
 import { ChatInput } from "../../src/components/Chat/ChatInput";
@@ -29,7 +30,8 @@ import { SaveCardModal } from "../../src/components/Chat/SaveCardModal";
 import { NotesModal } from "../../src/components/Chat/NotesModal";
 
 export default function ChatScreen() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { messages, setMessages, addMessage, clearHistory, loaded } =
+    useChatHistory();
   const [isLoading, setIsLoading] = useState(false);
 
   const [showNotes, setShowNotes] = useState(false);
@@ -47,7 +49,7 @@ export default function ChatScreen() {
 
   const systemPrompt = useMemo(
     () => buildSystemPrompt(studyLang, nativeLang),
-    [studyLang, nativeLang]
+    [studyLang, nativeLang],
   );
 
   const scrollToEnd = useCallback(() => {
@@ -64,24 +66,31 @@ export default function ChatScreen() {
       };
 
       const nextMessages = [...messages, userMessage];
-      setMessages(nextMessages);
+      // We set local state immediately for responsiveness, though the hook also syncs
       setIsLoading(true);
       scrollToEnd();
 
-      const reply = await sendChatMessage(nextMessages, systemPrompt);
+      try {
+        await addMessage(userMessage);
+        const reply = await sendChatMessage(nextMessages, systemPrompt);
 
-      const assistantMessage: ChatMessage = {
-        id: Math.random().toString(36).substr(2, 9),
-        role: "assistant",
-        content: reply,
-        timestamp: new Date().toISOString(),
-      };
+        const assistantMessage: ChatMessage = {
+          id: Math.random().toString(36).substr(2, 9),
+          role: "assistant",
+          content: reply,
+          timestamp: new Date().toISOString(),
+        };
 
-      setMessages((prev) => [...prev, assistantMessage]);
-      setIsLoading(false);
-      scrollToEnd();
+        await addMessage(assistantMessage, nextMessages);
+      } catch (error) {
+        console.error("Chat error:", error);
+        Toast.show({ type: "error", text1: "Failed to send message" });
+      } finally {
+        setIsLoading(false);
+        scrollToEnd();
+      }
     },
-    [messages, systemPrompt, scrollToEnd]
+    [messages, systemPrompt, scrollToEnd, addMessage],
   );
 
   const handleOpenSaveCard = useCallback(
@@ -94,7 +103,7 @@ export default function ChatScreen() {
       const extracted = await extractFlashcardFromMessage(
         message.content,
         studyLang,
-        nativeLang
+        nativeLang,
       );
 
       setIsExtracting(false);
@@ -103,7 +112,7 @@ export default function ChatScreen() {
         setPrefilledBack(extracted.back);
       }
     },
-    [studyLang, nativeLang]
+    [studyLang, nativeLang],
   );
 
   const handleSaveCard = useCallback(
@@ -111,7 +120,7 @@ export default function ChatScreen() {
       deckId: string | null,
       newDeckTitle: string | null,
       front: string,
-      back: string
+      back: string,
     ) => {
       if (!front.trim() || !back.trim()) return;
 
@@ -126,7 +135,7 @@ export default function ChatScreen() {
         if (!existingDeck) return;
         saveDeck(
           { ...existingDeck, cards: [...existingDeck.cards, newCard] },
-          deckId
+          deckId,
         );
       } else if (newDeckTitle?.trim()) {
         const newDeck: Deck = {
@@ -143,7 +152,7 @@ export default function ChatScreen() {
       setShowSaveCard(false);
       Toast.show({ type: "success", text1: "Flashcard saved!" });
     },
-    [decks, saveDeck, studyLang, nativeLang]
+    [decks, saveDeck, studyLang, nativeLang],
   );
 
   const handleAddNote = useCallback(
@@ -151,53 +160,62 @@ export default function ChatScreen() {
       addNote(message.content, { sourceMessageId: message.id });
       Toast.show({ type: "success", text1: "Saved to notes" });
     },
-    [addNote]
+    [addNote],
   );
 
   const handleChangeStudyLang = useCallback(
     (lang: Language) => {
       changeStudyLang(lang);
-      setMessages([]);
+      clearHistory();
       Toast.show({ type: "info", text1: "Language changed — starting fresh" });
     },
-    [changeStudyLang]
+    [changeStudyLang],
   );
 
   const handleChangeNativeLang = useCallback(
     (lang: Language) => {
       changeNativeLang(lang);
-      setMessages([]);
+      clearHistory();
       Toast.show({ type: "info", text1: "Language changed — starting fresh" });
     },
-    [changeNativeLang]
+    [changeNativeLang],
   );
 
   const handleNewChat = useCallback(() => {
-    setMessages([]);
-  }, []);
+    clearHistory();
+  }, [clearHistory]);
+
+  if (!loaded) {
+    return (
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
+        <ActivityIndicator size="large" color="#4f46e5" />
+      </SafeAreaView>
+    );
+  }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
       {/* Header */}
-      <View className="px-6 py-4 flex-row items-center justify-between border-b border-slate-100">
+      <View className="px-6 py-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
         <View>
-          <Text className="text-2xl font-semibold tracking-tight text-slate-900">
+          <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
             Chat
           </Text>
-          <Text className="text-slate-500 text-sm mt-1">
+          <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Your AI language tutor
           </Text>
         </View>
         <View className="flex-row gap-2 items-center">
           <Pressable
             onPress={() => setShowNotes(true)}
-            className="p-2 rounded-xl bg-slate-50"
+            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900"
           >
             <StickyNote size={20} color="#64748b" />
           </Pressable>
           <Pressable
             onPress={handleNewChat}
-            className="p-2 rounded-xl bg-slate-50"
+            className="p-2 rounded-xl bg-slate-50 dark:bg-slate-900"
           >
             <RotateCcw size={20} color="#64748b" />
           </Pressable>
@@ -227,14 +245,15 @@ export default function ChatScreen() {
             <View className="flex-1 items-center justify-center gap-4 py-20">
               <MessageCircle size={48} color="#e2e8f0" />
               <Text className="text-slate-400 text-sm text-center px-8 leading-5">
-                Ask me about vocabulary, translations, grammar, or send a sentence for corrections.
+                Ask me about vocabulary, translations, grammar, or send a
+                sentence for corrections.
               </Text>
             </View>
           }
           ListFooterComponent={
             isLoading ? (
               <View className="items-start py-2">
-                <View className="bg-slate-100 rounded-2xl px-4 py-3">
+                <View className="bg-slate-100 dark:bg-slate-900 rounded-2xl px-4 py-3">
                   <ActivityIndicator size="small" color="#4f46e5" />
                 </View>
               </View>
@@ -274,6 +293,7 @@ export default function ChatScreen() {
         onDeleteNote={deleteNote}
         onClose={() => setShowNotes(false)}
       />
+      </View>
     </SafeAreaView>
   );
 }

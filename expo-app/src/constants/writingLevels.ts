@@ -28,8 +28,7 @@ export const WRITING_LEVELS: LevelConfig[] = [
     minWords: 5,
     color: "emerald",
     evaluationCriteria: {
-      grammar:
-        "Very basic sentence structure, singular/plural, present tense",
+      grammar: "Very basic sentence structure, singular/plural, present tense",
       vocabulary: "High-frequency everyday words",
       spelling: "Basic phonetic spelling of simple words",
       fluency: "Isolated words and memorized phrases are acceptable",
@@ -45,8 +44,7 @@ export const WRITING_LEVELS: LevelConfig[] = [
     minWords: 20,
     color: "blue",
     evaluationCriteria: {
-      grammar:
-        "Simple conjunctions (og, men, fordi), present and past tense",
+      grammar: "Simple conjunctions (og, men, fordi), present and past tense",
       vocabulary: "Everyday vocabulary covering personal and family info",
       spelling:
         "Correct spelling of common words, Danish special characters (æ, ø, å)",
@@ -57,8 +55,7 @@ export const WRITING_LEVELS: LevelConfig[] = [
     value: "b1",
     label: "B1 - Intermediate",
     sublabel: "Prøve i Dansk 2",
-    description:
-      "Write clear connected text on subjects that are familiar.",
+    description: "Write clear connected text on subjects that are familiar.",
     passMark: 65,
     promptCount: 4,
     minWords: 60,
@@ -87,8 +84,7 @@ export const WRITING_LEVELS: LevelConfig[] = [
       vocabulary:
         "Precise and varied vocabulary, idiomatic and formal registers",
       spelling: "Near-perfect orthography including compound nouns",
-      fluency:
-        "Well-structured argumentation, cohesion, appropriate register",
+      fluency: "Well-structured argumentation, cohesion, appropriate register",
     },
   },
 ];

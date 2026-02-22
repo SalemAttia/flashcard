@@ -1,31 +1,60 @@
 import { useState, useEffect, useCallback } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { db } from "../firebase/config";
+import { useAuth } from "../context/AuthContext";
 import { ChatNote } from "../types";
 
-const STORAGE_KEY = "chat_notes";
+import { sanitize } from "../utils/firestore";
 
 export function useChatNotes() {
+  const { user } = useAuth();
   const [notes, setNotes] = useState<ChatNote[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    AsyncStorage.getItem(STORAGE_KEY).then((raw) => {
-      if (raw) {
-        try {
-          setNotes(JSON.parse(raw));
-        } catch {}
-      }
-      setLoaded(true);
-    });
-  }, []);
+    if (!user) {
+      setNotes([]);
+      setLoaded(false);
+      return;
+    }
 
-  useEffect(() => {
-    if (!loaded) return;
-    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
-  }, [notes, loaded]);
+    const ref = doc(db, "users", user.uid, "data", "chatNotes");
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        if (snap.exists()) {
+          setNotes((snap.data().notes as ChatNote[]) ?? []);
+        } else {
+          setNotes([]);
+        }
+        setLoaded(true);
+      },
+      (error) => {
+        console.error("Error in useChatNotes listener:", error);
+        setLoaded(true);
+      },
+    );
+
+    return unsub;
+  }, [user]);
+
+  // Helper: write notes array back to Firestore
+  const persist = useCallback(
+    async (next: ChatNote[]) => {
+      if (!user) return;
+      await setDoc(
+        doc(db, "users", user.uid, "data", "chatNotes"),
+        sanitize({ notes: next }),
+      );
+    },
+    [user],
+  );
 
   const addNote = useCallback(
-    (text: string, options?: { title?: string; sourceMessageId?: string }) => {
+    async (
+      text: string,
+      options?: { title?: string; sourceMessageId?: string },
+    ) => {
       const newNote: ChatNote = {
         id: Math.random().toString(36).substr(2, 9),
         text,
@@ -33,22 +62,29 @@ export function useChatNotes() {
         timestamp: new Date().toISOString(),
         sourceMessageId: options?.sourceMessageId,
       };
-      setNotes((prev) => [newNote, ...prev]);
+      const next = [newNote, ...notes];
+      setNotes(next);
+      await persist(next);
     },
-    []
+    [notes, persist],
   );
 
-  const deleteNote = useCallback((id: string) => {
-    setNotes((prev) => prev.filter((n) => n.id !== id));
-  }, []);
+  const deleteNote = useCallback(
+    async (id: string) => {
+      const next = notes.filter((n) => n.id !== id);
+      setNotes(next);
+      await persist(next);
+    },
+    [notes, persist],
+  );
 
   const updateNote = useCallback(
-    (id: string, changes: Partial<Pick<ChatNote, "title" | "text">>) => {
-      setNotes((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, ...changes } : n))
-      );
+    async (id: string, changes: Partial<Pick<ChatNote, "title" | "text">>) => {
+      const next = notes.map((n) => (n.id === id ? { ...n, ...changes } : n));
+      setNotes(next);
+      await persist(next);
     },
-    []
+    [notes, persist],
   );
 
   return { notes, addNote, deleteNote, updateNote, loaded };

@@ -11,7 +11,17 @@ import {
   ActivityIndicator,
   Image,
 } from "react-native";
-import { ChevronLeft, Plus, Trash2, Save, X, FileText, Sparkles, Camera, ImagePlus } from "lucide-react-native";
+import {
+  ChevronLeft,
+  Plus,
+  Trash2,
+  Save,
+  X,
+  FileText,
+  Sparkles,
+  Camera,
+  ImagePlus,
+} from "lucide-react-native";
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 import OpenAI from "openai";
@@ -27,25 +37,36 @@ interface DeckEditorProps {
   onDelete: (id: string) => void;
 }
 
-export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps) {
+export function DeckEditor({
+  deck,
+  onSave,
+  onCancel,
+  onDelete,
+}: DeckEditorProps) {
   const [title, setTitle] = useState(deck?.title || "");
   const [description, setDescription] = useState(deck?.description || "");
-  const [frontLang, setFrontLang] = useState<Language>(deck?.frontLang || "en-US");
+  const [frontLang, setFrontLang] = useState<Language>(
+    deck?.frontLang || "en-US",
+  );
   const [backLang, setBackLang] = useState<Language>(deck?.backLang || "da-DK");
   const [cards, setCards] = useState<Card[]>(
-    deck?.cards || [{ id: "1", front: "", back: "" }]
+    deck?.cards || [{ id: "1", front: "", back: "" }],
   );
   const [showBulk, setShowBulk] = useState(false);
   const [bulkText, setBulkText] = useState("");
   const [showAiGenerate, setShowAiGenerate] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
-  const [aiLevel, setAiLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [aiLevel, setAiLevel] = useState<
+    "beginner" | "intermediate" | "advanced"
+  >("beginner");
   const [aiCardCount, setAiCardCount] = useState(10);
   const [aiLoading, setAiLoading] = useState(false);
   const [showImageGenerate, setShowImageGenerate] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [imageLevel, setImageLevel] = useState<"beginner" | "intermediate" | "advanced">("beginner");
+  const [imageLevel, setImageLevel] = useState<
+    "beginner" | "intermediate" | "advanced"
+  >("beginner");
   const [imageLoading, setImageLoading] = useState(false);
 
   const addCard = () => {
@@ -69,7 +90,10 @@ export function DeckEditor({ deck, onSave, onCancel, onDelete }: DeckEditorProps
       .split("\n")
       .filter((l) => l.trim().includes(";") || l.trim().includes(","));
     if (lines.length === 0) {
-      Toast.show({ type: "error", text1: "Invalid format. Use 'Front; Back' format." });
+      Toast.show({
+        type: "error",
+        text1: "Invalid format. Use 'Front; Back' format.",
+      });
       return;
     }
 
@@ -152,9 +176,15 @@ Guidelines:
       setCards([...cards.filter((c) => c.front || c.back), ...newCards]);
       setShowAiGenerate(false);
       setAiTopic("");
-      Toast.show({ type: "success", text1: `Generated ${newCards.length} cards` });
+      Toast.show({
+        type: "success",
+        text1: `Generated ${newCards.length} cards`,
+      });
     } catch (error) {
-      Toast.show({ type: "error", text1: "Failed to generate cards. Please try again." });
+      Toast.show({
+        type: "error",
+        text1: "Failed to generate cards. Please try again.",
+      });
     } finally {
       setAiLoading(false);
     }
@@ -180,7 +210,10 @@ Guidelines:
   const pickImageFromGallery = async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) {
-      Toast.show({ type: "error", text1: "Photo library permission is required" });
+      Toast.show({
+        type: "error",
+        text1: "Photo library permission is required",
+      });
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -274,9 +307,15 @@ Guidelines:
       setShowImageGenerate(false);
       setImageUri(null);
       setImageBase64(null);
-      Toast.show({ type: "success", text1: `Generated ${newCards.length} cards from image` });
+      Toast.show({
+        type: "success",
+        text1: `Generated ${newCards.length} cards from image`,
+      });
     } catch (error) {
-      Toast.show({ type: "error", text1: "Failed to analyze image. Please try again." });
+      Toast.show({
+        type: "error",
+        text1: "Failed to analyze image. Please try again.",
+      });
     } finally {
       setImageLoading(false);
     }
@@ -297,14 +336,14 @@ Guidelines:
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1 bg-white"
+      className="flex-1 bg-white dark:bg-slate-950"
     >
       {/* Header */}
-      <View className="px-4 py-4 flex-row items-center justify-between border-b border-slate-100 bg-white">
+      <View className="px-4 py-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
         <Pressable onPress={onCancel} className="p-2 -ml-2">
           <ChevronLeft size={24} color="#64748b" />
         </Pressable>
-        <Text className="font-semibold">
+        <Text className="font-semibold dark:text-white">
           {deck ? "Edit Set" : "Create New Set"}
         </Text>
         <View className="flex-row items-center gap-3">
@@ -344,7 +383,7 @@ Guidelines:
               onChangeText={setTitle}
               placeholder="e.g., Arabic Vocabulary"
               placeholderTextColor="#cbd5e1"
-              className="text-xl font-medium border-b-2 border-slate-100 py-2 text-slate-900"
+              className="text-xl font-medium border-b-2 border-slate-100 dark:border-slate-800 py-2 text-slate-900 dark:text-white"
             />
           </View>
 
@@ -368,14 +407,16 @@ Guidelines:
 
         <View className="gap-6 pb-24">
           <View className="flex-row items-center gap-2">
-            <Text className="font-semibold text-slate-800">Cards</Text>
+            <Text className="font-semibold text-slate-800 dark:text-white">
+              Cards
+            </Text>
             <Text className="text-xs text-slate-400">({cards.length})</Text>
           </View>
 
           {cards.map((card, idx) => (
             <View
               key={card.id}
-              className="bg-slate-50 rounded-2xl p-5 border border-slate-100"
+              className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-5 border border-slate-100 dark:border-slate-800"
             >
               <Pressable
                 onPress={() => removeCard(card.id)}
@@ -391,17 +432,19 @@ Guidelines:
                   <TextInput
                     multiline
                     value={card.front}
-                    onChangeText={(value) => updateCard(card.id, "front", value)}
+                    onChangeText={(value) =>
+                      updateCard(card.id, "front", value)
+                    }
                     placeholder="Enter term..."
                     placeholderTextColor="#cbd5e1"
-                    className="text-sm font-medium text-slate-900"
+                    className="text-sm font-medium text-slate-900 dark:text-white"
                     textAlignVertical="top"
                     style={{
                       writingDirection: frontLang === "ar-SA" ? "rtl" : "ltr",
                     }}
                   />
                 </View>
-                <View className="h-px bg-slate-200" />
+                <View className="h-px bg-slate-200 dark:bg-slate-800" />
                 <View className="gap-1.5">
                   <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
                     Back ({backLang})
@@ -412,7 +455,7 @@ Guidelines:
                     onChangeText={(value) => updateCard(card.id, "back", value)}
                     placeholder="Enter translation..."
                     placeholderTextColor="#cbd5e1"
-                    className="text-sm text-slate-900"
+                    className="text-sm text-slate-900 dark:text-slate-200"
                     textAlignVertical="top"
                     style={{
                       writingDirection: backLang === "ar-SA" ? "rtl" : "ltr",
@@ -425,7 +468,7 @@ Guidelines:
 
           <Pressable
             onPress={addCard}
-            className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl flex-row items-center justify-center gap-2"
+            className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex-row items-center justify-center gap-2"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Plus size={20} color="#94a3b8" />
@@ -436,10 +479,15 @@ Guidelines:
 
       {/* Bulk Import Modal */}
       <Modal visible={showBulk} transparent animationType="slide">
-        <Pressable className="flex-1 bg-black/40" onPress={() => setShowBulk(false)} />
-        <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <Pressable
+          className="flex-1 bg-black/40"
+          onPress={() => setShowBulk(false)}
+        />
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
           <View className="flex-row justify-between items-center mb-4">
-            <Text className="font-bold text-lg">Bulk Import</Text>
+            <Text className="font-bold text-lg dark:text-white">
+              Bulk Import
+            </Text>
             <Pressable onPress={() => setShowBulk(false)} className="p-2">
               <X size={20} color="#94a3b8" />
             </Pressable>
@@ -453,17 +501,21 @@ Guidelines:
             value={bulkText}
             onChangeText={setBulkText}
             placeholder={"Hello; Hej\nThank you; Tak"}
-            placeholderTextColor="#cbd5e1"
-            className="h-48 bg-slate-50 rounded-2xl p-4 text-sm border border-slate-100 text-slate-900"
+            placeholderTextColor="#94a3b8"
+            className="h-48 bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 text-sm border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white"
             textAlignVertical="top"
-            style={{ fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace" }}
+            style={{
+              fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+            }}
           />
           <View className="flex-row gap-3 mt-6">
             <Pressable
               onPress={() => setShowBulk(false)}
-              className="flex-1 py-3 bg-slate-100 rounded-xl items-center"
+              className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl items-center"
             >
-              <Text className="text-slate-600 font-semibold">Cancel</Text>
+              <Text className="text-slate-600 dark:text-slate-300 font-semibold">
+                Cancel
+              </Text>
             </Pressable>
             <Pressable
               onPress={handleBulkImport}
@@ -481,11 +533,13 @@ Guidelines:
           className="flex-1 bg-black/40"
           onPress={() => !aiLoading && setShowAiGenerate(false)}
         />
-        <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
           <View className="flex-row justify-between items-center mb-4">
             <View className="flex-row items-center gap-2">
               <Sparkles size={20} color="#4f46e5" />
-              <Text className="font-bold text-lg">AI Generate</Text>
+              <Text className="font-bold text-lg dark:text-white">
+                AI Generate
+              </Text>
             </View>
             <Pressable
               onPress={() => !aiLoading && setShowAiGenerate(false)}
@@ -504,8 +558,8 @@ Guidelines:
                 value={aiTopic}
                 onChangeText={setAiTopic}
                 placeholder="e.g., Food vocabulary, Travel phrases"
-                placeholderTextColor="#cbd5e1"
-                className="bg-slate-50 rounded-2xl p-4 text-sm border border-slate-100 text-slate-900"
+                placeholderTextColor="#94a3b8"
+                className="bg-slate-50 dark:bg-slate-950 rounded-2xl p-4 text-sm border border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white"
                 editable={!aiLoading}
               />
             </View>
@@ -515,25 +569,29 @@ Guidelines:
                 Level
               </Text>
               <View className="flex-row gap-2">
-                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-                  <Pressable
-                    key={level}
-                    onPress={() => !aiLoading && setAiLevel(level)}
-                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                      aiLevel === level
-                        ? "bg-indigo-50 border-indigo-500"
-                        : "bg-slate-50 border-slate-100"
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-bold capitalize ${
-                        aiLevel === level ? "text-indigo-600" : "text-slate-400"
+                {(["beginner", "intermediate", "advanced"] as const).map(
+                  (level) => (
+                    <Pressable
+                      key={level}
+                      onPress={() => !aiLoading && setAiLevel(level)}
+                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                        aiLevel === level
+                          ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
                       }`}
                     >
-                      {level}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        className={`text-xs font-bold capitalize ${
+                          aiLevel === level
+                            ? "text-indigo-600"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {level}
+                      </Text>
+                    </Pressable>
+                  ),
+                )}
               </View>
             </View>
 
@@ -548,13 +606,15 @@ Guidelines:
                     onPress={() => !aiLoading && setAiCardCount(count)}
                     className={`flex-1 py-3 rounded-xl items-center border-2 ${
                       aiCardCount === count
-                        ? "bg-indigo-50 border-indigo-500"
-                        : "bg-slate-50 border-slate-100"
+                        ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
+                        : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
                     }`}
                   >
                     <Text
                       className={`text-sm font-bold ${
-                        aiCardCount === count ? "text-indigo-600" : "text-slate-400"
+                        aiCardCount === count
+                          ? "text-indigo-600"
+                          : "text-slate-400"
                       }`}
                     >
                       {count}
@@ -568,10 +628,12 @@ Guidelines:
           <View className="flex-row gap-3 mt-6">
             <Pressable
               onPress={() => setShowAiGenerate(false)}
-              className="flex-1 py-3 bg-slate-100 rounded-xl items-center"
+              className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl items-center"
               disabled={aiLoading}
             >
-              <Text className="text-slate-600 font-semibold">Cancel</Text>
+              <Text className="text-slate-600 dark:text-slate-300 font-semibold">
+                Cancel
+              </Text>
             </Pressable>
             <Pressable
               onPress={handleAiGenerate}
@@ -598,11 +660,13 @@ Guidelines:
           className="flex-1 bg-black/40"
           onPress={() => !imageLoading && setShowImageGenerate(false)}
         />
-        <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
           <View className="flex-row justify-between items-center mb-4">
             <View className="flex-row items-center gap-2">
               <Camera size={20} color="#4f46e5" />
-              <Text className="font-bold text-lg">Image to Cards</Text>
+              <Text className="font-bold text-lg dark:text-white">
+                Image to Cards
+              </Text>
             </View>
             <Pressable
               onPress={() => {
@@ -622,19 +686,23 @@ Guidelines:
             <View className="flex-row gap-3">
               <Pressable
                 onPress={pickImageFromCamera}
-                className="flex-1 py-4 bg-slate-50 rounded-2xl items-center border border-slate-100"
+                className="flex-1 py-4 bg-slate-50 dark:bg-slate-950 rounded-2xl items-center border border-slate-100 dark:border-slate-800"
                 disabled={imageLoading}
               >
                 <Camera size={24} color="#4f46e5" />
-                <Text className="text-xs font-semibold text-slate-600 mt-1">Take Photo</Text>
+                <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1">
+                  Take Photo
+                </Text>
               </Pressable>
               <Pressable
                 onPress={pickImageFromGallery}
-                className="flex-1 py-4 bg-slate-50 rounded-2xl items-center border border-slate-100"
+                className="flex-1 py-4 bg-slate-50 dark:bg-slate-950 rounded-2xl items-center border border-slate-100 dark:border-slate-800"
                 disabled={imageLoading}
               >
                 <ImagePlus size={24} color="#4f46e5" />
-                <Text className="text-xs font-semibold text-slate-600 mt-1">Gallery</Text>
+                <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300 mt-1">
+                  Gallery
+                </Text>
               </Pressable>
             </View>
 
@@ -653,25 +721,29 @@ Guidelines:
                 Level
               </Text>
               <View className="flex-row gap-2">
-                {(["beginner", "intermediate", "advanced"] as const).map((level) => (
-                  <Pressable
-                    key={level}
-                    onPress={() => !imageLoading && setImageLevel(level)}
-                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                      imageLevel === level
-                        ? "bg-indigo-50 border-indigo-500"
-                        : "bg-slate-50 border-slate-100"
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-bold capitalize ${
-                        imageLevel === level ? "text-indigo-600" : "text-slate-400"
+                {(["beginner", "intermediate", "advanced"] as const).map(
+                  (level) => (
+                    <Pressable
+                      key={level}
+                      onPress={() => !imageLoading && setImageLevel(level)}
+                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
+                        imageLevel === level
+                          ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
+                          : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
                       }`}
                     >
-                      {level}
-                    </Text>
-                  </Pressable>
-                ))}
+                      <Text
+                        className={`text-xs font-bold capitalize ${
+                          imageLevel === level
+                            ? "text-indigo-600"
+                            : "text-slate-400"
+                        }`}
+                      >
+                        {level}
+                      </Text>
+                    </Pressable>
+                  ),
+                )}
               </View>
             </View>
           </View>
@@ -683,10 +755,12 @@ Guidelines:
                 setImageUri(null);
                 setImageBase64(null);
               }}
-              className="flex-1 py-3 bg-slate-100 rounded-xl items-center"
+              className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl items-center"
               disabled={imageLoading}
             >
-              <Text className="text-slate-600 font-semibold">Cancel</Text>
+              <Text className="text-slate-600 dark:text-slate-300 font-semibold">
+                Cancel
+              </Text>
             </Pressable>
             <Pressable
               onPress={handleImageGenerate}
@@ -708,11 +782,11 @@ Guidelines:
       </Modal>
 
       {/* Footer */}
-      <View className="p-6 border-t border-slate-100 flex-row gap-3 bg-white">
+      <View className="p-6 border-t border-slate-100 dark:border-slate-800 flex-row gap-3 bg-white dark:bg-slate-900">
         {deck && (
           <Pressable
             onPress={() => onDelete(deck.id)}
-            className="p-4 bg-red-50 rounded-2xl"
+            className="p-4 bg-red-50 dark:bg-red-900/20 rounded-2xl"
           >
             <Trash2 size={24} color="#dc2626" />
           </Pressable>

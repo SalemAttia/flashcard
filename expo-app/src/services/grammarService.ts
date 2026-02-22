@@ -11,10 +11,11 @@ function getOpenAIClient(): OpenAI | null {
 
 export async function generateGrammarQuestions(
   topicConfig: GrammarTopicConfig | null,
-  options?: { customTopic?: string; questionCount?: number }
+  options?: { customTopic?: string; questionCount?: number },
 ): Promise<GrammarQuestion[]> {
   const openai = getOpenAIClient();
-  const topicLabel = options?.customTopic || topicConfig?.label || "General Danish Grammar";
+  const topicLabel =
+    options?.customTopic || topicConfig?.label || "General Danish Grammar";
   const topicLabelDa = topicConfig?.labelDa || topicLabel;
   const count = options?.questionCount || topicConfig?.questionCount || 10;
   const topicId = topicConfig?.id || ("custom" as GrammarTopicId);
@@ -74,7 +75,7 @@ Rules:
         q.options.length >= 2 &&
         typeof q.correctAnswer === "string" &&
         q.correctAnswer.length > 0 &&
-        typeof q.sentence === "string"
+        typeof q.sentence === "string",
     );
 
     if (valid.length === 0) throw new Error("No valid questions in response");
@@ -87,7 +88,7 @@ Rules:
   } catch (error) {
     console.warn(
       "AI grammar question generation failed, using local fallback:",
-      error
+      error,
     );
     if (topicConfig) {
       return generateLocalGrammarQuestions(topicConfig, count);
@@ -98,7 +99,7 @@ Rules:
 
 export async function generateGrammarExplanation(
   topicLabel: string,
-  topicLabelDa?: string
+  topicLabelDa?: string,
 ): Promise<string> {
   const openai = getOpenAIClient();
 
@@ -131,7 +132,10 @@ Keep it concise — this is a quick refresher, not a full lesson.`,
       ],
     });
 
-    return response.choices[0]?.message?.content?.trim() || "No explanation available.";
+    return (
+      response.choices[0]?.message?.content?.trim() ||
+      "No explanation available."
+    );
   } catch (error) {
     console.warn("AI grammar explanation failed:", error);
     return `**${topicLabel}**\n\nFailed to generate explanation. Please check your internet connection and try again.`;
@@ -140,7 +144,7 @@ Keep it concise — this is a quick refresher, not a full lesson.`,
 
 function generateLocalGrammarQuestions(
   topicConfig: GrammarTopicConfig,
-  count: number
+  count: number,
 ): GrammarQuestion[] {
   const fallbacks: Partial<
     Record<GrammarTopicId, Omit<GrammarQuestion, "id" | "topicId">[]>
@@ -152,7 +156,7 @@ function generateLocalGrammarQuestions(
         options: ["En", "Et", "Den", "Det"],
         correctAnswer: "Den",
         explanation:
-          "\"Hund\" is a common gender (en) noun. When using the definite form with an adjective, we use \"den\" for common gender nouns.",
+          '"Hund" is a common gender (en) noun. When using the definite form with an adjective, we use "den" for common gender nouns.',
       },
       {
         type: "multiple-choice",
@@ -160,7 +164,7 @@ function generateLocalGrammarQuestions(
         options: ["en", "et", "den", "det"],
         correctAnswer: "en",
         explanation:
-          "\"Bil\" is a common gender noun, so it takes the indefinite article \"en\".",
+          '"Bil" is a common gender noun, so it takes the indefinite article "en".',
       },
       {
         type: "fill-in-the-blank",
@@ -168,7 +172,7 @@ function generateLocalGrammarQuestions(
         options: ["Et", "En", "Det", "Den"],
         correctAnswer: "Et",
         explanation:
-          "\"Barn\" is a neuter gender (et) noun, so it takes the indefinite article \"et\".",
+          '"Barn" is a neuter gender (et) noun, so it takes the indefinite article "et".',
       },
       {
         type: "multiple-choice",
@@ -176,7 +180,7 @@ function generateLocalGrammarQuestions(
         options: ["den", "det", "en", "et"],
         correctAnswer: "det",
         explanation:
-          "\"Hus\" is a neuter gender (et) noun. When using the definite form with an adjective, we use \"det\" for neuter nouns.",
+          '"Hus" is a neuter gender (et) noun. When using the definite form with an adjective, we use "det" for neuter nouns.',
       },
       {
         type: "fill-in-the-blank",
@@ -184,7 +188,7 @@ function generateLocalGrammarQuestions(
         options: ["en", "et", "den", "det"],
         correctAnswer: "en",
         explanation:
-          "\"Bog\" is a common gender noun, so it takes the indefinite article \"en\".",
+          '"Bog" is a common gender noun, so it takes the indefinite article "en".',
       },
     ],
     "verb-tenses": [
@@ -194,7 +198,7 @@ function generateLocalGrammarQuestions(
         options: ["læser", "læste", "har læst", "vil læse"],
         correctAnswer: "læser",
         explanation:
-          "\"Hver dag\" (every day) indicates a habitual action, which requires the present tense \"læser\".",
+          '"Hver dag" (every day) indicates a habitual action, which requires the present tense "læser".',
       },
       {
         type: "fill-in-the-blank",
@@ -202,7 +206,7 @@ function generateLocalGrammarQuestions(
         options: ["går", "gik", "har gået", "vil gå"],
         correctAnswer: "gik",
         explanation:
-          "\"I går\" (yesterday) indicates past tense. The past tense of \"gå\" is \"gik\".",
+          '"I går" (yesterday) indicates past tense. The past tense of "gå" is "gik".',
       },
       {
         type: "multiple-choice",
@@ -210,7 +214,7 @@ function generateLocalGrammarQuestions(
         options: ["spiser", "spiste", "har spist", "vil spise"],
         correctAnswer: "har spist",
         explanation:
-          "\"Allerede\" (already) often signals the perfect tense \"har spist\" (has eaten).",
+          '"Allerede" (already) often signals the perfect tense "har spist" (has eaten).',
       },
       {
         type: "multiple-choice",
@@ -218,7 +222,7 @@ function generateLocalGrammarQuestions(
         options: ["rejser", "rejste", "har rejst", "vil rejse"],
         correctAnswer: "vil rejse",
         explanation:
-          "\"I morgen\" (tomorrow) indicates future. Danish uses \"vil\" + infinitive for future plans.",
+          '"I morgen" (tomorrow) indicates future. Danish uses "vil" + infinitive for future plans.',
       },
       {
         type: "fill-in-the-blank",
@@ -226,7 +230,7 @@ function generateLocalGrammarQuestions(
         options: ["bor", "boede", "har boet", "vil bo"],
         correctAnswer: "har boet",
         explanation:
-          "\"I fem år\" (for five years) with a continuing relevance to the present uses the perfect tense \"har boet\".",
+          '"I fem år" (for five years) with a continuing relevance to the present uses the perfect tense "har boet".',
       },
     ],
     prepositions: [
@@ -236,7 +240,7 @@ function generateLocalGrammarQuestions(
         options: ["i", "på", "til", "fra"],
         correctAnswer: "i",
         explanation:
-          "We use \"i\" for cities and countries: \"Jeg bor i København\" (I live in Copenhagen).",
+          'We use "i" for cities and countries: "Jeg bor i København" (I live in Copenhagen).',
       },
       {
         type: "fill-in-the-blank",
@@ -244,7 +248,7 @@ function generateLocalGrammarQuestions(
         options: ["på", "i", "til", "ved"],
         correctAnswer: "på",
         explanation:
-          "\"På\" is used for surfaces. The book is on the table: \"på bordet\".",
+          '"På" is used for surfaces. The book is on the table: "på bordet".',
       },
       {
         type: "multiple-choice",
@@ -252,7 +256,7 @@ function generateLocalGrammarQuestions(
         options: ["i", "til", "på", "fra"],
         correctAnswer: "i",
         explanation:
-          "Danish uses \"i skole\" (to/in school) as a fixed expression.",
+          'Danish uses "i skole" (to/in school) as a fixed expression.',
       },
       {
         type: "fill-in-the-blank",
@@ -260,13 +264,13 @@ function generateLocalGrammarQuestions(
         options: ["fra", "i", "til", "på"],
         correctAnswer: "fra",
         explanation:
-          "\"Fra\" means \"from\". She comes from Sweden: \"fra Sverige\".",
+          '"Fra" means "from". She comes from Sweden: "fra Sverige".',
       },
     ],
     "word-order": [
       {
         type: "multiple-choice",
-        sentence: "Which is the correct word order? \"I morgen...\"",
+        sentence: 'Which is the correct word order? "I morgen..."',
         options: [
           "I morgen jeg går til skole.",
           "I morgen går jeg til skole.",
@@ -275,7 +279,7 @@ function generateLocalGrammarQuestions(
         ],
         correctAnswer: "I morgen går jeg til skole.",
         explanation:
-          "Danish follows the V2 rule: the verb must be in the second position. When the sentence starts with an adverb (\"I morgen\"), the verb comes next, then the subject.",
+          'Danish follows the V2 rule: the verb must be in the second position. When the sentence starts with an adverb ("I morgen"), the verb comes next, then the subject.',
       },
       {
         type: "multiple-choice",
@@ -288,7 +292,7 @@ function generateLocalGrammarQuestions(
         ],
         correctAnswer: "Jeg kan ikke forstå det.",
         explanation:
-          "In main clauses, \"ikke\" comes after the finite verb: subject + verb + ikke.",
+          'In main clauses, "ikke" comes after the finite verb: subject + verb + ikke.',
       },
       {
         type: "fill-in-the-blank",
@@ -296,7 +300,7 @@ function generateLocalGrammarQuestions(
         options: ["gik", "hun gik", "gik hun", "hun"],
         correctAnswer: "gik",
         explanation:
-          "After an adverb like \"derefter\" (afterwards), the V2 rule places the verb directly after, then the subject: \"Derefter gik hun hjem.\"",
+          'After an adverb like "derefter" (afterwards), the V2 rule places the verb directly after, then the subject: "Derefter gik hun hjem."',
       },
     ],
   };
@@ -310,7 +314,7 @@ function generateLocalGrammarQuestions(
 
   if (!fallbacks[topicConfig.id]) {
     console.warn(
-      `No local fallback for topic "${topicConfig.id}". Using articles fallback.`
+      `No local fallback for topic "${topicConfig.id}". Using articles fallback.`,
     );
   }
 
@@ -328,7 +332,7 @@ function generateLocalGrammarQuestions(
 }
 
 export async function generateGrammarTopicTitle(
-  rawDescription: string
+  rawDescription: string,
 ): Promise<string> {
   const openai = getOpenAIClient();
   if (!openai) {

@@ -10,7 +10,11 @@ interface LanguagePickerProps {
   label: string;
 }
 
-export function LanguagePicker({ value, onChange, label }: LanguagePickerProps) {
+export function LanguagePicker({
+  value,
+  onChange,
+  label,
+}: LanguagePickerProps) {
   const [open, setOpen] = useState(false);
   const selected = LANGUAGES.find((l) => l.value === value);
 
@@ -22,9 +26,9 @@ export function LanguagePicker({ value, onChange, label }: LanguagePickerProps) 
         </Text>
         <Pressable
           onPress={() => setOpen(true)}
-          className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 flex-row items-center justify-between"
+          className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 flex-row items-center justify-between"
         >
-          <Text className="text-sm font-medium">
+          <Text className="text-sm font-medium dark:text-white">
             {selected?.flag} {selected?.label}
           </Text>
           <ChevronDown size={16} color="#94a3b8" />
@@ -36,7 +40,7 @@ export function LanguagePicker({ value, onChange, label }: LanguagePickerProps) 
           className="flex-1 bg-black/40"
           onPress={() => setOpen(false)}
         />
-        <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
           <Text className="font-bold text-lg mb-4">{label}</Text>
           {LANGUAGES.map((lang) => (
             <Pressable
@@ -45,9 +49,9 @@ export function LanguagePicker({ value, onChange, label }: LanguagePickerProps) 
                 onChange(lang.value);
                 setOpen(false);
               }}
-              className="flex-row items-center justify-between py-4 border-b border-slate-100"
+              className="flex-row items-center justify-between py-4 border-b border-slate-100 dark:border-slate-800"
             >
-              <Text className="text-base font-medium">
+              <Text className="text-base font-medium dark:text-white">
                 {lang.flag} {lang.label}
               </Text>
               {lang.value === value && <Check size={20} color="#4f46e5" />}

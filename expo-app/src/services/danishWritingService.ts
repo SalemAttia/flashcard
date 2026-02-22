@@ -12,7 +12,7 @@ function getOpenAIClient(): OpenAI | null {
 export async function generateWritingPrompts(
   levelConfig: LevelConfig,
   deck?: Deck | null,
-  topic?: string | null
+  topic?: string | null,
 ): Promise<WritingPrompt[]> {
   const openai = getOpenAIClient();
 
@@ -79,34 +79,135 @@ Return ONLY the JSON array.`,
 function generateLocalPrompts(
   levelConfig: LevelConfig,
   deck?: Deck | null,
-  topic?: string | null
+  topic?: string | null,
 ): WritingPrompt[] {
-  const contextWords = deck
-    ? deck.cards.slice(0, 5).map((c) => c.back)
-    : [];
+  const contextWords = deck ? deck.cards.slice(0, 5).map((c) => c.back) : [];
 
-  const promptsByLevel: Record<WritingLevel, Array<{ instruction: string; instructionDa: string; hints: string[] }>> = {
+  const promptsByLevel: Record<
+    WritingLevel,
+    Array<{ instruction: string; instructionDa: string; hints: string[] }>
+  > = {
     a1: [
-      { instruction: "Præsenter dig selv på dansk med dit navn og hvor du er fra.", instructionDa: "Introduce yourself in Danish with your name and where you are from.", hints: ["Jeg hedder...", "Jeg er fra...", "Jeg bor i..."] },
-      { instruction: "Skriv en kort liste over dine yndlingsretter på dansk.", instructionDa: "Write a short list of your favourite foods in Danish.", hints: ["Jeg kan lide...", "Min favorit er...", "Jeg spiser..."] },
-      { instruction: "Beskriv dine familiemedlemmer med korte danske sætninger.", instructionDa: "Describe your family members in short Danish sentences.", hints: ["Min mor hedder...", "Jeg har...", "Han/Hun er..."] },
+      {
+        instruction:
+          "Præsenter dig selv på dansk med dit navn og hvor du er fra.",
+        instructionDa:
+          "Introduce yourself in Danish with your name and where you are from.",
+        hints: ["Jeg hedder...", "Jeg er fra...", "Jeg bor i..."],
+      },
+      {
+        instruction: "Skriv en kort liste over dine yndlingsretter på dansk.",
+        instructionDa: "Write a short list of your favourite foods in Danish.",
+        hints: ["Jeg kan lide...", "Min favorit er...", "Jeg spiser..."],
+      },
+      {
+        instruction:
+          "Beskriv dine familiemedlemmer med korte danske sætninger.",
+        instructionDa:
+          "Describe your family members in short Danish sentences.",
+        hints: ["Min mor hedder...", "Jeg har...", "Han/Hun er..."],
+      },
     ],
     a2: [
-      { instruction: "Skriv et kort afsnit om din daglige rutine på dansk.", instructionDa: "Write a short paragraph about your daily routine in Danish.", hints: ["Om morgenen...", "Derefter...", "Om aftenen..."] },
-      { instruction: "Fortæl om din sidste weekend på dansk — hvad lavede du?", instructionDa: "Write about your last weekend in Danish — what did you do?", hints: ["I weekenden...", "Jeg gik til...", "Det var..."] },
-      { instruction: "Beskriv dit hjem på dansk. Hvilke rum har du, og hvad er der i dem?", instructionDa: "Describe your home in Danish. What rooms do you have and what is in them?", hints: ["Mit hus har...", "I stuen er der...", "Køkkenet er..."] },
-      { instruction: "Skriv om din bedste ven på dansk. Hvordan mødte I hinanden?", instructionDa: "Write about your best friend in Danish. How did you meet?", hints: ["Min bedste ven hedder...", "Vi mødte hinanden...", "Vi kan lide at..."] },
+      {
+        instruction: "Skriv et kort afsnit om din daglige rutine på dansk.",
+        instructionDa:
+          "Write a short paragraph about your daily routine in Danish.",
+        hints: ["Om morgenen...", "Derefter...", "Om aftenen..."],
+      },
+      {
+        instruction: "Fortæl om din sidste weekend på dansk — hvad lavede du?",
+        instructionDa:
+          "Write about your last weekend in Danish — what did you do?",
+        hints: ["I weekenden...", "Jeg gik til...", "Det var..."],
+      },
+      {
+        instruction:
+          "Beskriv dit hjem på dansk. Hvilke rum har du, og hvad er der i dem?",
+        instructionDa:
+          "Describe your home in Danish. What rooms do you have and what is in them?",
+        hints: ["Mit hus har...", "I stuen er der...", "Køkkenet er..."],
+      },
+      {
+        instruction:
+          "Skriv om din bedste ven på dansk. Hvordan mødte I hinanden?",
+        instructionDa:
+          "Write about your best friend in Danish. How did you meet?",
+        hints: [
+          "Min bedste ven hedder...",
+          "Vi mødte hinanden...",
+          "Vi kan lide at...",
+        ],
+      },
     ],
     b1: [
-      { instruction: "Skriv et brev til en ven på dansk om en tur du har taget for nylig.", instructionDa: "Write a letter to a friend in Danish about a recent trip you took.", hints: ["Kære...", "Jeg rejste til...", "Det mest interessante var..."] },
-      { instruction: "Skriv et afsnit på dansk om hvorfor det er vigtigt at lære sprog.", instructionDa: "Write a paragraph in Danish about why learning languages is important.", hints: ["Jeg mener at...", "For det første...", "Derudover..."] },
-      { instruction: "Beskriv et problem i dit nabolag og foreslå en løsning på dansk.", instructionDa: "Describe a problem in your neighbourhood and suggest a solution in Danish.", hints: ["Et problem i mit kvarter er...", "Dette påvirker...", "En løsning kunne være..."] },
-      { instruction: "Skriv om en dansk tradition eller kulturel begivenhed du synes er interessant.", instructionDa: "Write about a Danish tradition or cultural event you find interesting.", hints: ["En vigtig tradition er...", "Folk fejrer det ved at...", "Det er vigtigt fordi..."] },
+      {
+        instruction:
+          "Skriv et brev til en ven på dansk om en tur du har taget for nylig.",
+        instructionDa:
+          "Write a letter to a friend in Danish about a recent trip you took.",
+        hints: ["Kære...", "Jeg rejste til...", "Det mest interessante var..."],
+      },
+      {
+        instruction:
+          "Skriv et afsnit på dansk om hvorfor det er vigtigt at lære sprog.",
+        instructionDa:
+          "Write a paragraph in Danish about why learning languages is important.",
+        hints: ["Jeg mener at...", "For det første...", "Derudover..."],
+      },
+      {
+        instruction:
+          "Beskriv et problem i dit nabolag og foreslå en løsning på dansk.",
+        instructionDa:
+          "Describe a problem in your neighbourhood and suggest a solution in Danish.",
+        hints: [
+          "Et problem i mit kvarter er...",
+          "Dette påvirker...",
+          "En løsning kunne være...",
+        ],
+      },
+      {
+        instruction:
+          "Skriv om en dansk tradition eller kulturel begivenhed du synes er interessant.",
+        instructionDa:
+          "Write about a Danish tradition or cultural event you find interesting.",
+        hints: [
+          "En vigtig tradition er...",
+          "Folk fejrer det ved at...",
+          "Det er vigtigt fordi...",
+        ],
+      },
     ],
     b2: [
-      { instruction: "Skriv et essay på dansk om fordele og ulemper ved sociale medier i det moderne danske samfund.", instructionDa: "Write an essay in Danish about the advantages and disadvantages of social media in modern Danish society.", hints: ["På den ene side...", "Ikke desto mindre...", "Alt i alt..."] },
-      { instruction: "Skriv et detaljeret svar på en jobannonce på dansk. Forklar dine kvalifikationer og motivation.", instructionDa: "Write a detailed response to a job advertisement in Danish. Explain your qualifications and motivation.", hints: ["Med henvisning til...", "Jeg har erfaring med...", "Jeg ser frem til..."] },
-      { instruction: "Skriv om udfordringerne ved at integrere sig i en ny kultur, med fokus på Danmark.", instructionDa: "Write about the challenges of integrating into a new culture, focusing on Denmark.", hints: ["Integration indebærer...", "En af de største udfordringer...", "Samfundet bør..."] },
+      {
+        instruction:
+          "Skriv et essay på dansk om fordele og ulemper ved sociale medier i det moderne danske samfund.",
+        instructionDa:
+          "Write an essay in Danish about the advantages and disadvantages of social media in modern Danish society.",
+        hints: ["På den ene side...", "Ikke desto mindre...", "Alt i alt..."],
+      },
+      {
+        instruction:
+          "Skriv et detaljeret svar på en jobannonce på dansk. Forklar dine kvalifikationer og motivation.",
+        instructionDa:
+          "Write a detailed response to a job advertisement in Danish. Explain your qualifications and motivation.",
+        hints: [
+          "Med henvisning til...",
+          "Jeg har erfaring med...",
+          "Jeg ser frem til...",
+        ],
+      },
+      {
+        instruction:
+          "Skriv om udfordringerne ved at integrere sig i en ny kultur, med fokus på Danmark.",
+        instructionDa:
+          "Write about the challenges of integrating into a new culture, focusing on Denmark.",
+        hints: [
+          "Integration indebærer...",
+          "En af de største udfordringer...",
+          "Samfundet bør...",
+        ],
+      },
     ],
   };
 
@@ -126,7 +227,7 @@ function generateLocalPrompts(
 export async function evaluateWriting(
   prompt: WritingPrompt,
   userText: string,
-  levelConfig: LevelConfig
+  levelConfig: LevelConfig,
 ): Promise<WritingEvaluation> {
   const openai = getOpenAIClient();
 
@@ -205,7 +306,7 @@ Return a JSON object with this exact schema:
 function localFallbackEvaluation(
   prompt: WritingPrompt,
   userText: string,
-  levelConfig: LevelConfig
+  levelConfig: LevelConfig,
 ): WritingEvaluation {
   const wordCount = userText.trim().split(/\s+/).filter(Boolean).length;
   const meetsMinWords = wordCount >= prompt.minWords;
@@ -216,7 +317,12 @@ function localFallbackEvaluation(
   else score += Math.round((wordCount / prompt.minWords) * 40);
   if (hasDanishChars) score += 20;
   if (wordCount > 0) score += 20;
-  if (userText.includes(".") || userText.includes("!") || userText.includes("?")) score += 10;
+  if (
+    userText.includes(".") ||
+    userText.includes("!") ||
+    userText.includes("?")
+  )
+    score += 10;
   if (userText[0] === userText[0]?.toUpperCase()) score += 10;
 
   score = Math.min(score, 100);
@@ -234,7 +340,8 @@ function localFallbackEvaluation(
       fluency: meetsMinWords
         ? `Good length — ${wordCount} words (minimum: ${prompt.minWords}).`
         : `Too short — ${wordCount} words (minimum: ${prompt.minWords}).`,
-      overall: "This is a basic evaluation without AI. Connect an OpenAI API key for detailed feedback.",
+      overall:
+        "This is a basic evaluation without AI. Connect an OpenAI API key for detailed feedback.",
     },
   };
 }

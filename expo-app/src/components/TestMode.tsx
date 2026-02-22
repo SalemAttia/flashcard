@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Pressable, TextInput, ScrollView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  TextInput,
+  ScrollView,
+  Platform,
+} from "react-native";
 import {
   X,
   Check,
@@ -59,7 +66,7 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
     spinRotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
     generateQuestions();
     return () => {
@@ -92,7 +99,7 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
           easing: Easing.inOut(Easing.ease),
         }),
         -1,
-        true
+        true,
       );
     } else {
       speakingPulse.value = withTiming(1, { duration: 200 });
@@ -119,14 +126,18 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
     Speech.stop();
     setIsSpeaking(true);
 
-    if (Platform.OS === "web" && typeof window !== "undefined" && window.speechSynthesis) {
+    if (
+      Platform.OS === "web" &&
+      typeof window !== "undefined" &&
+      window.speechSynthesis
+    ) {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = lang;
 
       const voices = await getVoicesAsync();
       const langPrefix = lang.split("-")[0];
       const match = voices.find(
-        (v) => v.lang === lang || v.lang.startsWith(langPrefix + "-")
+        (v) => v.lang === lang || v.lang.startsWith(langPrefix + "-"),
       );
 
       if (match) {
@@ -135,7 +146,8 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
         Toast.show({
           type: "error",
           text1: `No ${lang} voice found`,
-          text2: "Install a Danish voice: Settings → Accessibility → Spoken Content → Voices.",
+          text2:
+            "Install a Danish voice: Settings → Accessibility → Spoken Content → Voices.",
         });
         setIsSpeaking(false);
         return;
@@ -358,7 +370,7 @@ Return ONLY the JSON array.`,
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center p-8 gap-6">
+      <View className="flex-1 bg-white dark:bg-slate-950 items-center justify-center p-8 gap-6">
         <View className="relative items-center justify-center">
           <Animated.View
             style={[
@@ -370,6 +382,7 @@ Return ONLY the JSON array.`,
                 borderWidth: 4,
                 borderColor: "#e0e7ff",
                 borderTopColor: "#4f46e5",
+                backgroundColor: "transparent",
               },
             ]}
           />
@@ -378,7 +391,7 @@ Return ONLY the JSON array.`,
           </View>
         </View>
         <View className="items-center gap-2">
-          <Text className="text-xl font-bold text-slate-800">
+          <Text className="text-xl font-bold text-slate-800 dark:text-white">
             AI is crafting your test...
           </Text>
           <Text className="text-slate-500 text-sm text-center max-w-[240px]">
@@ -403,9 +416,9 @@ Return ONLY the JSON array.`,
     : userAnswer === current.correctAnswer;
 
   return (
-    <View className="flex-1 bg-slate-50">
+    <View className="flex-1 bg-slate-50 dark:bg-slate-950">
       {/* Header */}
-      <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
+      <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable
           onPress={() => {
             Speech.stop();
@@ -422,7 +435,10 @@ Return ONLY the JSON array.`,
               AI Test Mode
             </Text>
           </View>
-          <Text className="font-semibold text-sm" numberOfLines={1}>
+          <Text
+            className="font-semibold text-sm text-slate-900 dark:text-white"
+            numberOfLines={1}
+          >
             {deck.title}
           </Text>
         </View>
@@ -430,7 +446,7 @@ Return ONLY the JSON array.`,
       </View>
 
       {/* Progress */}
-      <View className="px-6 py-4 bg-white border-b border-slate-100">
+      <View className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
             Progress
@@ -439,7 +455,7 @@ Return ONLY the JSON array.`,
             {currentIndex + 1} / {questions.length}
           </Text>
         </View>
-        <View className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+        <View className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <View
             style={{ width: `${progressPercent}%` }}
             className="h-full bg-indigo-500 rounded-full"
@@ -455,7 +471,7 @@ Return ONLY the JSON array.`,
       >
         <View className="w-full max-w-[384px] gap-8">
           <View className="items-center gap-4">
-            <View className="px-3 py-1 bg-indigo-50 rounded-full">
+            <View className="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/30 rounded-full">
               <Text className="text-indigo-600 text-[10px] font-bold uppercase tracking-widest">
                 {current.type === "sound"
                   ? "listening"
@@ -465,7 +481,7 @@ Return ONLY the JSON array.`,
 
             {/* Non-sound prompt */}
             {current.type !== "sound" && (
-              <Text className="text-2xl font-bold text-slate-800 text-center leading-relaxed">
+              <Text className="text-2xl font-bold text-slate-800 dark:text-white text-center leading-relaxed">
                 {current.prompt}
               </Text>
             )}
@@ -473,7 +489,7 @@ Return ONLY the JSON array.`,
             {/* Sound prompt: speaker button */}
             {current.type === "sound" && (
               <View className="items-center gap-4">
-                <Text className="text-base text-slate-500 text-center">
+                <Text className="text-base text-slate-500 dark:text-slate-400 text-center">
                   {current.prompt}
                 </Text>
                 <Pressable
@@ -527,11 +543,13 @@ Return ONLY the JSON array.`,
                     className={`w-full p-4 rounded-2xl border-2 ${
                       showFeedback
                         ? isCorrectOption
-                          ? "bg-green-50 border-green-500"
+                          ? "bg-green-50 dark:bg-green-950/20 border-green-500"
                           : isSelected
-                          ? "bg-red-50 border-red-500"
-                          : "bg-white border-slate-100"
-                        : "bg-white border-slate-100"
+                            ? "bg-red-50 dark:bg-red-900/20 border-red-500"
+                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                        : isSelected
+                          ? "bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500"
+                          : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
                     }`}
                     style={({ pressed }) =>
                       !showFeedback
@@ -544,11 +562,11 @@ Return ONLY the JSON array.`,
                         className={`font-medium ${
                           showFeedback
                             ? isCorrectOption
-                              ? "text-green-700"
+                              ? "text-green-700 dark:text-green-400"
                               : isSelected
-                              ? "text-red-700"
-                              : "text-slate-400"
-                            : "text-slate-800"
+                                ? "text-red-700 dark:text-red-400"
+                                : "text-slate-400 dark:text-slate-600"
+                            : "text-slate-800 dark:text-white"
                         }`}
                       >
                         {option}
@@ -578,11 +596,11 @@ Return ONLY the JSON array.`,
                       className={`flex-1 p-6 rounded-2xl border-2 items-center ${
                         showFeedback
                           ? isCorrectVal
-                            ? "bg-green-50 border-green-500"
+                            ? "bg-green-50 dark:bg-green-950/20 border-green-500"
                             : isSelected
-                            ? "bg-red-50 border-red-500"
-                            : "bg-white border-slate-100"
-                          : "bg-white border-slate-100"
+                              ? "bg-red-50 dark:bg-red-950/20 border-red-500"
+                              : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                          : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
                       }`}
                       style={({ pressed }) =>
                         !showFeedback
@@ -596,9 +614,9 @@ Return ONLY the JSON array.`,
                             ? isCorrectVal
                               ? "text-green-700"
                               : isSelected
-                              ? "text-red-700"
-                              : "text-slate-400"
-                            : "text-slate-700"
+                                ? "text-red-700 dark:text-red-400"
+                                : "text-slate-400 dark:text-slate-600"
+                            : "text-slate-700 dark:text-white"
                         }`}
                       >
                         {val}
@@ -624,9 +642,9 @@ Return ONLY the JSON array.`,
                   className={`w-full p-4 rounded-2xl border-2 text-base ${
                     showFeedback
                       ? isAnswerCorrect
-                        ? "bg-green-50 border-green-500 text-green-700"
-                        : "bg-red-50 border-red-500 text-red-700"
-                      : "bg-white border-slate-200 text-slate-900"
+                        ? "bg-green-50 dark:bg-green-950/20 border-green-500 text-green-700 dark:text-green-400"
+                        : "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-700 dark:text-red-400"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
                   }`}
                 />
                 {!showFeedback && (
@@ -659,11 +677,13 @@ Return ONLY the JSON array.`,
                     className={`w-full p-4 rounded-2xl border-2 ${
                       showFeedback
                         ? isCorrectOption
-                          ? "bg-green-50 border-green-500"
+                          ? "bg-green-50 dark:bg-green-950/20 border-green-500"
                           : isSelected
-                          ? "bg-red-50 border-red-500"
-                          : "bg-white border-slate-100"
-                        : "bg-white border-slate-100"
+                            ? "bg-red-50 dark:bg-red-950/20 border-red-500"
+                            : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
+                        : isSelected
+                          ? "bg-indigo-50 dark:bg-indigo-950/20 border-indigo-500"
+                          : "bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800"
                     }`}
                     style={({ pressed }) =>
                       !showFeedback
@@ -676,11 +696,11 @@ Return ONLY the JSON array.`,
                         className={`font-medium ${
                           showFeedback
                             ? isCorrectOption
-                              ? "text-green-700"
+                              ? "text-green-700 dark:text-green-400"
                               : isSelected
-                              ? "text-red-700"
-                              : "text-slate-400"
-                            : "text-slate-800"
+                                ? "text-red-700 dark:text-red-400"
+                                : "text-slate-400 dark:text-slate-600"
+                            : "text-slate-800 dark:text-white"
                         }`}
                       >
                         {option}
@@ -697,40 +717,39 @@ Return ONLY the JSON array.`,
               })}
 
             {/* Sound: written variant */}
-            {current.type === "sound" &&
-              current.soundVariant === "written" && (
-                <View className="gap-4">
-                  <TextInput
-                    editable={!showFeedback}
-                    value={userAnswer}
-                    onChangeText={setUserAnswer}
-                    onSubmitEditing={() => handleAnswer(userAnswer)}
-                    returnKeyType="done"
-                    placeholder="Type what you heard..."
-                    placeholderTextColor="#94a3b8"
-                    className={`w-full p-4 rounded-2xl border-2 text-base ${
-                      showFeedback
-                        ? isAnswerCorrect
-                          ? "bg-green-50 border-green-500 text-green-700"
-                          : "bg-red-50 border-red-500 text-red-700"
-                        : "bg-white border-slate-200 text-slate-900"
-                    }`}
-                  />
-                  {!showFeedback && (
-                    <Pressable
-                      onPress={() => handleAnswer(userAnswer)}
-                      className="w-full py-4 bg-indigo-600 rounded-2xl items-center"
-                      style={({ pressed }) => ({
-                        transform: [{ scale: pressed ? 0.98 : 1 }],
-                      })}
-                    >
-                      <Text className="text-white font-semibold">
-                        Check Answer
-                      </Text>
-                    </Pressable>
-                  )}
-                </View>
-              )}
+            {current.type === "sound" && current.soundVariant === "written" && (
+              <View className="gap-4">
+                <TextInput
+                  editable={!showFeedback}
+                  value={userAnswer}
+                  onChangeText={setUserAnswer}
+                  onSubmitEditing={() => handleAnswer(userAnswer)}
+                  returnKeyType="done"
+                  placeholder="Type what you heard..."
+                  placeholderTextColor="#94a3b8"
+                  className={`w-full p-4 rounded-2xl border-2 text-base ${
+                    showFeedback
+                      ? isAnswerCorrect
+                        ? "bg-green-50 dark:bg-green-950/20 border-green-500 text-green-700 dark:text-green-400"
+                        : "bg-red-50 dark:bg-red-950/20 border-red-500 text-red-700 dark:text-red-400"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white"
+                  }`}
+                />
+                {!showFeedback && (
+                  <Pressable
+                    onPress={() => handleAnswer(userAnswer)}
+                    className="w-full py-4 bg-indigo-600 rounded-2xl items-center"
+                    style={({ pressed }) => ({
+                      transform: [{ scale: pressed ? 0.98 : 1 }],
+                    })}
+                  >
+                    <Text className="text-white font-semibold">
+                      Check Answer
+                    </Text>
+                  </Pressable>
+                )}
+              </View>
+            )}
           </View>
 
           {/* Feedback */}
@@ -739,8 +758,8 @@ Return ONLY the JSON array.`,
               entering={FadeIn.duration(300)}
               className={`p-6 rounded-3xl border-2 gap-2 ${
                 isAnswerCorrect
-                  ? "bg-green-50 border-green-100"
-                  : "bg-red-50 border-red-100"
+                  ? "bg-green-50 dark:bg-green-950/20 border-green-100 dark:border-green-900/50"
+                  : "bg-red-50 dark:bg-red-950/20 border-red-100 dark:border-red-900/50"
               }`}
             >
               <View className="flex-row items-center gap-2">
@@ -751,7 +770,9 @@ Return ONLY the JSON array.`,
                 )}
                 <Text
                   className={`font-bold uppercase tracking-widest text-[10px] ${
-                    isAnswerCorrect ? "text-green-800" : "text-red-800"
+                    isAnswerCorrect
+                      ? "text-green-800 dark:text-green-300"
+                      : "text-red-800 dark:text-red-300"
                   }`}
                 >
                   {isAnswerCorrect ? "Brilliant!" : "Not quite"}
@@ -759,20 +780,27 @@ Return ONLY the JSON array.`,
               </View>
               <Text
                 className={`text-sm font-medium leading-relaxed ${
-                  isAnswerCorrect ? "text-green-800" : "text-red-800"
+                  isAnswerCorrect
+                    ? "text-green-800 dark:text-green-300"
+                    : "text-red-800 dark:text-red-300"
                 }`}
               >
                 {current.explanation}
               </Text>
               <Pressable
                 onPress={nextQuestion}
-                className="mt-4 w-full py-3 bg-white border border-slate-200 rounded-xl flex-row items-center justify-center gap-2"
+                className="mt-4 w-full py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl flex-row items-center justify-center gap-2"
                 style={({ pressed }) => ({
                   transform: [{ scale: pressed ? 0.95 : 1 }],
                 })}
               >
-                <Text className="text-slate-800 font-bold">Next Question</Text>
-                <ChevronRight size={18} color="#1e293b" />
+                <Text className="text-slate-800 dark:text-white font-bold">
+                  Next Question
+                </Text>
+                <ChevronRight
+                  size={18}
+                  color={isAnswerCorrect ? "#166534" : "#991b1b"}
+                />
               </Pressable>
             </Animated.View>
           )}

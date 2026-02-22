@@ -12,6 +12,10 @@ import Animated, {
 } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../src/firebase/config";
+import { useAuth } from "../src/context/AuthContext";
+import { sanitize } from "../src/utils/firestore";
 import { QuestionCard } from "../src/components/Grammar/QuestionCard";
 import { AnswerFeedback } from "../src/components/Grammar/AnswerFeedback";
 import { generateGrammarQuestions } from "../src/services/grammarService";
@@ -28,14 +32,22 @@ type SessionPhase = "generating" | "answering" | "feedback";
 const GRAMMAR_RESULT_KEY = "grammar_last_result";
 
 export default function GrammarSessionScreen() {
-  const { topicId, customTopic, questionCount: questionCountParam } =
-    useLocalSearchParams<{
-      topicId?: GrammarTopicId;
-      customTopic?: string;
-      questionCount?: string;
-    }>();
-  const topicConfig = topicId ? getTopicConfig(topicId as GrammarTopicId) : null;
-  const questionCount = questionCountParam ? parseInt(questionCountParam, 10) : 10;
+  const {
+    topicId,
+    customTopic,
+    questionCount: questionCountParam,
+  } = useLocalSearchParams<{
+    topicId?: GrammarTopicId;
+    customTopic?: string;
+    questionCount?: string;
+  }>();
+  const { user } = useAuth();
+  const topicConfig = topicId
+    ? getTopicConfig(topicId as GrammarTopicId)
+    : null;
+  const questionCount = questionCountParam
+    ? parseInt(questionCountParam, 10)
+    : 10;
   const displayLabel = customTopic || topicConfig?.label || "Grammar Quiz";
 
   const [phase, setPhase] = useState<SessionPhase>("generating");
@@ -50,7 +62,7 @@ export default function GrammarSessionScreen() {
     spinRotation.value = withRepeat(
       withTiming(360, { duration: 2000, easing: Easing.linear }),
       -1,
-      false
+      false,
     );
     loadQuestions();
   }, []);
@@ -122,6 +134,12 @@ export default function GrammarSessionScreen() {
         scorePercent,
       };
 
+      if (user) {
+        await setDoc(
+          doc(db, "users", user.uid, "results", "grammar"),
+          sanitize(result),
+        );
+      }
       await AsyncStorage.setItem(GRAMMAR_RESULT_KEY, JSON.stringify(result));
       router.replace("/grammar-summary");
     }
@@ -134,8 +152,12 @@ export default function GrammarSessionScreen() {
 
   if (phase === "generating") {
     return (
-      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-        <View className="p-4 flex-row items-center justify-between border-b border-slate-100">
+      <SafeAreaView
+        className="flex-1 bg-white dark:bg-slate-950"
+        edges={["top"]}
+      >
+      <View className="flex-1 w-full max-w-2xl self-center">
+        <View className="p-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
           <Pressable onPress={handleCancel} className="p-2 -ml-2">
             <X size={24} color="#64748b" />
           </Pressable>
@@ -143,7 +165,7 @@ export default function GrammarSessionScreen() {
             <Text className="text-xs font-bold text-indigo-600 uppercase tracking-widest">
               Grammar Quiz
             </Text>
-            <Text className="text-sm font-semibold text-slate-800">
+            <Text className="text-sm font-semibold text-slate-800 dark:text-white">
               {displayLabel}
             </Text>
           </View>
@@ -161,6 +183,7 @@ export default function GrammarSessionScreen() {
                   borderWidth: 4,
                   borderColor: "#e0e7ff",
                   borderTopColor: "#4f46e5",
+                  backgroundColor: "transparent",
                 },
               ]}
             />
@@ -169,7 +192,7 @@ export default function GrammarSessionScreen() {
             </View>
           </View>
           <View className="items-center gap-2">
-            <Text className="text-xl font-bold text-slate-800">
+            <Text className="text-xl font-bold text-slate-800 dark:text-white">
               Preparing your quiz...
             </Text>
             <Text className="text-slate-500 text-sm text-center max-w-[240px]">
@@ -177,6 +200,7 @@ export default function GrammarSessionScreen() {
             </Text>
           </View>
         </View>
+      </View>
       </SafeAreaView>
     );
   }
@@ -187,9 +211,13 @@ export default function GrammarSessionScreen() {
   const isCorrect = currentAnswer?.isCorrect ?? false;
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
+      <View className="flex-1 w-full max-w-2xl self-center">
       {/* Header */}
-      <View className="p-4 flex-row items-center justify-between bg-white border-b border-slate-100">
+      <View className="p-4 flex-row items-center justify-between bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <Pressable onPress={handleCancel} className="p-2 -ml-2">
           <X size={24} color="#64748b" />
         </Pressable>
@@ -200,7 +228,7 @@ export default function GrammarSessionScreen() {
               Grammar Quiz
             </Text>
           </View>
-          <Text className="text-sm font-semibold text-slate-800">
+          <Text className="text-sm font-semibold text-slate-800 dark:text-white">
             {displayLabel}
           </Text>
         </View>
@@ -208,7 +236,7 @@ export default function GrammarSessionScreen() {
       </View>
 
       {/* Progress */}
-      <View className="px-6 py-4 bg-white border-b border-slate-100">
+      <View className="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
         <View className="flex-row justify-between items-center mb-2">
           <Text className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
             Progress
@@ -217,7 +245,7 @@ export default function GrammarSessionScreen() {
             {currentIndex + 1} / {questions.length}
           </Text>
         </View>
-        <View className="h-1 w-full bg-slate-100 rounded-full overflow-hidden">
+        <View className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
           <View
             style={{ width: `${progressPercent}%` }}
             className="h-full bg-indigo-500 rounded-full"
@@ -226,10 +254,7 @@ export default function GrammarSessionScreen() {
       </View>
 
       {/* Content */}
-      <ScrollView
-        className="flex-1 p-6"
-        contentContainerClassName="pb-10"
-      >
+      <ScrollView className="flex-1 p-6" contentContainerClassName="pb-10">
         {phase === "answering" && (
           <QuestionCard
             question={currentQuestion}
@@ -249,6 +274,7 @@ export default function GrammarSessionScreen() {
           />
         )}
       </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }

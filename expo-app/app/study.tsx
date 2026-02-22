@@ -1,5 +1,5 @@
 import React from "react";
-import { ActivityIndicator } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useDecks } from "../src/store/useDecks";
@@ -11,7 +11,7 @@ export default function StudyScreen() {
 
   if (!loaded) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
@@ -24,13 +24,17 @@ export default function StudyScreen() {
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-slate-50" edges={["top"]}>
+    <SafeAreaView
+      className="flex-1 bg-slate-50 dark:bg-slate-950"
+      edges={["top"]}
+    >
+      <View className="flex-1 w-full max-w-2xl self-center">
       <StudySession
         deck={deck}
         onComplete={(correct, total) => {
           markStudied(deck.id);
           router.replace(
-            `/summary?correct=${correct}&total=${total}&isTest=false&deckId=${deck.id}`
+            `/summary?correct=${correct}&total=${total}&isTest=false&deckId=${deck.id}`,
           );
         }}
         onCancel={() => {
@@ -38,6 +42,7 @@ export default function StudyScreen() {
           else router.replace("/");
         }}
       />
+      </View>
     </SafeAreaView>
   );
 }

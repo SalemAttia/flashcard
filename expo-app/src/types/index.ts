@@ -172,6 +172,7 @@ export interface ChecklistItem {
   sublabel: string;
   timeOfDay: TimeOfDay;
   completedAt?: string;
+  manuallyUncompleted?: boolean;
 }
 
 export interface CustomTask {
@@ -183,6 +184,7 @@ export interface CustomTask {
   activeDays?: number[]; // 0=Sun, 1=Mon, ..., 6=Sat; undefined = every day
   subChecklist?: SubCheckItem[];
   completedAt?: string;
+  manuallyUncompleted?: boolean;
 }
 
 export interface DailyProgress {

@@ -47,6 +47,7 @@ import Animated, {
   runOnJS,
 } from "react-native-reanimated";
 import { useDailyProgress } from "../../src/store/useDailyProgress";
+import { useAuth } from "../../src/context/AuthContext";
 import {
   ChecklistItem,
   ChecklistItemId,
@@ -72,7 +73,12 @@ const TIME_OF_DAY_CONFIG: Record<
   { label: string; icon: typeof Sun; color: string; bg: string }
 > = {
   morning: { label: "Morning", icon: Sun, color: "#f59e0b", bg: "#fffbeb" },
-  afternoon: { label: "Afternoon", icon: Cloud, color: "#3b82f6", bg: "#eff6ff" },
+  afternoon: {
+    label: "Afternoon",
+    icon: Cloud,
+    color: "#3b82f6",
+    bg: "#eff6ff",
+  },
   evening: { label: "Evening", icon: Moon, color: "#8b5cf6", bg: "#f5f3ff" },
 };
 
@@ -111,7 +117,7 @@ function getWeekDays(weekOffset: number = 0): string[] {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     days.push(
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
     );
   }
   return days;
@@ -135,7 +141,8 @@ function WeekSummaryCard({
 }) {
   const today = getToday();
   const todayIdx = weekDays.indexOf(today);
-  const daysUpToToday = todayIdx >= 0 ? weekDays.slice(0, todayIdx + 1) : weekDays;
+  const daysUpToToday =
+    todayIdx >= 0 ? weekDays.slice(0, todayIdx + 1) : weekDays;
 
   let totalCompleted = 0;
   let totalTasks = 0;
@@ -148,15 +155,16 @@ function WeekSummaryCard({
     if (completed === total && total > 0) daysFullyDone++;
   }
 
-  const pct = totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
+  const pct =
+    totalTasks > 0 ? Math.round((totalCompleted / totalTasks) * 100) : 0;
 
   return (
-    <View className="mx-6 mb-4 bg-slate-50 rounded-2xl px-4 py-3 flex-row items-center justify-between">
+    <View className="mx-6 mb-4 bg-slate-50 dark:bg-slate-900 rounded-2xl px-4 py-3 flex-row items-center justify-between">
       <View className="flex-1">
-        <Text className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+        <Text className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">
           Week Summary
         </Text>
-        <Text className="text-slate-700 text-sm">
+        <Text className="text-slate-700 dark:text-slate-200 text-sm">
           <Text className="font-semibold">{totalCompleted}</Text>
           <Text>/{totalTasks} tasks</Text>
           <Text className="text-slate-400"> · </Text>
@@ -164,8 +172,10 @@ function WeekSummaryCard({
           <Text> perfect {daysFullyDone === 1 ? "day" : "days"}</Text>
         </Text>
       </View>
-      <View className="w-12 h-12 rounded-full bg-white items-center justify-center border-2 border-indigo-100">
-        <Text className="text-indigo-600 font-bold text-sm">{pct}%</Text>
+      <View className="w-12 h-12 rounded-full bg-white dark:bg-slate-800 items-center justify-center border-2 border-indigo-100 dark:border-indigo-900/30">
+        <Text className="text-indigo-600 dark:text-indigo-400 font-bold text-sm">
+          {pct}%
+        </Text>
       </View>
     </View>
   );
@@ -197,7 +207,7 @@ function WeekCalendarStrip({
           <ChevronLeft size={20} color="#64748b" />
         </Pressable>
         <Pressable>
-          <Text className="text-slate-600 text-xs font-semibold">
+          <Text className="text-slate-600 dark:text-slate-400 text-xs font-semibold">
             {isCurrentWeek ? "This Week" : getWeekLabel(weekDays)}
           </Text>
         </Pressable>
@@ -226,19 +236,15 @@ function WeekCalendarStrip({
                 {DAY_NAMES[i]}
               </Text>
               <View
-                className={`w-9 h-9 rounded-full items-center justify-center ${isSelected
-                  ? "bg-indigo-600"
-                  : isToday
-                    ? "bg-indigo-50"
-                    : ""
+                className={`w-9 h-9 rounded-full items-center justify-center ${isSelected ? "bg-indigo-600" : isToday ? "bg-indigo-50" : ""
                   }`}
               >
                 <Text
                   className={`text-sm font-semibold ${isSelected
-                    ? "text-white"
-                    : isToday
-                      ? "text-indigo-600"
-                      : "text-slate-700"
+                      ? "text-white"
+                      : isToday
+                        ? "text-indigo-600 dark:text-indigo-400"
+                        : "text-slate-700 dark:text-slate-300"
                     }`}
                 >
                   {dayNum}
@@ -247,7 +253,9 @@ function WeekCalendarStrip({
               {hasTasks && !isSelected && (
                 <View className="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1" />
               )}
-              {!hasTasks && !isSelected && <View className="w-1.5 h-1.5 mt-1" />}
+              {!hasTasks && !isSelected && (
+                <View className="w-1.5 h-1.5 mt-1" />
+              )}
             </Pressable>
           );
         })}
@@ -270,10 +278,12 @@ function StreakBadge({ count }: { count: number }) {
   return (
     <Animated.View
       style={style}
-      className="flex-row items-center bg-orange-50 px-3 py-1.5 rounded-full"
+      className="flex-row items-center bg-orange-50 dark:bg-orange-900/20 px-3 py-1.5 rounded-full"
     >
       <Flame size={16} color="#f97316" />
-      <Text className="text-orange-600 font-semibold text-sm ml-1">{count}</Text>
+      <Text className="text-orange-600 dark:text-orange-400 font-semibold text-sm ml-1">
+        {count}
+      </Text>
     </Animated.View>
   );
 }
@@ -290,7 +300,9 @@ function ProgressBar({
   const progress = useSharedValue(0);
 
   useEffect(() => {
-    progress.value = withTiming(total > 0 ? completed / total : 0, { duration: 600 });
+    progress.value = withTiming(total > 0 ? completed / total : 0, {
+      duration: 600,
+    });
   }, [completed, total]);
 
   const barStyle = useAnimatedStyle(() => {
@@ -312,7 +324,7 @@ function ProgressBar({
         </Text>
       </View>
       <View
-        className="h-2.5 bg-slate-100 rounded-full overflow-hidden"
+        className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
         onLayout={(e) => {
           containerWidth.value = e.nativeEvent.layout.width;
         }}
@@ -325,15 +337,20 @@ function ProgressBar({
 
 function MotivationalBanner({ completedCount }: { completedCount: number }) {
   const phrase =
-    MOTIVATIONAL_PHRASES[Math.min(completedCount, MOTIVATIONAL_PHRASES.length - 1)];
+    MOTIVATIONAL_PHRASES[
+    Math.min(completedCount, MOTIVATIONAL_PHRASES.length - 1)
+    ];
 
   return (
     <Animated.View
       key={completedCount}
       entering={FadeInDown.duration(400)}
-      className="mx-6 mb-5 bg-indigo-50 rounded-2xl px-4 py-3"
+      style={{ marginHorizontal: 24, marginBottom: 20 }}
+      className="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl px-4 py-3"
     >
-      <Text className="text-indigo-700 font-medium text-center">{phrase}</Text>
+      <Text className="text-indigo-700 dark:text-indigo-300 font-medium text-center">
+        {phrase}
+      </Text>
     </Animated.View>
   );
 }
@@ -406,7 +423,7 @@ function ChecklistRow({
     if (isCompleted) {
       checkScale.value = withSequence(
         withSpring(1.3, { damping: 8, stiffness: 200 }),
-        withSpring(1, { damping: 12, stiffness: 150 })
+        withSpring(1, { damping: 12, stiffness: 150 }),
       );
     } else {
       checkScale.value = withTiming(0, { duration: 200 });
@@ -423,7 +440,7 @@ function ChecklistRow({
   }));
 
   return (
-    <Animated.View style={rowStyle} className="mx-6 mb-3">
+    <Animated.View style={[rowStyle, { marginHorizontal: 24, marginBottom: 12 }]}>
       <Pressable
         onPress={() => {
           if (disabled) return;
@@ -433,7 +450,7 @@ function ChecklistRow({
             onComplete();
           }
         }}
-        className="flex-row items-center bg-white border border-slate-100 rounded-2xl px-4 py-3.5"
+        className="flex-row items-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5"
         style={({ pressed }) => ({
           transform: [{ scale: pressed && !disabled ? 0.98 : 1 }],
           opacity: disabled ? 0.5 : isCompleted ? 0.7 : 1,
@@ -447,7 +464,9 @@ function ChecklistRow({
         </View>
         <View className="flex-1">
           <Text
-            className={`font-medium text-base ${isCompleted ? "text-slate-400 line-through" : "text-slate-800"
+            className={`font-medium text-base ${isCompleted
+                ? "text-slate-400 dark:text-slate-600 line-through"
+                : "text-slate-800 dark:text-white"
               }`}
           >
             {item.label}
@@ -505,7 +524,7 @@ function CustomTaskRow({
     if (isCompleted) {
       checkScale.value = withSequence(
         withSpring(1.3, { damping: 8, stiffness: 200 }),
-        withSpring(1, { damping: 12, stiffness: 150 })
+        withSpring(1, { damping: 12, stiffness: 150 }),
       );
     } else {
       checkScale.value = withTiming(0, { duration: 200 });
@@ -530,7 +549,7 @@ function CustomTaskRow({
   };
 
   return (
-    <Animated.View style={rowStyle} className="mx-6 mb-3">
+    <Animated.View style={[rowStyle, { marginHorizontal: 24, marginBottom: 12 }]}>
       <Pressable
         onPress={() => {
           if (showDeleteOptions) {
@@ -546,7 +565,7 @@ function CustomTaskRow({
         onLongPress={() => {
           if (!disabled) onToggle();
         }}
-        className="flex-row items-center bg-white border border-slate-100 rounded-2xl px-4 py-3.5"
+        className="flex-row items-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-4 py-3.5"
         style={({ pressed }) => ({
           transform: [{ scale: pressed && !disabled ? 0.98 : 1 }],
           opacity: disabled ? 0.5 : isCompleted ? 0.7 : 1,
@@ -558,7 +577,9 @@ function CustomTaskRow({
         <View className="flex-1">
           <View className="flex-row items-center">
             <Text
-              className={`font-medium text-base ${isCompleted ? "text-slate-400 line-through" : "text-slate-800"
+              className={`font-medium text-base ${isCompleted
+                  ? "text-slate-400 dark:text-slate-600 line-through"
+                  : "text-slate-800 dark:text-white"
                 }`}
             >
               {task.label}
@@ -570,7 +591,9 @@ function CustomTaskRow({
             )}
           </View>
           {task.sublabel ? (
-            <Text className="text-slate-400 text-xs mt-0.5">{task.sublabel}</Text>
+            <Text className="text-slate-400 text-xs mt-0.5">
+              {task.sublabel}
+            </Text>
           ) : null}
           {hasSubs && (
             <View className="flex-row items-center mt-1">
@@ -596,16 +619,24 @@ function CustomTaskRow({
         {!hasSubs && (
           <Animated.View
             style={checkStyle}
-            className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+            className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
+                ? "bg-emerald-500"
+                : "border-2 border-slate-200 dark:border-slate-800"
               }`}
           >
             {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
           </Animated.View>
         )}
         {hasSubs && (
-          <Pressable onPress={() => { if (!disabled) onToggle(); }}>
+          <Pressable
+            onPress={() => {
+              if (!disabled) onToggle();
+            }}
+          >
             <View
-              className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted ? "bg-emerald-500" : "border-2 border-slate-200"
+              className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
+                  ? "bg-emerald-500"
+                  : "border-2 border-slate-200 dark:border-slate-800"
                 }`}
             >
               {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
@@ -616,24 +647,28 @@ function CustomTaskRow({
 
       {/* Inline delete options for recurring tasks */}
       {showDeleteOptions && (
-        <View className="mt-1 bg-white border border-slate-100 rounded-xl overflow-hidden">
+        <View className="mt-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden">
           <Pressable
             onPress={() => {
               setShowDeleteOptions(false);
               onRemove();
             }}
-            className="px-4 py-3 border-b border-slate-100"
+            className="px-4 py-3 border-b border-slate-100 dark:border-slate-800"
           >
-            <Text className="text-slate-700 text-sm font-medium">Remove today only</Text>
+            <Text className="text-slate-700 dark:text-slate-200 text-sm font-medium">
+              Remove today only
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => {
               setShowDeleteOptions(false);
               if (onRemoveRecurring) onRemoveRecurring();
             }}
-            className="px-4 py-3 border-b border-slate-100"
+            className="px-4 py-3 border-b border-slate-100 dark:border-slate-800"
           >
-            <Text className="text-red-500 text-sm font-medium">Stop recurring</Text>
+            <Text className="text-red-500 text-sm font-medium">
+              Stop recurring
+            </Text>
           </Pressable>
           <Pressable
             onPress={() => setShowDeleteOptions(false)}
@@ -661,7 +696,9 @@ function CustomTaskRow({
                 <Square size={16} color="#cbd5e1" />
               )}
               <Text
-                className={`ml-2 text-sm ${sub.checked ? "text-slate-400 line-through" : "text-slate-700"
+                className={`ml-2 text-sm ${sub.checked
+                    ? "text-slate-400 dark:text-slate-600 line-through"
+                    : "text-slate-700 dark:text-slate-300"
                   }`}
               >
                 {sub.text}
@@ -693,13 +730,19 @@ function TimeOfDayPicker({
           <Pressable
             key={opt}
             onPress={() => onChange(opt)}
-            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${selected ? "border-2" : "border border-slate-200"
+            className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${selected
+                ? "border-2"
+                : "border border-slate-200 dark:border-slate-800"
               }`}
-            style={selected ? { borderColor: config.color, backgroundColor: config.bg } : undefined}
+            style={
+              selected
+                ? { borderColor: config.color, backgroundColor: config.bg }
+                : undefined
+            }
           >
             <Icon size={16} color={selected ? config.color : "#94a3b8"} />
             <Text
-              className={`ml-1.5 text-xs font-semibold ${selected ? "" : "text-slate-400"
+              className={`ml-1.5 text-xs font-semibold ${selected ? "" : "text-slate-400 dark:text-slate-500"
                 }`}
               style={selected ? { color: config.color } : undefined}
             >
@@ -758,7 +801,7 @@ function DayOfWeekPicker({
             <Pressable
               key={idx}
               onPress={() => toggleDay(idx)}
-              className={`w-10 h-10 rounded-full items-center justify-center ${selected ? "bg-indigo-600" : "bg-slate-100"
+              className={`w-10 h-10 rounded-full items-center justify-center ${selected ? "bg-indigo-600" : "bg-slate-100 dark:bg-slate-800"
                 }`}
             >
               <Text
@@ -792,9 +835,11 @@ function DefaultItemsSettingsModal({
   return (
     <Modal visible={visible} transparent animationType="slide">
       <Pressable className="flex-1 bg-black/40" onPress={onClose} />
-      <View className="bg-white rounded-t-3xl p-6 pb-10">
+      <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
         <View className="flex-row items-center justify-between mb-5">
-          <Text className="text-lg font-semibold text-slate-900">Default Tasks</Text>
+          <Text className="text-lg font-semibold text-slate-900 dark:text-white">
+            Default Tasks
+          </Text>
           <Pressable onPress={onClose} hitSlop={8}>
             <X size={20} color="#94a3b8" />
           </Pressable>
@@ -809,7 +854,7 @@ function DefaultItemsSettingsModal({
           return (
             <View
               key={item.id}
-              className="flex-row items-center justify-between py-3 border-b border-slate-100"
+              className="flex-row items-center justify-between py-3 border-b border-slate-100 dark:border-slate-800"
             >
               <View className="flex-row items-center flex-1 mr-3">
                 <View
@@ -819,8 +864,12 @@ function DefaultItemsSettingsModal({
                   <Icon size={18} color={config.color} />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-sm font-medium text-slate-800">{item.label}</Text>
-                  <Text className="text-slate-400 text-xs">{item.sublabel}</Text>
+                  <Text className="text-sm font-medium text-slate-800 dark:text-white">
+                    {item.label}
+                  </Text>
+                  <Text className="text-slate-400 text-xs">
+                    {item.sublabel}
+                  </Text>
                 </View>
               </View>
               <Switch
@@ -852,7 +901,7 @@ function TaskModal({
     timeOfDay: TimeOfDay,
     recurring?: boolean,
     subChecklist?: SubCheckItem[],
-    activeDays?: number[]
+    activeDays?: number[],
   ) => void;
   onEdit?: (
     taskId: string,
@@ -863,7 +912,7 @@ function TaskModal({
       recurring?: boolean;
       subChecklist?: SubCheckItem[];
       activeDays?: number[];
-    }
+    },
   ) => void;
   editingTask?: CustomTask | null;
 }) {
@@ -885,7 +934,10 @@ function TaskModal({
       setRecurring(!!editingTask.recurring);
       setActiveDays(editingTask.activeDays ?? []);
       setSubItems(
-        (editingTask.subChecklist ?? []).map((s) => ({ id: s.id, text: s.text }))
+        (editingTask.subChecklist ?? []).map((s) => ({
+          id: s.id,
+          text: s.text,
+        })),
       );
     } else {
       setLabel("");
@@ -921,7 +973,7 @@ function TaskModal({
         timeOfDay,
         recurring || undefined,
         subChecklist.length > 0 ? subChecklist : undefined,
-        recurring && activeDays.length > 0 ? activeDays : undefined
+        recurring && activeDays.length > 0 ? activeDays : undefined,
       );
     }
     setLabel("");
@@ -953,10 +1005,11 @@ function TaskModal({
       <Pressable className="flex-1 bg-black/40" onPress={onClose} />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
+        className="flex-1 justify-end"
       >
-        <View className="bg-white rounded-t-3xl p-6 pb-10">
+        <View className="bg-white dark:bg-slate-900 rounded-t-3xl p-6 pb-10">
           <View className="flex-row items-center justify-between mb-4">
-            <Text className="text-lg font-semibold text-slate-900">
+            <Text className="text-lg font-semibold text-slate-900 dark:text-white">
               {isEditing ? "Edit Task" : "Add Task"}
             </Text>
             <Pressable onPress={onClose} hitSlop={8}>
@@ -970,7 +1023,7 @@ function TaskModal({
             placeholderTextColor="#94a3b8"
             value={label}
             onChangeText={setLabel}
-            className="border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 mb-3"
+            className="border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white mb-3"
             autoFocus
           />
 
@@ -980,7 +1033,7 @@ function TaskModal({
             placeholderTextColor="#94a3b8"
             value={sublabel}
             onChangeText={setSublabel}
-            className="border border-slate-200 rounded-xl px-4 py-3 text-base text-slate-900 mb-4"
+            className="border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-base text-slate-900 dark:text-white mb-4"
           />
 
           {/* Time of day */}
@@ -995,10 +1048,12 @@ function TaskModal({
           </Text>
           {subItems.map((item) => (
             <View key={item.id} className="flex-row items-center mb-2">
-              <View className="w-5 h-5 rounded border border-slate-200 items-center justify-center mr-2">
-                <Square size={12} color="#cbd5e1" />
+              <View className="w-5 h-5 rounded border border-slate-200 dark:border-slate-800 items-center justify-center mr-2">
+                <Square size={12} color="#94a3b8" />
               </View>
-              <Text className="flex-1 text-sm text-slate-700">{item.text}</Text>
+              <Text className="flex-1 text-sm text-slate-700 dark:text-slate-300">
+                {item.text}
+              </Text>
               <Pressable onPress={() => removeSubItem(item.id)} hitSlop={8}>
                 <X size={14} color="#94a3b8" />
               </Pressable>
@@ -1011,23 +1066,28 @@ function TaskModal({
               value={newSubText}
               onChangeText={setNewSubText}
               onSubmitEditing={addSubItem}
-              className="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-900 mr-2"
+              className="flex-1 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-900 dark:text-white mr-2"
             />
             <Pressable
               onPress={addSubItem}
               disabled={!newSubText.trim()}
-              className={`w-8 h-8 rounded-lg items-center justify-center ${newSubText.trim() ? "bg-indigo-100" : "bg-slate-100"
+              className={`w-8 h-8 rounded-lg items-center justify-center ${newSubText.trim()
+                  ? "bg-indigo-100 dark:bg-indigo-900/30"
+                  : "bg-slate-100 dark:bg-slate-800"
                 }`}
             >
-              <Plus size={16} color={newSubText.trim() ? "#4f46e5" : "#94a3b8"} />
+              <Plus
+                size={16}
+                color={newSubText.trim() ? "#4f46e5" : "#94a3b8"}
+              />
             </Pressable>
           </View>
 
           {/* Recurring toggle */}
-          <View className="flex-row items-center justify-between mb-3 bg-slate-50 rounded-xl px-4 py-3">
+          <View className="flex-row items-center justify-between mb-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl px-4 py-3">
             <View className="flex-row items-center">
               <Repeat size={16} color="#64748b" />
-              <Text className="text-sm font-medium text-slate-700 ml-2">
+              <Text className="text-sm font-medium text-slate-700 dark:text-slate-300 ml-2">
                 Repeat daily
               </Text>
             </View>
@@ -1041,24 +1101,23 @@ function TaskModal({
 
           {/* Day-of-week picker (visible when recurring is ON) */}
           {recurring && (
-            <DayOfWeekPicker
-              activeDays={activeDays}
-              onChange={setActiveDays}
-            />
+            <DayOfWeekPicker activeDays={activeDays} onChange={setActiveDays} />
           )}
 
           {/* Submit button */}
           <Pressable
             onPress={handleSubmit}
             disabled={!label.trim()}
-            className={`py-3.5 rounded-2xl items-center ${label.trim() ? "bg-indigo-600" : "bg-slate-200"
+            className={`py-3.5 rounded-2xl items-center ${label.trim() ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-800"
               }`}
             style={({ pressed }) => ({
               transform: [{ scale: pressed ? 0.98 : 1 }],
             })}
           >
             <Text
-              className={`font-medium ${label.trim() ? "text-white" : "text-slate-400"
+              className={`font-medium ${label.trim()
+                  ? "text-white"
+                  : "text-slate-400 dark:text-slate-600"
                 }`}
             >
               {isEditing ? "Save Changes" : "Add Task"}
@@ -1111,7 +1170,10 @@ function TimeSection({
         >
           <Icon size={14} color={config.color} />
         </View>
-        <Text className="text-xs font-semibold uppercase tracking-wider" style={{ color: config.color }}>
+        <Text
+          className="text-xs font-semibold uppercase tracking-wider"
+          style={{ color: config.color }}
+        >
           {config.label}
         </Text>
       </View>
@@ -1134,7 +1196,9 @@ function TimeSection({
           index={coreItems.length + index}
           onToggle={() => toggleCustomTask(task.id)}
           onRemove={() => removeCustomTask(task.id)}
-          onRemoveRecurring={task.recurring ? () => removeRecurringTask(task.id) : undefined}
+          onRemoveRecurring={
+            task.recurring ? () => removeRecurringTask(task.id) : undefined
+          }
           onToggleSubItem={(subId) => toggleSubCheckItem(task.id, subId)}
           onEdit={() => onEditTask(task)}
           disabled={disabled}
@@ -1147,6 +1211,7 @@ function TimeSection({
 // --- Main Screen ---
 
 export default function HomeScreen() {
+  const { signOut } = useAuth();
   const {
     dayProgress,
     streakCount,
@@ -1203,131 +1268,136 @@ export default function HomeScreen() {
 
   if (!loaded) {
     return (
-      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+      <SafeAreaView className="flex-1 bg-white dark:bg-slate-950 items-center justify-center">
         <ActivityIndicator size="large" color="#4f46e5" />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      <AllDoneBanner visible={showCelebration} />
+    <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
+      <View className="flex-1 w-full max-w-2xl self-center">
+        <AllDoneBanner visible={showCelebration} />
 
-      {/* Header */}
-      <View className="p-6 pb-4 flex-row items-center justify-between">
-        <View>
-          <Text className="text-2xl font-semibold tracking-tight text-slate-900">
-            Hej!
-          </Text>
-          <Text className="text-slate-500 text-sm mt-0.5">
-            {formatDateDisplay(selectedDate)}
-          </Text>
-        </View>
-        <View className="flex-row items-center">
-          {!isToday && (
+        {/* Header */}
+        <View className="p-6 pb-4 flex-row items-center justify-between">
+          <View>
+            <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              Hej!
+            </Text>
+            <Text className="text-slate-500 dark:text-slate-400 text-sm mt-0.5">
+              {formatDateDisplay(selectedDate)}
+            </Text>
+          </View>
+          <View className="flex-row items-center">
+            {!isToday && (
+              <Pressable
+                onPress={() => {
+                  setWeekOffset(0);
+                  setSelectedDate(today);
+                }}
+                className="bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1.5 rounded-full mr-2"
+              >
+                <Text className="text-indigo-600 dark:text-indigo-400 font-semibold text-xs">
+                  Today
+                </Text>
+              </Pressable>
+            )}
+            <StreakBadge count={streakCount} />
             <Pressable
-              onPress={() => {
-                setWeekOffset(0);
-                setSelectedDate(today);
-              }}
-              className="bg-indigo-50 px-3 py-1.5 rounded-full mr-2"
+              onPress={() => setShowSettings(true)}
+              className="w-9 h-9 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 ml-2"
             >
-              <Text className="text-indigo-600 font-semibold text-xs">Today</Text>
+              <Settings size={18} color="#64748b" />
             </Pressable>
-          )}
-          <Pressable
-            onPress={() => setShowSettings(true)}
-            hitSlop={8}
-            className="mr-2"
-          >
-            <Settings size={20} color="#94a3b8" />
-          </Pressable>
-          <StreakBadge count={streakCount} />
+          </View>
         </View>
-      </View>
 
-      {/* Calendar Strip */}
-      <WeekCalendarStrip
-        weekDays={weekDays}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-        hasTasksForDate={hasTasksForDate}
-        onPrevWeek={() => setWeekOffset((o) => o - 1)}
-        onNextWeek={() => setWeekOffset((o) => o + 1)}
-        isCurrentWeek={isCurrentWeek}
-      />
-
-      {/* Week Summary */}
-      <WeekSummaryCard weekDays={weekDays} getDateProgress={getDateProgress} />
-
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-        {/* Progress Bar */}
-        <ProgressBar
-          completed={completedCount}
-          total={totalCount}
-          allDone={allDone}
+        {/* Calendar Strip */}
+        <WeekCalendarStrip
+          weekDays={weekDays}
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+          hasTasksForDate={hasTasksForDate}
+          onPrevWeek={() => setWeekOffset((o) => o - 1)}
+          onNextWeek={() => setWeekOffset((o) => o + 1)}
+          isCurrentWeek={isCurrentWeek}
         />
 
-        {/* Motivational Banner (today only) */}
-        {isToday && <MotivationalBanner completedCount={completedCount} />}
+        {/* Week Summary - only show on Sunday */}
+        {selectedDate === weekDays[6] && (
+          <WeekSummaryCard weekDays={weekDays} getDateProgress={getDateProgress} />
+        )}
 
-        {/* Time-of-day sections */}
-        {grouped.map(({ timeOfDay, coreItems, customItems }) => (
-          <TimeSection
-            key={timeOfDay}
-            timeOfDay={timeOfDay}
-            coreItems={coreItems}
-            customItems={customItems}
-            completeItem={completeItem}
-            uncompleteItem={uncompleteItem}
-            toggleCustomTask={toggleCustomTask}
-            removeCustomTask={removeCustomTask}
-            removeRecurringTask={removeRecurringTask}
-            toggleSubCheckItem={toggleSubCheckItem}
-            onEditTask={(task) => {
-              setEditingTask(task);
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+          {/* Progress Bar */}
+          <ProgressBar
+            completed={completedCount}
+            total={totalCount}
+            allDone={allDone}
+          />
+
+          {/* Motivational Banner (today only) */}
+          {isToday && <MotivationalBanner completedCount={completedCount} />}
+
+          {/* Time-of-day sections */}
+          {grouped.map(({ timeOfDay, coreItems, customItems }) => (
+            <TimeSection
+              key={timeOfDay}
+              timeOfDay={timeOfDay}
+              coreItems={coreItems}
+              customItems={customItems}
+              completeItem={completeItem}
+              uncompleteItem={uncompleteItem}
+              toggleCustomTask={toggleCustomTask}
+              removeCustomTask={removeCustomTask}
+              removeRecurringTask={removeRecurringTask}
+              toggleSubCheckItem={toggleSubCheckItem}
+              onEditTask={(task) => {
+                setEditingTask(task);
+                setShowTaskModal(true);
+              }}
+              disabled={isFutureDate}
+            />
+          ))}
+
+          {/* Add Task Button */}
+          <Pressable
+            onPress={() => {
+              setEditingTask(null);
               setShowTaskModal(true);
             }}
-            disabled={isFutureDate}
-          />
-        ))}
+            className="mx-6 mt-2 mb-3 flex-row items-center justify-center py-3 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl"
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            })}
+          >
+            <Plus size={18} color="#94a3b8" />
+            <Text className="text-slate-400 font-medium ml-2">Add Task</Text>
+          </Pressable>
 
-        {/* Add Task Button */}
-        <Pressable
-          onPress={() => {
+          <View className="h-8" />
+        </ScrollView>
+
+        <TaskModal
+          visible={showTaskModal}
+          onClose={() => {
+            setShowTaskModal(false);
             setEditingTask(null);
-            setShowTaskModal(true);
           }}
-          className="mx-6 mt-2 mb-3 flex-row items-center justify-center py-3 border border-dashed border-slate-200 rounded-2xl"
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          })}
-        >
-          <Plus size={18} color="#94a3b8" />
-          <Text className="text-slate-400 font-medium ml-2">Add Task</Text>
-        </Pressable>
+          onAdd={addCustomTask}
+          onEdit={editCustomTask}
+          editingTask={editingTask}
+        />
 
-        <View className="h-8" />
-      </ScrollView>
-
-      <TaskModal
-        visible={showTaskModal}
-        onClose={() => {
-          setShowTaskModal(false);
-          setEditingTask(null);
-        }}
-        onAdd={addCustomTask}
-        onEdit={editCustomTask}
-        editingTask={editingTask}
-      />
-
-      <DefaultItemsSettingsModal
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-        defaultItems={defaultItems}
-        hiddenItems={hiddenDefaultItems}
-        onToggle={toggleDefaultItemVisibility}
-      />
+        <DefaultItemsSettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+          defaultItems={defaultItems}
+          hiddenItems={hiddenDefaultItems}
+          onToggle={toggleDefaultItemVisibility}
+        />
+      </View>
     </SafeAreaView>
   );
 }
