@@ -199,4 +199,6 @@ export interface ProgressStore {
   lastCompletedDate?: string; // YYYY-MM-DD when all 4 core items were last completed
   recurringTasks?: CustomTask[]; // recurring task templates
   hiddenDefaultItems?: ChecklistItemId[]; // default items the user chose to hide
+  onboardingCompleted?: Record<string, boolean>; // track which onboarding tours are finished
+  bannersDismissed?: Record<string, boolean>; // track which banners are dismissed
 }

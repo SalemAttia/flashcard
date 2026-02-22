@@ -6,7 +6,7 @@ import {
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from "firebase/auth";
-import { doc, onSnapshot, DocumentSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, DocumentSnapshot, updateDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 
 interface AuthContextValue {
@@ -68,11 +68,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const res = await createUserWithEmailAndPassword(auth, email, password);
+    // Initialize user document
+    await setDoc(doc(db, "users", res.user.uid), {
+      email,
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp(),
+      isApproved: false, // Default to false for manual approval
+    });
   };
 
   const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+    const res = await signInWithEmailAndPassword(auth, email, password);
+    // Update last login
+    await updateDoc(doc(db, "users", res.user.uid), {
+      lastLogin: serverTimestamp(),
+    });
   };
 
   const signOut = async () => {
