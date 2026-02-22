@@ -164,64 +164,75 @@ export function useDailyProgress() {
   useEffect(() => {
     if (!user || !loaded || selectedDate !== getToday()) return;
 
+    let isCancelled = false;
     const today = getToday();
-    const dayProgress = daysMap[today] ?? freshDay(today);
+    const currentDayState = daysMap[today] ?? freshDay(today);
 
     const checkAutoComplete = async () => {
       const now = new Date().toISOString();
       const autoCompleted: Partial<Record<ChecklistItemId, boolean>> = {};
 
-      const decksSnap = await getDocs(
-        collection(db, "users", user.uid, "decks"),
-      );
-      if (decksSnap.docs.some((d) => d.data().lastStudied?.startsWith(today))) {
-        autoCompleted.study_deck = true;
-      }
+      try {
+        const [decksSnap, grammarSnap, writingSnap] = await Promise.all([
+          getDocs(collection(db, "users", user.uid, "decks")),
+          getDoc(doc(db, "users", user.uid, "results", "grammar")),
+          getDoc(doc(db, "users", user.uid, "results", "writing")),
+        ]);
 
-      const grammarSnap = await getDoc(
-        doc(db, "users", user.uid, "results", "grammar"),
-      );
-      if (
-        grammarSnap.exists() &&
-        grammarSnap.data().completedAt?.startsWith(today)
-      ) {
-        autoCompleted.grammar_quiz = true;
-      }
+        if (isCancelled) return;
 
-      const writingSnap = await getDoc(
-        doc(db, "users", user.uid, "results", "writing"),
-      );
-      if (
-        writingSnap.exists() &&
-        writingSnap.data().completedAt?.startsWith(today)
-      ) {
-        autoCompleted.writing_test = true;
-      }
-
-      if (Object.keys(autoCompleted).length > 0) {
-        const updatedItems = dayProgress.items.map((item) =>
-          autoCompleted[item.id] && !item.completedAt
-            ? { ...item, completedAt: now }
-            : item,
-        );
-        const updatedDay = { ...dayProgress, items: updatedItems };
-        // Avoid infinite loop by only updating if something actually changed
-        if (
-          updatedItems.some(
-            (item, idx) =>
-              item.completedAt !== dayProgress.items[idx].completedAt,
-          )
-        ) {
-          await setDoc(
-            doc(db, "users", user.uid, "days", today),
-            sanitize(updatedDay),
-          );
+        if (decksSnap.docs.some((d) => d.data().lastStudied?.startsWith(today))) {
+          autoCompleted.study_deck = true;
         }
+
+        if (
+          grammarSnap.exists() &&
+          grammarSnap.data().completedAt?.startsWith(today)
+        ) {
+          autoCompleted.grammar_quiz = true;
+        }
+
+        if (
+          writingSnap.exists() &&
+          writingSnap.data().completedAt?.startsWith(today)
+        ) {
+          autoCompleted.writing_test = true;
+        }
+
+        if (Object.keys(autoCompleted).length > 0) {
+          const updatedItems = currentDayState.items.map((item) =>
+            autoCompleted[item.id] &&
+              !item.completedAt &&
+              !item.manuallyUncompleted
+              ? { ...item, completedAt: now }
+              : item,
+          );
+
+          // Only update if something actually changed to avoid infinite loops
+          const hasChanges = updatedItems.some(
+            (item, idx) =>
+              item.completedAt !== currentDayState.items[idx].completedAt,
+          );
+
+          if (hasChanges && !isCancelled) {
+            const updatedDay = { ...currentDayState, items: updatedItems };
+            await setDoc(
+              doc(db, "users", user.uid, "days", today),
+              sanitize(updatedDay),
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Auto-complete check failed:", err);
       }
     };
 
     checkAutoComplete();
-  }, [user, loaded, selectedDate, daysMap]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [user, loaded, selectedDate, daysMap[getToday()]]);
 
   const dayProgressRaw = useMemo(
     () => daysMap[selectedDate] ?? freshDay(selectedDate),
@@ -273,14 +284,14 @@ export function useDailyProgress() {
       // but here we use dayProgress to ensure we have the right context.
       const updatedItems = dayProgress.items.map((item) =>
         item.id === id
-          ? { ...item, completedAt: new Date().toISOString() }
+          ? { ...item, completedAt: new Date().toISOString(), manuallyUncompleted: false }
           : item,
       );
       // Since dayProgress.items is already filtered, we need to be careful.
       // Actually, it's better to update dayProgressRaw and save that.
       const rawItems = dayProgressRaw.items.map((item) =>
         item.id === id
-          ? { ...item, completedAt: new Date().toISOString() }
+          ? { ...item, completedAt: new Date().toISOString(), manuallyUncompleted: false }
           : item,
       );
       await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
@@ -291,7 +302,7 @@ export function useDailyProgress() {
   const uncompleteItem = useCallback(
     async (id: ChecklistItemId) => {
       const rawItems = dayProgressRaw.items.map((item) =>
-        item.id === id ? { ...item, completedAt: undefined } : item,
+        item.id === id ? { ...item, completedAt: undefined, manuallyUncompleted: true } : item,
       );
       await updateDayInFirestore({ ...dayProgressRaw, items: rawItems });
     },
@@ -387,9 +398,10 @@ export function useDailyProgress() {
       const updatedCustom = baseItems.map((t) =>
         t.id === taskId
           ? {
-              ...t,
-              completedAt: t.completedAt ? undefined : new Date().toISOString(),
-            }
+            ...t,
+            completedAt: t.completedAt ? undefined : new Date().toISOString(),
+            manuallyUncompleted: t.completedAt ? true : false,
+          }
           : t,
       );
       await setDoc(
