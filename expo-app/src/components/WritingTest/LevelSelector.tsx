@@ -15,6 +15,13 @@ interface LevelSelectorProps {
   onStart: () => void;
 }
 
+const LEVEL_TOPIC_SUGGESTIONS: Record<WritingLevel, string[]> = {
+  a1: ["Familie", "Mad", "Farver og tal", "Dyr", "Vejret", "Hjem"],
+  a2: ["Daglig rutine", "Indkøb", "Fritidsaktiviteter", "Transport", "Skole", "Venner"],
+  b1: ["Arbejde og karriere", "Sundhed", "Rejser", "Natur og miljø", "Medier", "Danske traditioner"],
+  b2: ["Politik og samfund", "Teknologi og fremtiden", "Miljø og bæredygtighed", "Kunst og kultur", "Filosofi", "Økonomi"],
+};
+
 const LEVEL_COLORS: Record<
   string,
   { bg: string; border: string; text: string; badge: string }
@@ -45,16 +52,6 @@ const LEVEL_COLORS: Record<
   },
 };
 
-const SUGGESTED_TOPICS = [
-  "Familie og venner",
-  "Mad og drikke",
-  "Arbejde og uddannelse",
-  "Ferie og rejser",
-  "Natur og miljø",
-  "By og nabolag",
-  "Sundhed og sport",
-  "Teknologi",
-];
 
 export function LevelSelector({
   selectedLevel,
@@ -153,8 +150,16 @@ export function LevelSelector({
           placeholderTextColor="#94a3b8"
           className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-sm text-slate-800 dark:text-white mb-3"
         />
+        {selectedLevel && (
+          <Text className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">
+            Suggested for {selectedLevel.toUpperCase()}
+          </Text>
+        )}
         <View className="flex-row flex-wrap gap-2">
-          {SUGGESTED_TOPICS.map((t) => (
+          {(selectedLevel
+            ? LEVEL_TOPIC_SUGGESTIONS[selectedLevel]
+            : Object.values(LEVEL_TOPIC_SUGGESTIONS).flat().slice(0, 8)
+          ).map((t) => (
             <Pressable
               key={t}
               onPress={() => onChangeTopic(topic === t ? "" : t)}

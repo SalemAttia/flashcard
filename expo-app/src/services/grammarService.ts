@@ -11,7 +11,7 @@ function getOpenAIClient(): OpenAI | null {
 
 export async function generateGrammarQuestions(
   topicConfig: GrammarTopicConfig | null,
-  options?: { customTopic?: string; questionCount?: number },
+  options?: { customTopic?: string; questionCount?: number; level?: string },
 ): Promise<GrammarQuestion[]> {
   const openai = getOpenAIClient();
   const topicLabel =
@@ -19,6 +19,10 @@ export async function generateGrammarQuestions(
   const topicLabelDa = topicConfig?.labelDa || topicLabel;
   const count = options?.questionCount || topicConfig?.questionCount || 10;
   const topicId = topicConfig?.id || ("custom" as GrammarTopicId);
+
+  const levelHint = options?.level
+    ? ` The student is at CEFR ${options.level.toUpperCase()} level. For A1 use very simple words and short sentences; for A2 use everyday vocabulary; for B1 use wider vocabulary; for B2 use complex structures.`
+    : "";
 
   if (!openai) {
     if (topicConfig) {
@@ -34,7 +38,7 @@ export async function generateGrammarQuestions(
       messages: [
         {
           role: "system",
-          content: `You are a Danish grammar teacher creating exercises for the topic: "${topicLabel}" (${topicLabelDa}). Respond ONLY with a JSON array, no markdown fences.`,
+          content: `You are a Danish grammar teacher creating exercises for the topic: "${topicLabel}" (${topicLabelDa}).${levelHint} Respond ONLY with a JSON array, no markdown fences.`,
         },
         {
           role: "user",

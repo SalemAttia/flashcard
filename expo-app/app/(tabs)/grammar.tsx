@@ -5,8 +5,10 @@ import { router } from "expo-router";
 import { TopicSelector } from "../../src/components/Grammar/TopicSelector";
 import { GrammarTopicId, SavedCustomTopic } from "../../src/types";
 import { useCustomGrammarTopics } from "../../src/store/useCustomGrammarTopics";
+import { useUserLevel } from "../../src/store/useUserLevel";
 
 export default function GrammarScreen() {
+  const { level } = useUserLevel();
   const [selectedTopic, setSelectedTopic] = useState<GrammarTopicId | null>(
     null,
   );
@@ -81,6 +83,7 @@ export default function GrammarScreen() {
         onDeleteSavedTopic={deleteTopic}
         onSelectSavedTopic={handleSelectSavedTopic}
         selectedSavedTopicId={selectedSavedTopicId}
+        userLevel={level}
       />
       </View>
     </SafeAreaView>

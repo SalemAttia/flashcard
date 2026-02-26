@@ -64,6 +64,41 @@ import {
   OnboardingOverlay,
   OnboardingStep,
 } from "../../src/components/OnboardingOverlay";
+import { useUserLevel } from "../../src/store/useUserLevel";
+import { LevelPicker } from "../../src/components/LevelPicker";
+import { getLevelTip } from "../../src/constants/levelTips";
+import { useRouter } from "expo-router";
+import { WritingLevel } from "../../src/types";
+
+const LEVEL_TASK_SUBLABELS: Record<
+  ChecklistItemId,
+  Record<WritingLevel, string>
+> = {
+  study_deck: {
+    a1: "Review beginner flashcards (greetings, numbers)",
+    a2: "Study everyday vocabulary (food, routines)",
+    b1: "Practice intermediate words (workplace, travel)",
+    b2: "Master advanced vocabulary (idioms, abstract)",
+  },
+  grammar_quiz: {
+    a1: "Practice articles and basic nouns",
+    a2: "Test verb tenses and word order",
+    b1: "Work on modals and complex sentences",
+    b2: "Master passive voice and relative clauses",
+  },
+  writing_test: {
+    a1: "Write short sentences about daily life",
+    a2: "Describe your routine in a paragraph",
+    b1: "Write an opinion piece on a topic",
+    b2: "Compose a formal essay or argument",
+  },
+  chat_session: {
+    a1: "Practice basic greetings and introductions",
+    a2: "Chat about everyday topics in Danish",
+    b1: "Discuss current events and opinions",
+    b2: "Debate complex topics in fluent Danish",
+  },
+};
 
 // --- Help Banner Component ---
 
@@ -1297,6 +1332,104 @@ function TimeSection({
 
 // --- Main Screen ---
 
+// --- Learning Path Card ---
+
+function LearningPathCard({
+  level,
+  onChangeLevel,
+}: {
+  level: string;
+  onChangeLevel: () => void;
+}) {
+  const router = useRouter();
+  const tip = getLevelTip(level as any);
+  if (!tip) return null;
+
+  const colorMap: Record<string, { badge: string; badgeBg: string; accent: string }> = {
+    emerald: { badge: "#059669", badgeBg: "#ecfdf5", accent: "#10b981" },
+    blue: { badge: "#2563eb", badgeBg: "#eff6ff", accent: "#3b82f6" },
+    violet: { badge: "#7c3aed", badgeBg: "#f5f3ff", accent: "#8b5cf6" },
+    rose: { badge: "#e11d48", badgeBg: "#fff1f2", accent: "#f43f5e" },
+  };
+  const colors = colorMap[tip.color] || colorMap.blue;
+
+  return (
+    <Animated.View
+      entering={FadeInDown.delay(100).duration(500)}
+      className="mx-6 mb-4"
+    >
+      <View className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-4">
+        {/* Level Badge + Change */}
+        <View className="flex-row items-center justify-between mb-3">
+          <Pressable
+            onPress={onChangeLevel}
+            className="flex-row items-center"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <View
+              className="px-3 py-1 rounded-full mr-2"
+              style={{ backgroundColor: colors.badgeBg }}
+            >
+              <Text
+                className="text-xs font-bold"
+                style={{ color: colors.badge }}
+              >
+                {tip.label}
+              </Text>
+            </View>
+            <Text className="text-[10px] text-slate-400 font-medium">
+              {tip.sublabel}
+            </Text>
+          </Pressable>
+          <Pressable onPress={onChangeLevel}>
+            <Text className="text-xs text-indigo-500 font-semibold">
+              Change
+            </Text>
+          </Pressable>
+        </View>
+
+        {/* Daily Goal */}
+        <View className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-3 mb-3">
+          <View className="flex-row items-center mb-1">
+            <Target size={14} color={colors.accent} />
+            <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300 ml-1.5">
+              Daily Goal
+            </Text>
+          </View>
+          <Text className="text-xs text-slate-500 dark:text-slate-400">
+            {tip.dailyGoal}
+          </Text>
+        </View>
+
+        {/* Focus Areas */}
+        <View className="mb-3">
+          <View className="flex-row items-center mb-1.5">
+            <Lightbulb size={14} color="#f59e0b" />
+            <Text className="text-xs font-semibold text-slate-600 dark:text-slate-300 ml-1.5">
+              Focus On
+            </Text>
+          </View>
+          {tip.focusAreas.slice(0, 2).map((area, i) => (
+            <Text
+              key={i}
+              className="text-xs text-slate-500 dark:text-slate-400 ml-5 mb-0.5"
+            >
+              {"\u2022"} {area}
+            </Text>
+          ))}
+        </View>
+
+        {/* Next Level Hint */}
+        <View className="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-3">
+          <Text className="text-xs text-indigo-600 dark:text-indigo-400 font-medium">
+            {tip.nextLevelHint}
+          </Text>
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
 export default function HomeScreen() {
   const { signOut } = useAuth();
   const {
@@ -1327,6 +1460,13 @@ export default function HomeScreen() {
     dismissBanner,
   } = useDailyProgress();
 
+  const {
+    level,
+    changeLevel,
+    loaded: levelLoaded,
+    hasLevel,
+  } = useUserLevel();
+
   const [celebrationShown, setCelebrationShown] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
@@ -1334,6 +1474,14 @@ export default function HomeScreen() {
   const [editingTask, setEditingTask] = useState<CustomTask | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  const [showLevelPicker, setShowLevelPicker] = useState(false);
+
+  // Show level picker on first launch
+  useEffect(() => {
+    if (levelLoaded && !hasLevel) {
+      setShowLevelPicker(true);
+    }
+  }, [levelLoaded, hasLevel]);
 
   // Auto-show onboarding if not completed
   useEffect(() => {
@@ -1349,15 +1497,21 @@ export default function HomeScreen() {
   const isToday = selectedDate === today;
   const isFutureDate = selectedDate > today;
 
-  // Group items by time of day
+  // Group items by time of day, injecting level-aware sublabels
   const grouped = useMemo(() => {
     const times: TimeOfDay[] = ["morning", "afternoon", "evening"];
     return times.map((tod) => ({
       timeOfDay: tod,
-      coreItems: dayProgress.items.filter((i) => i.timeOfDay === tod),
+      coreItems: dayProgress.items
+        .filter((i) => i.timeOfDay === tod)
+        .map((i) => ({
+          ...i,
+          sublabel:
+            LEVEL_TASK_SUBLABELS[i.id]?.[level] ?? i.sublabel,
+        })),
       customItems: dayProgress.customItems.filter((t) => t.timeOfDay === tod),
     }));
-  }, [dayProgress]);
+  }, [dayProgress, level]);
 
   useEffect(() => {
     if (allDone && !celebrationShown && isToday) {
@@ -1450,6 +1604,14 @@ export default function HomeScreen() {
             allDone={allDone}
           />
 
+          {/* Learning Path Card */}
+          {isToday && (
+            <LearningPathCard
+              level={level}
+              onChangeLevel={() => setShowLevelPicker(true)}
+            />
+          )}
+
           {/* Motivational Banner (today only) */}
           {isToday && <MotivationalBanner completedCount={completedCount} />}
 
@@ -1520,6 +1682,16 @@ export default function HomeScreen() {
               finishOnboarding("home");
             }
           }}
+        />
+
+        <LevelPicker
+          visible={showLevelPicker}
+          currentLevel={level}
+          onSelect={changeLevel}
+          onClose={() => setShowLevelPicker(false)}
+          title="What is your Danish level?"
+          subtitle="This helps us personalize your learning experience with the right content and difficulty."
+          showClose={hasLevel}
         />
       </View>
     </SafeAreaView>
