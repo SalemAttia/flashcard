@@ -4,11 +4,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useDecks } from "../src/store/useDecks";
+import { useAuth } from "../src/context/AuthContext";
 import { DeckEditor } from "../src/components/DeckEditor";
 
 export default function EditorScreen() {
   const { deckId } = useLocalSearchParams<{ deckId?: string }>();
-  const { getDeck, saveDeck, deleteDeck, loaded } = useDecks();
+  const { getDeck, saveDeck, deleteDeck, toggleGlobal, loaded } = useDecks();
+  const { isAdmin } = useAuth();
 
   if (!loaded) {
     return (
@@ -23,23 +25,38 @@ export default function EditorScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
       <View className="flex-1 w-full max-w-2xl self-center">
-      <DeckEditor
-        deck={deck}
-        onSave={(deckData) => {
-          saveDeck(deckData, deckId || null);
-          Toast.show({
-            type: "success",
-            text1: deckId ? "Deck updated successfully" : "New deck created",
-          });
-          router.replace("/(tabs)/decks");
-        }}
-        onCancel={() => router.back()}
-        onDelete={(id) => {
-          deleteDeck(id);
-          Toast.show({ type: "success", text1: "Deck deleted" });
-          router.replace("/(tabs)/decks");
-        }}
-      />
+        <DeckEditor
+          deck={deck}
+          isAdmin={isAdmin}
+          isGlobal={deck?.isGlobal}
+          onToggleGlobal={
+            deckId
+              ? () => {
+                toggleGlobal(deckId);
+                Toast.show({
+                  type: "success",
+                  text1: deck?.isGlobal
+                    ? "Deck is now private"
+                    : "Deck is now global for everyone",
+                });
+              }
+              : undefined
+          }
+          onSave={(deckData) => {
+            saveDeck(deckData, deckId || null);
+            Toast.show({
+              type: "success",
+              text1: deckId ? "Deck updated successfully" : "New deck created",
+            });
+            router.replace("/(tabs)/decks");
+          }}
+          onCancel={() => router.back()}
+          onDelete={(id) => {
+            deleteDeck(id);
+            Toast.show({ type: "success", text1: "Deck deleted" });
+            router.replace("/(tabs)/decks");
+          }}
+        />
       </View>
     </SafeAreaView>
   );

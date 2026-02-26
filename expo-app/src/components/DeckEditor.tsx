@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator,
   Image,
+  Switch,
 } from "react-native";
 import {
   ChevronLeft,
@@ -25,6 +26,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import Toast from "react-native-toast-message";
 import OpenAI from "openai";
+import { Globe } from "lucide-react-native";
 import { Deck, Card, Language } from "../types";
 import { LanguagePicker } from "./LanguagePicker";
 
@@ -35,6 +37,9 @@ interface DeckEditorProps {
   onSave: (deck: Deck) => void;
   onCancel: () => void;
   onDelete: (id: string) => void;
+  isAdmin?: boolean;
+  isGlobal?: boolean;
+  onToggleGlobal?: () => void;
 }
 
 export function DeckEditor({
@@ -42,6 +47,9 @@ export function DeckEditor({
   onSave,
   onCancel,
   onDelete,
+  isAdmin,
+  isGlobal,
+  onToggleGlobal,
 }: DeckEditorProps) {
   const [title, setTitle] = useState(deck?.title || "");
   const [description, setDescription] = useState(deck?.description || "");
@@ -403,6 +411,36 @@ Guidelines:
               />
             </View>
           </View>
+
+          {/* Global Toggle – admin only, existing deck only */}
+          {isAdmin && deck && onToggleGlobal && (
+            <Pressable
+              onPress={onToggleGlobal}
+              className={`flex-row items-center justify-between p-4 rounded-2xl border ${isGlobal
+                  ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800"
+                  : "bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                }`}
+            >
+              <View className="flex-row items-center gap-3 flex-1">
+                <Globe size={20} color={isGlobal ? "#059669" : "#94a3b8"} />
+                <View className="flex-1">
+                  <Text className={`font-semibold text-sm ${isGlobal ? "text-emerald-700 dark:text-emerald-400" : "text-slate-700 dark:text-slate-300"
+                    }`}>
+                    Make Global for Everyone
+                  </Text>
+                  <Text className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                    {isGlobal ? "All users can see and study this deck" : "Only you can see this deck"}
+                  </Text>
+                </View>
+              </View>
+              <Switch
+                value={!!isGlobal}
+                onValueChange={onToggleGlobal}
+                trackColor={{ false: "#cbd5e1", true: "#6ee7b7" }}
+                thumbColor={isGlobal ? "#059669" : "#f1f5f9"}
+              />
+            </Pressable>
+          )}
         </View>
 
         <View className="gap-6 pb-24">
@@ -574,18 +612,16 @@ Guidelines:
                     <Pressable
                       key={level}
                       onPress={() => !aiLoading && setAiLevel(level)}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                        aiLevel === level
+                      className={`flex-1 py-3 rounded-xl items-center border-2 ${aiLevel === level
                           ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
                           : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
-                      }`}
+                        }`}
                     >
                       <Text
-                        className={`text-xs font-bold capitalize ${
-                          aiLevel === level
+                        className={`text-xs font-bold capitalize ${aiLevel === level
                             ? "text-indigo-600"
                             : "text-slate-400"
-                        }`}
+                          }`}
                       >
                         {level}
                       </Text>
@@ -604,18 +640,16 @@ Guidelines:
                   <Pressable
                     key={count}
                     onPress={() => !aiLoading && setAiCardCount(count)}
-                    className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                      aiCardCount === count
+                    className={`flex-1 py-3 rounded-xl items-center border-2 ${aiCardCount === count
                         ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
                         : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
-                    }`}
+                      }`}
                   >
                     <Text
-                      className={`text-sm font-bold ${
-                        aiCardCount === count
+                      className={`text-sm font-bold ${aiCardCount === count
                           ? "text-indigo-600"
                           : "text-slate-400"
-                      }`}
+                        }`}
                     >
                       {count}
                     </Text>
@@ -726,18 +760,16 @@ Guidelines:
                     <Pressable
                       key={level}
                       onPress={() => !imageLoading && setImageLevel(level)}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${
-                        imageLevel === level
+                      className={`flex-1 py-3 rounded-xl items-center border-2 ${imageLevel === level
                           ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
                           : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
-                      }`}
+                        }`}
                     >
                       <Text
-                        className={`text-xs font-bold capitalize ${
-                          imageLevel === level
+                        className={`text-xs font-bold capitalize ${imageLevel === level
                             ? "text-indigo-600"
                             : "text-slate-400"
-                        }`}
+                          }`}
                       >
                         {level}
                       </Text>

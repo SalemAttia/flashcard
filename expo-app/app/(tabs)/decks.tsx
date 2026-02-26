@@ -11,10 +11,12 @@ import { router } from "expo-router";
 import { Plus } from "lucide-react-native";
 import Toast from "react-native-toast-message";
 import { useDecks } from "../../src/store/useDecks";
+import { useAuth } from "../../src/context/AuthContext";
 import { DeckList } from "../../src/components/DeckList";
 
 export default function HomeScreen() {
   const { decks, deleteDeck, loaded } = useDecks();
+  const { user } = useAuth();
 
   if (!loaded) {
     return (
@@ -27,58 +29,59 @@ export default function HomeScreen() {
   return (
     <SafeAreaView className="flex-1 bg-white dark:bg-slate-950" edges={["top"]}>
       <View className="flex-1 w-full max-w-2xl self-center">
-      <View className="p-6 pb-2">
-        <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-          Decks
-        </Text>
-        <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
-          Master your learning, card by card.
-        </Text>
-      </View>
+        <View className="p-6 pb-2">
+          <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+            Decks
+          </Text>
+          <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
+            Master your learning, card by card.
+          </Text>
+        </View>
 
-      <ScrollView className="flex-1 px-6 py-4">
-        <DeckList
-          decks={decks}
-          onEdit={(deck) => router.push(`/editor?deckId=${deck.id}`)}
-          onStudy={(deck) => {
-            if (deck.cards.length === 0) {
-              Toast.show({
-                type: "error",
-                text1: "Add some cards to this deck first!",
-              });
-              return;
-            }
-            router.push(`/study?deckId=${deck.id}`);
-          }}
-          onTest={(deck) => {
-            if (deck.cards.length < 2) {
-              Toast.show({
-                type: "error",
-                text1: "You need at least 2 cards for a test!",
-              });
-              return;
-            }
-            router.push(`/test?deckId=${deck.id}`);
-          }}
-          onDelete={(deck) => {
-            deleteDeck(deck.id);
-            Toast.show({ type: "success", text1: "Deck deleted" });
-          }}
-        />
-      </ScrollView>
+        <ScrollView className="flex-1 px-6 py-4">
+          <DeckList
+            decks={decks}
+            currentUserId={user?.uid}
+            onEdit={(deck) => router.push(`/editor?deckId=${deck.id}`)}
+            onStudy={(deck) => {
+              if (deck.cards.length === 0) {
+                Toast.show({
+                  type: "error",
+                  text1: "Add some cards to this deck first!",
+                });
+                return;
+              }
+              router.push(`/study?deckId=${deck.id}`);
+            }}
+            onTest={(deck) => {
+              if (deck.cards.length < 2) {
+                Toast.show({
+                  type: "error",
+                  text1: "You need at least 2 cards for a test!",
+                });
+                return;
+              }
+              router.push(`/test?deckId=${deck.id}`);
+            }}
+            onDelete={(deck) => {
+              deleteDeck(deck.id);
+              Toast.show({ type: "success", text1: "Deck deleted" });
+            }}
+          />
+        </ScrollView>
 
-      <View className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
-        <Pressable
-          onPress={() => router.push("/editor")}
-          className="w-full bg-indigo-600 py-4 rounded-2xl flex-row items-center justify-center gap-2"
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          })}
-        >
-          <Plus size={20} color="#fff" />
-          <Text className="text-white font-medium">New Study Set</Text>
-        </Pressable>
-      </View>
+        <View className="p-6 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-950">
+          <Pressable
+            onPress={() => router.push("/editor")}
+            className="w-full bg-indigo-600 py-4 rounded-2xl flex-row items-center justify-center gap-2"
+            style={({ pressed }) => ({
+              transform: [{ scale: pressed ? 0.98 : 1 }],
+            })}
+          >
+            <Plus size={20} color="#fff" />
+            <Text className="text-white font-medium">New Study Set</Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
