@@ -15,7 +15,7 @@ import { useAuth } from "../../src/context/AuthContext";
 import { DeckList } from "../../src/components/DeckList";
 
 export default function HomeScreen() {
-  const { decks, loaded } = useDecks();
+  const { decks, deleteDeck, loaded } = useDecks();
   const { user } = useAuth();
 
   if (!loaded) {
@@ -62,6 +62,10 @@ export default function HomeScreen() {
                 return;
               }
               router.push(`/test?deckId=${deck.id}`);
+            }}
+            onDelete={(deck) => {
+              deleteDeck(deck.id);
+              Toast.show({ type: "success", text1: "Deck deleted" });
             }}
           />
         </ScrollView>

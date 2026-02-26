@@ -7,6 +7,7 @@ import {
   Layout,
   ClipboardCheck,
   Globe,
+  Trash2,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -23,6 +24,7 @@ interface DeckListProps {
   onEdit: (deck: Deck) => void;
   onStudy: (deck: Deck) => void;
   onTest: (deck: Deck) => void;
+  onDelete: (deck: Deck) => void;
   currentUserId?: string;
 }
 
@@ -32,6 +34,7 @@ function DeckCard({
   onEdit,
   onStudy,
   onTest,
+  onDelete,
   isOwnDeck,
 }: {
   deck: Deck;
@@ -39,6 +42,7 @@ function DeckCard({
   onEdit: () => void;
   onStudy: () => void;
   onTest: () => void;
+  onDelete: () => void;
   isOwnDeck: boolean;
 }) {
   const opacity = useSharedValue(0);
@@ -138,22 +142,33 @@ function DeckCard({
           </Text>
         </Pressable>
         {isOwnDeck && (
-          <Pressable
-            onPress={onEdit}
-            className="px-4 bg-slate-50 dark:bg-slate-800 rounded-xl items-center justify-center"
-            style={({ pressed }) => ({
-              transform: [{ scale: pressed ? 0.98 : 1 }],
-            })}
-          >
-            <Edit2 size={16} color="#475569" />
-          </Pressable>
+          <>
+            <Pressable
+              onPress={onEdit}
+              className="px-4 bg-slate-50 dark:bg-slate-800 rounded-xl items-center justify-center"
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <Edit2 size={16} color="#475569" />
+            </Pressable>
+            <Pressable
+              onPress={onDelete}
+              className="px-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl items-center justify-center"
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <Trash2 size={16} color="#e11d48" />
+            </Pressable>
+          </>
         )}
       </View>
     </Animated.View>
   );
 }
 
-export function DeckList({ decks, onEdit, onStudy, onTest, currentUserId }: DeckListProps) {
+export function DeckList({ decks, onEdit, onStudy, onTest, onDelete, currentUserId }: DeckListProps) {
   if (decks.length === 0) {
     return (
       <View className="items-center justify-center h-64 gap-4">
@@ -180,6 +195,7 @@ export function DeckList({ decks, onEdit, onStudy, onTest, currentUserId }: Deck
             onEdit={() => onEdit(deck)}
             onStudy={() => onStudy(deck)}
             onTest={() => onTest(deck)}
+            onDelete={() => onDelete(deck)}
           />
         );
       })}

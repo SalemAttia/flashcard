@@ -111,6 +111,12 @@ export function useDailyProgress() {
   const [hiddenDefaultItems, setHiddenDefaultItems] = useState<
     ChecklistItemId[]
   >([]);
+  const [onboardingCompleted, setOnboardingCompleted] = useState<
+    Record<string, boolean>
+  >({});
+  const [bannersDismissed, setBannersDismissed] = useState<
+    Record<string, boolean>
+  >({});
 
   const [selectedDate, setSelectedDate] = useState(getToday());
   const [daysMap, setDaysMap] = useState<Record<string, DailyProgress>>({});
@@ -129,6 +135,8 @@ export function useDailyProgress() {
           setLastCompletedDate(data.lastCompletedDate);
           setRecurringTasks(data.recurringTasks ?? []);
           setHiddenDefaultItems(data.hiddenDefaultItems ?? []);
+          setOnboardingCompleted(data.onboardingCompleted ?? {});
+          setBannersDismissed(data.bannersDismissed ?? {});
         }
         setLoaded(true);
       },
@@ -270,12 +278,13 @@ export function useDailyProgress() {
             lastCompletedDate: day.date,
             recurringTasks,
             hiddenDefaultItems,
+            onboardingCompleted,
           }),
           { merge: true },
         );
       }
     },
-    [user, streakCount, lastCompletedDate, recurringTasks, hiddenDefaultItems],
+    [user, streakCount, lastCompletedDate, recurringTasks, hiddenDefaultItems, onboardingCompleted],
   );
 
   const completeItem = useCallback(
@@ -490,6 +499,34 @@ export function useDailyProgress() {
     [user, hiddenDefaultItems],
   );
 
+  const finishOnboarding = useCallback(
+    async (tourId: string) => {
+      if (!user) return;
+      const nextOnboarding = { ...onboardingCompleted, [tourId]: true };
+      setOnboardingCompleted(nextOnboarding);
+      await setDoc(
+        doc(db, "users", user.uid, "data", "progress"),
+        { onboardingCompleted: nextOnboarding },
+        { merge: true },
+      );
+    },
+    [user, onboardingCompleted],
+  );
+
+  const dismissBanner = useCallback(
+    async (bannerId: string) => {
+      if (!user) return;
+      const nextBanners = { ...bannersDismissed, [bannerId]: true };
+      setBannersDismissed(nextBanners);
+      await setDoc(
+        doc(db, "users", user.uid, "data", "progress"),
+        { bannersDismissed: nextBanners },
+        { merge: true },
+      );
+    },
+    [user, bannersDismissed],
+  );
+
   const hasTasksForDate = useCallback(
     (date: string): boolean => {
       const day = daysMap[date];
@@ -568,5 +605,9 @@ export function useDailyProgress() {
     defaultItems: DEFAULT_ITEMS,
     hasTasksForDate,
     getDateProgress,
+    onboardingCompleted,
+    finishOnboarding,
+    bannersDismissed,
+    dismissBanner,
   };
 }

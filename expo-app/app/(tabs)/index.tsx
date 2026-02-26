@@ -35,6 +35,11 @@ import {
   CheckSquare,
   Pencil,
   Settings,
+  Sparkles,
+  Target,
+  Lightbulb,
+  Calendar,
+  Info,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -55,6 +60,55 @@ import {
   SubCheckItem,
   TimeOfDay,
 } from "../../src/types";
+import {
+  OnboardingOverlay,
+  OnboardingStep,
+} from "../../src/components/OnboardingOverlay";
+
+// --- Help Banner Component ---
+
+interface HelpBannerProps {
+  onDismiss: () => void;
+  onPress: () => void;
+  visible: boolean;
+}
+
+const HelpBanner: React.FC<HelpBannerProps> = ({ onDismiss, onPress, visible }) => {
+  if (!visible) return null;
+
+  return (
+    <Animated.View
+      entering={FadeInDown.duration(600).springify()}
+      className="mx-6 mb-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-3xl overflow-hidden shadow-sm"
+    >
+      <Pressable
+        onPress={onPress}
+        className="flex-row items-center p-4 pr-12"
+        style={({ pressed }) => ({ opacity: pressed ? 0.9 : 1 })}
+      >
+        <View className="bg-indigo-600/10 dark:bg-indigo-600/30 w-10 h-10 rounded-2xl items-center justify-center mr-4">
+          <BookOpen size={20} color="#4f46e5" />
+        </View>
+        <View className="flex-1">
+          <Text className="text-slate-900 dark:text-white font-bold text-sm mb-0.5">
+            How does it work?
+          </Text>
+          <Text className="text-slate-500 dark:text-slate-400 text-xs">
+            Learn the methodology and start learning.
+          </Text>
+        </View>
+        <ChevronRight size={16} color="#64748b" />
+      </Pressable>
+      <Pressable
+        onPress={onDismiss}
+        className="absolute top-2 right-2 p-2"
+        hitSlop={10}
+      >
+        <X size={16} color="#94a3b8" />
+      </Pressable>
+    </Animated.View>
+  );
+};
 
 // --- Config ---
 
@@ -88,6 +142,39 @@ const MOTIVATIONAL_PHRASES = [
   "Du klarer det godt!",
   "Næsten færdig!",
   "Fantastisk dag!",
+];
+
+const ONBOARDING_STEPS: OnboardingStep[] = [
+  {
+    title: "Welcome to your Daily Routine",
+    description: "This app helps you learn Danish through consistency. By doing a little every day, you build lasting habits and long-term memory.",
+    icon: <Sparkles size={48} color="#4f46e5" />,
+  },
+  {
+    title: "Maintain your Streak",
+    description: "Your streak is more than just a number—it represents your dedication. Keep it alive by completing your core tasks every single day.",
+    icon: <Flame size={48} color="#f59e0b" />,
+  },
+  {
+    title: "The Perfect Day",
+    description: "Aim for a 'Perfect Day' by completing all core tasks. Watch the progress bar turn green as you move towards your daily goal.",
+    icon: <Target size={48} color="#10b981" />,
+  },
+  {
+    title: "Four Pillars of Learning",
+    description: "We focus on Study (Active Recall), Grammar (Structure), Writing (Expression), and Chat (Fluency) to give you a balanced learning experience.",
+    icon: <GraduationCap size={48} color="#7c3aed" />,
+  },
+  {
+    title: "Best Practices",
+    description: "Little and often is better than once a week. Use 'Custom Tasks' to add personal goals like 'Watch a Danish show' or 'Read the news'.",
+    icon: <Lightbulb size={48} color="#d97706" />,
+  },
+  {
+    title: "Track your Progress",
+    description: "Use the calendar to see your history and the Week Summary to celebrate your wins. Consistency is key!",
+    icon: <Calendar size={48} color="#0284c7" />,
+  },
 ];
 
 const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -241,10 +328,10 @@ function WeekCalendarStrip({
               >
                 <Text
                   className={`text-sm font-semibold ${isSelected
-                      ? "text-white"
-                      : isToday
-                        ? "text-indigo-600 dark:text-indigo-400"
-                        : "text-slate-700 dark:text-slate-300"
+                    ? "text-white"
+                    : isToday
+                      ? "text-indigo-600 dark:text-indigo-400"
+                      : "text-slate-700 dark:text-slate-300"
                     }`}
                 >
                   {dayNum}
@@ -465,8 +552,8 @@ function ChecklistRow({
         <View className="flex-1">
           <Text
             className={`font-medium text-base ${isCompleted
-                ? "text-slate-400 dark:text-slate-600 line-through"
-                : "text-slate-800 dark:text-white"
+              ? "text-slate-400 dark:text-slate-600 line-through"
+              : "text-slate-800 dark:text-white"
               }`}
           >
             {item.label}
@@ -578,8 +665,8 @@ function CustomTaskRow({
           <View className="flex-row items-center">
             <Text
               className={`font-medium text-base ${isCompleted
-                  ? "text-slate-400 dark:text-slate-600 line-through"
-                  : "text-slate-800 dark:text-white"
+                ? "text-slate-400 dark:text-slate-600 line-through"
+                : "text-slate-800 dark:text-white"
                 }`}
             >
               {task.label}
@@ -620,8 +707,8 @@ function CustomTaskRow({
           <Animated.View
             style={checkStyle}
             className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
-                ? "bg-emerald-500"
-                : "border-2 border-slate-200 dark:border-slate-800"
+              ? "bg-emerald-500"
+              : "border-2 border-slate-200 dark:border-slate-800"
               }`}
           >
             {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
@@ -635,8 +722,8 @@ function CustomTaskRow({
           >
             <View
               className={`w-7 h-7 rounded-full items-center justify-center ${isCompleted
-                  ? "bg-emerald-500"
-                  : "border-2 border-slate-200 dark:border-slate-800"
+                ? "bg-emerald-500"
+                : "border-2 border-slate-200 dark:border-slate-800"
                 }`}
             >
               {isCompleted && <Check size={16} color="#fff" strokeWidth={3} />}
@@ -697,8 +784,8 @@ function CustomTaskRow({
               )}
               <Text
                 className={`ml-2 text-sm ${sub.checked
-                    ? "text-slate-400 dark:text-slate-600 line-through"
-                    : "text-slate-700 dark:text-slate-300"
+                  ? "text-slate-400 dark:text-slate-600 line-through"
+                  : "text-slate-700 dark:text-slate-300"
                   }`}
               >
                 {sub.text}
@@ -731,8 +818,8 @@ function TimeOfDayPicker({
             key={opt}
             onPress={() => onChange(opt)}
             className={`flex-1 flex-row items-center justify-center py-2.5 rounded-xl mx-1 ${selected
-                ? "border-2"
-                : "border border-slate-200 dark:border-slate-800"
+              ? "border-2"
+              : "border border-slate-200 dark:border-slate-800"
               }`}
             style={
               selected
@@ -1072,8 +1159,8 @@ function TaskModal({
               onPress={addSubItem}
               disabled={!newSubText.trim()}
               className={`w-8 h-8 rounded-lg items-center justify-center ${newSubText.trim()
-                  ? "bg-indigo-100 dark:bg-indigo-900/30"
-                  : "bg-slate-100 dark:bg-slate-800"
+                ? "bg-indigo-100 dark:bg-indigo-900/30"
+                : "bg-slate-100 dark:bg-slate-800"
                 }`}
             >
               <Plus
@@ -1116,8 +1203,8 @@ function TaskModal({
           >
             <Text
               className={`font-medium ${label.trim()
-                  ? "text-white"
-                  : "text-slate-400 dark:text-slate-600"
+                ? "text-white"
+                : "text-slate-400 dark:text-slate-600"
                 }`}
             >
               {isEditing ? "Save Changes" : "Add Task"}
@@ -1234,6 +1321,10 @@ export default function HomeScreen() {
     hiddenDefaultItems,
     toggleDefaultItemVisibility,
     defaultItems,
+    onboardingCompleted,
+    finishOnboarding,
+    bannersDismissed,
+    dismissBanner,
   } = useDailyProgress();
 
   const [celebrationShown, setCelebrationShown] = useState(false);
@@ -1242,8 +1333,17 @@ export default function HomeScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [editingTask, setEditingTask] = useState<CustomTask | null>(null);
   const [weekOffset, setWeekOffset] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Auto-show onboarding if not completed
+  useEffect(() => {
+    if (loaded && !onboardingCompleted?.home && !showOnboarding) {
+      setShowOnboarding(true);
+    }
+  }, [loaded, onboardingCompleted?.home]);
 
   const weekDays = useMemo(() => getWeekDays(weekOffset), [weekOffset]);
+
   const today = getToday();
   const isCurrentWeek = weekOffset === 0;
   const isToday = selectedDate === today;
@@ -1279,6 +1379,13 @@ export default function HomeScreen() {
       <View className="flex-1 w-full max-w-2xl self-center">
         <AllDoneBanner visible={showCelebration} />
 
+        {/* Help Banner */}
+        <HelpBanner
+          visible={!bannersDismissed?.home_help}
+          onDismiss={() => dismissBanner("home_help")}
+          onPress={() => setShowOnboarding(true)}
+        />
+
         {/* Header */}
         <View className="p-6 pb-4 flex-row items-center justify-between">
           <View>
@@ -1304,6 +1411,12 @@ export default function HomeScreen() {
               </Pressable>
             )}
             <StreakBadge count={streakCount} />
+            <Pressable
+              onPress={() => setShowOnboarding(true)}
+              className="w-9 h-9 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 ml-2"
+            >
+              <Info size={18} color="#64748b" />
+            </Pressable>
             <Pressable
               onPress={() => setShowSettings(true)}
               className="w-9 h-9 items-center justify-center rounded-full bg-slate-50 dark:bg-slate-900 ml-2"
@@ -1396,6 +1509,17 @@ export default function HomeScreen() {
           defaultItems={defaultItems}
           hiddenItems={hiddenDefaultItems}
           onToggle={toggleDefaultItemVisibility}
+        />
+
+        <OnboardingOverlay
+          visible={showOnboarding}
+          steps={ONBOARDING_STEPS}
+          onFinish={() => {
+            setShowOnboarding(false);
+            if (!onboardingCompleted?.home) {
+              finishOnboarding("home");
+            }
+          }}
         />
       </View>
     </SafeAreaView>

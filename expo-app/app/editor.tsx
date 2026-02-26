@@ -48,13 +48,13 @@ export default function EditorScreen() {
               type: "success",
               text1: deckId ? "Deck updated successfully" : "New deck created",
             });
-            router.replace("/");
+            router.replace("/(tabs)/decks");
           }}
           onCancel={() => router.back()}
           onDelete={(id) => {
             deleteDeck(id);
             Toast.show({ type: "success", text1: "Deck deleted" });
-            router.replace("/");
+            router.replace("/(tabs)/decks");
           }}
         />
       </View>
