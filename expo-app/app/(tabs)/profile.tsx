@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Pressable,
   ScrollView,
   ActivityIndicator,
-  Appearance,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "../../src/context/AuthContext";
@@ -18,15 +17,35 @@ import {
   CircleHelp,
   Moon,
   Sun,
+  GraduationCap,
+  ChevronRight,
 } from "lucide-react-native";
 import { useColorScheme } from "nativewind";
-
 import { useRouter } from "expo-router";
+import { useUserLevel } from "../../src/store/useUserLevel";
+import { LevelPicker } from "../../src/components/LevelPicker";
+import { WRITING_LEVELS } from "../../src/constants/writingLevels";
+
+const LEVEL_COLOR_MAP: Record<string, string> = {
+  emerald: "#10b981",
+  blue: "#3b82f6",
+  violet: "#8b5cf6",
+  rose: "#f43f5e",
+};
+
+const LEVEL_BG_MAP: Record<string, string> = {
+  emerald: "#ecfdf5",
+  blue: "#eff6ff",
+  violet: "#f5f3ff",
+  rose: "#fff1f2",
+};
 
 export default function ProfileScreen() {
   const { user, signOut, loading } = useAuth();
   const router = useRouter();
   const { colorScheme, setColorScheme } = useColorScheme();
+  const { level, changeLevel, loaded: levelLoaded } = useUserLevel();
+  const [showLevelPicker, setShowLevelPicker] = useState(false);
 
   const toggleDarkMode = () => {
     setColorScheme(colorScheme === "dark" ? "light" : "dark");
@@ -39,6 +58,10 @@ export default function ProfileScreen() {
       </SafeAreaView>
     );
   }
+
+  const currentLevelConfig = WRITING_LEVELS.find((l) => l.value === level);
+  const levelColor = LEVEL_COLOR_MAP[currentLevelConfig?.color ?? "blue"];
+  const levelBg = LEVEL_BG_MAP[currentLevelConfig?.color ?? "blue"];
 
   const menuItems: any[] = [
     {
@@ -92,6 +115,36 @@ export default function ProfileScreen() {
               </View>
             </View>
           </View>
+
+          {/* Danish Level Card */}
+          <Text className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4 ml-1">
+            Danish Level
+          </Text>
+          <Pressable
+            onPress={() => setShowLevelPicker(true)}
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden mb-8 p-4"
+            style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+          >
+            <View className="flex-row items-center justify-between">
+              <View className="flex-row items-center flex-1">
+                <View
+                  className="w-10 h-10 rounded-xl items-center justify-center mr-3"
+                  style={{ backgroundColor: levelBg }}
+                >
+                  <GraduationCap size={20} color={levelColor} />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-gray-900 dark:text-white font-bold text-base">
+                    {currentLevelConfig?.label}
+                  </Text>
+                  <Text className="text-gray-400 dark:text-slate-500 text-xs mt-0.5">
+                    {currentLevelConfig?.sublabel} — {currentLevelConfig?.description}
+                  </Text>
+                </View>
+              </View>
+              <ChevronRight size={18} color="#94a3b8" />
+            </View>
+          </Pressable>
 
           <Text className="text-sm font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4 ml-1">
             Settings
@@ -158,6 +211,13 @@ export default function ProfileScreen() {
           </View>
         </ScrollView>
       </View>
+
+      <LevelPicker
+        visible={showLevelPicker}
+        currentLevel={level}
+        onSelect={changeLevel}
+        onClose={() => setShowLevelPicker(false)}
+      />
     </SafeAreaView>
   );
 }
