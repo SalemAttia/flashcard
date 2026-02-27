@@ -21,6 +21,7 @@ import { QuestionCard } from "../src/components/Grammar/QuestionCard";
 import { AnswerFeedback } from "../src/components/Grammar/AnswerFeedback";
 import { generateGrammarQuestions } from "../src/services/grammarService";
 import { getTopicConfig } from "../src/constants/grammarTopics";
+import { useChatLanguages } from "../src/store/useChatLanguages";
 import {
   GrammarTopicId,
   GrammarQuestion,
@@ -44,6 +45,7 @@ export default function GrammarSessionScreen() {
   }>();
   const { user } = useAuth();
   const { completeItem } = useDailyProgress();
+  const { studyLang, nativeLang, userLevel } = useChatLanguages();
   const topicConfig = topicId
     ? getTopicConfig(topicId as GrammarTopicId)
     : null;
@@ -78,6 +80,9 @@ export default function GrammarSessionScreen() {
       const generated = await generateGrammarQuestions(topicConfig, {
         customTopic: customTopic || undefined,
         questionCount,
+        studyLang,
+        nativeLang,
+        userLevel,
       });
       if (generated.length === 0) throw new Error("No questions generated");
       setQuestions(generated);

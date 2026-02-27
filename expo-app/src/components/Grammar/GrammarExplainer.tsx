@@ -9,12 +9,16 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { generateGrammarExplanation } from "../../services/grammarService";
+import { Language, WritingLevel } from "../../types";
 
 interface GrammarExplainerProps {
   visible: boolean;
   topicLabel: string;
   topicLabelDa?: string;
   onClose: () => void;
+  studyLang?: Language;
+  nativeLang?: Language;
+  userLevel?: WritingLevel;
 }
 
 export function GrammarExplainer({
@@ -22,6 +26,9 @@ export function GrammarExplainer({
   topicLabel,
   topicLabelDa,
   onClose,
+  studyLang,
+  nativeLang,
+  userLevel,
 }: GrammarExplainerProps) {
   const [explanation, setExplanation] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -36,7 +43,7 @@ export function GrammarExplainer({
         -1,
         false,
       );
-      generateGrammarExplanation(topicLabel, topicLabelDa)
+      generateGrammarExplanation(topicLabel, topicLabelDa, studyLang, nativeLang, userLevel)
         .then((text) => {
           setExplanation(text);
           setLoading(false);

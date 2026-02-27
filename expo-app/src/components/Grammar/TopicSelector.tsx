@@ -18,7 +18,7 @@ import {
   GRAMMAR_TOPICS,
   GrammarTopicConfig,
 } from "../../constants/grammarTopics";
-import { GrammarTopicId, SavedCustomTopic } from "../../types";
+import { GrammarTopicId, SavedCustomTopic, Language, WritingLevel } from "../../types";
 import { GrammarExplainer } from "./GrammarExplainer";
 import { generateGrammarTopicTitle } from "../../services/grammarService";
 
@@ -35,6 +35,9 @@ interface TopicSelectorProps {
   onDeleteSavedTopic: (id: string) => void;
   onSelectSavedTopic: (topic: SavedCustomTopic) => void;
   selectedSavedTopicId: string | null;
+  studyLang?: Language;
+  nativeLang?: Language;
+  userLevel?: WritingLevel;
 }
 
 const TOPIC_COLORS: Record<
@@ -160,6 +163,9 @@ export function TopicSelector({
   onDeleteSavedTopic,
   onSelectSavedTopic,
   selectedSavedTopicId,
+  studyLang,
+  nativeLang,
+  userLevel,
 }: TopicSelectorProps) {
   const hasCustomTopic = customTopic.trim().length > 0;
   const canStart = selectedTopic || hasCustomTopic;
@@ -179,7 +185,7 @@ export function TopicSelector({
     setIsGeneratingTitle(true);
     setSuggestedTitle(null);
     try {
-      const title = await generateGrammarTopicTitle(customTopic.trim());
+      const title = await generateGrammarTopicTitle(customTopic.trim(), studyLang);
       setSuggestedTitle(title);
     } finally {
       setIsGeneratingTitle(false);
@@ -210,6 +216,9 @@ export function TopicSelector({
           setExplainerTopic(null);
           setExplainerCustomLabel(null);
         }}
+        studyLang={studyLang}
+        nativeLang={nativeLang}
+        userLevel={userLevel}
       />
 
       {/* Custom topic input */}

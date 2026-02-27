@@ -1,5 +1,5 @@
 import OpenAI from "openai";
-import { Language, ChatMessage } from "../types";
+import { Language, ChatMessage, WritingLevel } from "../types";
 import { LANGUAGES } from "../constants/languages";
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
@@ -12,20 +12,29 @@ function getOpenAIClient(): OpenAI | null {
 export function buildSystemPrompt(
   studyLang: Language,
   nativeLang: Language,
+  userLevel?: WritingLevel,
 ): string {
   const study = LANGUAGES.find((l) => l.value === studyLang);
   const native = LANGUAGES.find((l) => l.value === nativeLang);
   const studyName = study?.label ?? studyLang;
   const nativeName = native?.label ?? nativeLang;
+  const level = userLevel ?? "a1";
 
   const rtlNote =
     studyLang === "ar-SA" || nativeLang === "ar-SA"
       ? " When writing Arabic text, always use the Arabic script (not romanisation)."
       : "";
 
+  const levelGuidance =
+    level === "a1" || level === "a2"
+      ? `The student is at CEFR ${level.toUpperCase()} level. Use simple vocabulary, short sentences, and basic grammar. Be extra patient and encouraging.`
+      : `The student is at CEFR ${level.toUpperCase()} level. Use richer vocabulary, more complex grammar structures, idiomatic expressions, and nuanced explanations.`;
+
   return `You are a friendly and knowledgeable ${studyName} language tutor. \
 The student's native language is ${nativeName}. Always communicate with the student \
 in ${nativeName} unless they ask you to switch.${rtlNote}
+
+${levelGuidance}
 
 Your role:
 1. Explain words and phrases in ${studyName} clearly, including pronunciation hints where helpful.
@@ -33,6 +42,7 @@ Your role:
 3. Give grammar explanations with concise examples in ${studyName}.
 4. Correct the student gently when they make mistakes, and explain why.
 5. Suggest related vocabulary when it naturally enriches the answer.
+6. Adapt complexity of examples and explanations to CEFR ${level.toUpperCase()} level.
 
 Formatting rules:
 - Keep responses concise — no wall-of-text. Use short paragraphs or bullet points.

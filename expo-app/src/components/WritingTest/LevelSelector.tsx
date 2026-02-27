@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, Pressable, ScrollView, TextInput } from "react-native";
 import { Check, ChevronRight } from "lucide-react-native";
 import { WRITING_LEVELS, LevelConfig } from "../../constants/writingLevels";
-import { WritingLevel, Deck } from "../../types";
+import { WritingLevel, Deck, Language } from "../../types";
 
 interface LevelSelectorProps {
   selectedLevel: WritingLevel | null;
@@ -13,6 +13,7 @@ interface LevelSelectorProps {
   topic: string;
   onChangeTopic: (topic: string) => void;
   onStart: () => void;
+  studyLang?: Language;
 }
 
 const LEVEL_COLORS: Record<
@@ -65,9 +66,10 @@ export function LevelSelector({
   topic,
   onChangeTopic,
   onStart,
+  studyLang,
 }: LevelSelectorProps) {
-  const danishDecks = decks.filter(
-    (d) => d.backLang === "da-DK" && d.cards.length > 0,
+  const filteredDecks = decks.filter(
+    (d) => d.backLang === (studyLang ?? "da-DK") && d.cards.length > 0,
   );
 
   return (
@@ -179,7 +181,7 @@ export function LevelSelector({
       </View>
 
       {/* Vocabulary deck (only for Danish decks) */}
-      {danishDecks.length > 0 && (
+      {filteredDecks.length > 0 && (
         <View>
           <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">
             Vocabulary Context (Optional)
@@ -206,7 +208,7 @@ export function LevelSelector({
                 No deck — generic prompts
               </Text>
             </Pressable>
-            {danishDecks.map((deck) => (
+            {filteredDecks.map((deck) => (
               <Pressable
                 key={deck.id}
                 onPress={() => onSelectDeck(deck.id)}

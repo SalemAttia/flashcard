@@ -5,6 +5,7 @@ import { router } from "expo-router";
 import { TopicSelector } from "../../src/components/Grammar/TopicSelector";
 import { GrammarTopicId, SavedCustomTopic } from "../../src/types";
 import { useCustomGrammarTopics } from "../../src/store/useCustomGrammarTopics";
+import { useChatLanguages } from "../../src/store/useChatLanguages";
 
 export default function GrammarScreen() {
   const [selectedTopic, setSelectedTopic] = useState<GrammarTopicId | null>(
@@ -22,6 +23,7 @@ export default function GrammarScreen() {
     deleteTopic,
     markTopicUsed,
   } = useCustomGrammarTopics();
+  const { studyLang, nativeLang, userLevel } = useChatLanguages();
 
   const handleSelectSavedTopic = (topic: SavedCustomTopic) => {
     setCustomTopic(topic.title);
@@ -81,6 +83,9 @@ export default function GrammarScreen() {
         onDeleteSavedTopic={deleteTopic}
         onSelectSavedTopic={handleSelectSavedTopic}
         selectedSavedTopicId={selectedSavedTopicId}
+        studyLang={studyLang}
+        nativeLang={nativeLang}
+        userLevel={userLevel}
       />
       </View>
     </SafeAreaView>

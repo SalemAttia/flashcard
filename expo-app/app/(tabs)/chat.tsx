@@ -44,14 +44,20 @@ export default function ChatScreen() {
 
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
-  const { studyLang, nativeLang, changeStudyLang, changeNativeLang } =
-    useChatLanguages();
+  const {
+    studyLang,
+    nativeLang,
+    userLevel,
+    changeStudyLang,
+    changeNativeLang,
+    changeUserLevel,
+  } = useChatLanguages();
   const { decks, saveDeck } = useDecks();
   const { notes, addNote, deleteNote } = useChatNotes();
 
   const systemPrompt = useMemo(
-    () => buildSystemPrompt(studyLang, nativeLang),
-    [studyLang, nativeLang],
+    () => buildSystemPrompt(studyLang, nativeLang, userLevel),
+    [studyLang, nativeLang, userLevel],
   );
 
   const scrollToEnd = useCallback(() => {
@@ -229,8 +235,10 @@ export default function ChatScreen() {
       <LanguageSelector
         studyLang={studyLang}
         nativeLang={nativeLang}
+        userLevel={userLevel}
         onChangeStudy={handleChangeStudyLang}
         onChangeNative={handleChangeNativeLang}
+        onChangeLevel={changeUserLevel}
       />
 
       {/* Messages + input */}

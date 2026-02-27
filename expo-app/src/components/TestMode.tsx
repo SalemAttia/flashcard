@@ -27,6 +27,8 @@ import Animated, {
 import * as Speech from "expo-speech";
 import OpenAI from "openai";
 import { Deck, Card, Language } from "../types";
+import { useChatLanguages } from "../store/useChatLanguages";
+import { LANGUAGES } from "../constants/languages";
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
@@ -51,6 +53,9 @@ interface Question {
 }
 
 export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
+  const { nativeLang, userLevel } = useChatLanguages();
+  const nativeLangName =
+    LANGUAGES.find((l) => l.value === nativeLang)?.label ?? "English";
   const [loading, setLoading] = useState(true);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -190,8 +195,7 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert language educator. Generate test questions for flashcard study sets. Always respond with valid JSON only, no markdown fences.",
+            content: `You are an expert language educator. The student's native language is ${nativeLangName} and their CEFR level is ${userLevel.toUpperCase()}. Generate test questions for flashcard study sets. Provide all explanations in ${nativeLangName}. Always respond with valid JSON only, no markdown fences.`,
           },
           {
             role: "user",
@@ -199,6 +203,7 @@ export function TestMode({ deck, onComplete, onCancel }: TestModeProps) {
 Title: ${deck.title}
 Front language: ${deck.frontLang}
 Back language: ${deck.backLang}
+Student CEFR level: ${userLevel.toUpperCase()}
 
 Cards:
 ${cardsList}
@@ -212,10 +217,10 @@ Generate exactly ${questionCount} questions as a JSON array. Include a mix of al
 Each object must have:
 {
   "type": "multiple-choice" | "true-false" | "written" | "sound",
-  "prompt": "question text shown to the user (for sound: e.g. 'Listen and translate:')",
+  "prompt": "question text shown to the user in ${nativeLangName} (for sound: e.g. 'Listen and translate:')",
   "correctAnswer": "the correct answer string",
   "options": ["a","b","c","d"],     // for multiple-choice and sound with soundVariant multiple-choice
-  "explanation": "brief explanation",
+  "explanation": "brief explanation in ${nativeLangName}",
   // For type "sound" only:
   "audioText": "the exact text to speak aloud",
   "audioLang": "${deck.frontLang}",
@@ -226,11 +231,13 @@ For type "sound":
 - audioText should be the word/phrase from the front side of the card (in ${deck.frontLang})
 - correctAnswer should be the translation the user must produce (in ${deck.backLang})
 - options (if soundVariant is "multiple-choice") should be plausible translations in ${deck.backLang}
-- prompt should be instructional, e.g. "Listen and translate:"
+- prompt should be instructional in ${nativeLangName}, e.g. "Listen and translate:"
 - audioLang must be "${deck.frontLang}"
 
+Adjust question difficulty to CEFR ${userLevel.toUpperCase()} level.
 For true-false, correctAnswer must be exactly "true" or "false".
 For written, correctAnswer is the expected translation.
+All explanations MUST be in ${nativeLangName}.
 Return ONLY the JSON array.`,
           },
         ],

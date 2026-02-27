@@ -3,11 +3,13 @@ import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useDecks } from "../../src/store/useDecks";
+import { useChatLanguages } from "../../src/store/useChatLanguages";
 import { LevelSelector } from "../../src/components/WritingTest/LevelSelector";
 import { WritingLevel } from "../../src/types";
 
 export default function WritingTestScreen() {
   const { decks } = useDecks();
+  const { studyLang } = useChatLanguages();
   const [selectedLevel, setSelectedLevel] = useState<WritingLevel | null>(null);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
   const [topic, setTopic] = useState("");
@@ -41,6 +43,7 @@ export default function WritingTestScreen() {
         topic={topic}
         onChangeTopic={setTopic}
         onStart={handleStart}
+        studyLang={studyLang}
       />
       </View>
     </SafeAreaView>
