@@ -22,6 +22,7 @@ import { useChatLanguages } from "../../src/store/useChatLanguages";
 import { useChatNotes } from "../../src/store/useChatNotes";
 import { useDecks } from "../../src/store/useDecks";
 import { useChatHistory } from "../../src/store/useChatHistory";
+import { useUserLevel } from "../../src/store/useUserLevel";
 import { useDailyProgress } from "../../src/store/useDailyProgress";
 
 import { LanguageSelector } from "../../src/components/Chat/LanguageSelector";
@@ -44,20 +45,15 @@ export default function ChatScreen() {
 
   const flatListRef = useRef<FlatList<ChatMessage>>(null);
 
-  const {
-    studyLang,
-    nativeLang,
-    userLevel,
-    changeStudyLang,
-    changeNativeLang,
-    changeUserLevel,
-  } = useChatLanguages();
+  const { studyLang, nativeLang, changeStudyLang, changeNativeLang } =
+    useChatLanguages();
   const { decks, saveDeck } = useDecks();
   const { notes, addNote, deleteNote } = useChatNotes();
+  const { level } = useUserLevel();
 
   const systemPrompt = useMemo(
-    () => buildSystemPrompt(studyLang, nativeLang, userLevel),
-    [studyLang, nativeLang, userLevel],
+    () => buildSystemPrompt(studyLang, nativeLang, level),
+    [studyLang, nativeLang, level],
   );
 
   const scrollToEnd = useCallback(() => {
@@ -208,9 +204,16 @@ export default function ChatScreen() {
       {/* Header */}
       <View className="px-6 py-4 flex-row items-center justify-between border-b border-slate-100 dark:border-slate-800">
         <View>
-          <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
-            Chat
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">
+              Chat
+            </Text>
+            <View className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40">
+              <Text className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                {level.toUpperCase()}
+              </Text>
+            </View>
+          </View>
           <Text className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Your AI language tutor
           </Text>
@@ -235,10 +238,8 @@ export default function ChatScreen() {
       <LanguageSelector
         studyLang={studyLang}
         nativeLang={nativeLang}
-        userLevel={userLevel}
         onChangeStudy={handleChangeStudyLang}
         onChangeNative={handleChangeNativeLang}
-        onChangeLevel={changeUserLevel}
       />
 
       {/* Messages + input */}

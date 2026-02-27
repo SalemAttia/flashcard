@@ -17,8 +17,9 @@ import {
 import {
   GRAMMAR_TOPICS,
   GrammarTopicConfig,
+  getTopicIntroLevel,
 } from "../../constants/grammarTopics";
-import { GrammarTopicId, SavedCustomTopic, Language, WritingLevel } from "../../types";
+import { GrammarTopicId, SavedCustomTopic, WritingLevel } from "../../types";
 import { GrammarExplainer } from "./GrammarExplainer";
 import { generateGrammarTopicTitle } from "../../services/grammarService";
 
@@ -35,8 +36,6 @@ interface TopicSelectorProps {
   onDeleteSavedTopic: (id: string) => void;
   onSelectSavedTopic: (topic: SavedCustomTopic) => void;
   selectedSavedTopicId: string | null;
-  studyLang?: Language;
-  nativeLang?: Language;
   userLevel?: WritingLevel;
 }
 
@@ -150,6 +149,13 @@ const TOPIC_COLORS: Record<
 
 const QUESTION_COUNT_OPTIONS = [5, 10, 15, 20];
 
+const LEVEL_GRAMMAR_CHIPS: Record<WritingLevel, string[]> = {
+  a1: ["basic articles en/et", "simple pronouns", "present tense verbs", "negation with ikke", "plural nouns"],
+  a2: ["past tense sentences", "question formation", "prepositions i/på/til", "adjective agreement", "V2 word order"],
+  b1: ["modal verbs kan/skal/vil", "subordinate clauses", "comparative adjectives", "reflexive verbs", "conditionals med hvis"],
+  b2: ["passive voice s-passiv", "relative clauses som/der", "indirect speech", "complex sentence structures", "formal register"],
+};
+
 export function TopicSelector({
   selectedTopic,
   onSelectTopic,
@@ -163,12 +169,26 @@ export function TopicSelector({
   onDeleteSavedTopic,
   onSelectSavedTopic,
   selectedSavedTopicId,
-  studyLang,
-  nativeLang,
   userLevel,
 }: TopicSelectorProps) {
   const hasCustomTopic = customTopic.trim().length > 0;
   const canStart = selectedTopic || hasCustomTopic;
+  const [showAllTopics, setShowAllTopics] = useState(false);
+
+  // Show only topics introduced at the user's exact level by default;
+  // the rest (accessible but from other levels) are behind "show all"
+  const currentLevelTopics = userLevel
+    ? GRAMMAR_TOPICS.filter((t) => getTopicIntroLevel(t) === userLevel)
+    : GRAMMAR_TOPICS;
+  const otherAccessibleTopics = userLevel
+    ? GRAMMAR_TOPICS.filter((t) => getTopicIntroLevel(t) !== userLevel && t.levels.includes(userLevel))
+    : [];
+  const inaccessibleTopics = userLevel
+    ? GRAMMAR_TOPICS.filter((t) => !t.levels.includes(userLevel))
+    : [];
+  const displayedTopics = showAllTopics
+    ? GRAMMAR_TOPICS.filter((t) => userLevel ? t.levels.includes(userLevel) : true)
+    : currentLevelTopics;
   const [explainerTopic, setExplainerTopic] =
     useState<GrammarTopicConfig | null>(null);
   const [explainerCustomLabel, setExplainerCustomLabel] = useState<
@@ -185,7 +205,7 @@ export function TopicSelector({
     setIsGeneratingTitle(true);
     setSuggestedTitle(null);
     try {
-      const title = await generateGrammarTopicTitle(customTopic.trim(), studyLang);
+      const title = await generateGrammarTopicTitle(customTopic.trim());
       setSuggestedTitle(title);
     } finally {
       setIsGeneratingTitle(false);
@@ -216,9 +236,6 @@ export function TopicSelector({
           setExplainerTopic(null);
           setExplainerCustomLabel(null);
         }}
-        studyLang={studyLang}
-        nativeLang={nativeLang}
-        userLevel={userLevel}
       />
 
       {/* Custom topic input */}
@@ -315,6 +332,41 @@ export function TopicSelector({
             </Text>
           </Pressable>
         )}
+
+        {/* Level-specific quick picks */}
+        {userLevel && (
+          <View className="mt-3">
+            <Text className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-2">
+              Quick picks for {userLevel.toUpperCase()}
+            </Text>
+            <View className="flex-row flex-wrap gap-2">
+              {LEVEL_GRAMMAR_CHIPS[userLevel].map((chip) => (
+                <Pressable
+                  key={chip}
+                  onPress={() => {
+                    onChangeCustomTopic(customTopic === chip ? "" : chip);
+                    onSelectTopic(null as any);
+                  }}
+                  className={`px-3 py-1.5 rounded-full border ${
+                    customTopic === chip
+                      ? "bg-indigo-100 dark:bg-indigo-900/40 border-indigo-300 dark:border-indigo-700"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+                  }`}
+                >
+                  <Text
+                    className={`text-xs font-medium ${
+                      customTopic === chip
+                        ? "text-indigo-700 dark:text-indigo-400"
+                        : "text-slate-600 dark:text-slate-400"
+                    }`}
+                  >
+                    {chip}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
+        )}
       </View>
 
       {/* Saved custom topics */}
@@ -388,12 +440,16 @@ export function TopicSelector({
       {/* Preset topics */}
       <View>
         <Text className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">
-          Or Select a Topic
+          {userLevel
+            ? `${userLevel.toUpperCase()} Topics`
+            : "Or Select a Topic"}
         </Text>
         <View className="gap-3">
-          {GRAMMAR_TOPICS.map((topic) => {
+          {displayedTopics.map((topic) => {
             const isSelected = selectedTopic === topic.id && !hasCustomTopic;
             const colors = TOPIC_COLORS[topic.color] || TOPIC_COLORS.indigo;
+            const isNewAtLevel =
+              userLevel && getTopicIntroLevel(topic) === userLevel;
             return (
               <Pressable
                 key={topic.id}
@@ -412,7 +468,7 @@ export function TopicSelector({
               >
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 gap-1">
-                    <View className="flex-row items-center gap-2">
+                    <View className="flex-row items-center gap-2 flex-wrap">
                       <Text
                         className={`font-bold ${
                           isSelected
@@ -435,6 +491,13 @@ export function TopicSelector({
                           {topic.labelDa}
                         </Text>
                       </View>
+                      {isNewAtLevel && (
+                        <View className="px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40">
+                          <Text className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
+                            New at {userLevel.toUpperCase()}
+                          </Text>
+                        </View>
+                      )}
                     </View>
                     <Text className="text-xs text-slate-500">
                       {topic.description}
@@ -458,6 +521,20 @@ export function TopicSelector({
             );
           })}
         </View>
+
+        {/* Show all accessible / show current level only toggle */}
+        {userLevel && otherAccessibleTopics.length > 0 && (
+          <Pressable
+            onPress={() => setShowAllTopics(!showAllTopics)}
+            className="mt-3 py-2 items-center"
+          >
+            <Text className="text-sm font-semibold text-indigo-500">
+              {showAllTopics
+                ? `Show ${userLevel.toUpperCase()} only`
+                : `Show all accessible topics (+${otherAccessibleTopics.length} more)`}
+            </Text>
+          </Pressable>
+        )}
       </View>
 
       {/* Question count */}

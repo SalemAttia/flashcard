@@ -1,7 +1,6 @@
 import OpenAI from "openai";
-import { GrammarQuestion, GrammarTopicId, Language, WritingLevel } from "../types";
+import { GrammarQuestion, GrammarTopicId } from "../types";
 import { GrammarTopicConfig } from "../constants/grammarTopics";
-import { LANGUAGES } from "../constants/languages";
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
@@ -12,26 +11,18 @@ function getOpenAIClient(): OpenAI | null {
 
 export async function generateGrammarQuestions(
   topicConfig: GrammarTopicConfig | null,
-  options?: {
-    customTopic?: string;
-    questionCount?: number;
-    studyLang?: Language;
-    nativeLang?: Language;
-    userLevel?: WritingLevel;
-  },
+  options?: { customTopic?: string; questionCount?: number; level?: string },
 ): Promise<GrammarQuestion[]> {
   const openai = getOpenAIClient();
   const topicLabel =
-    options?.customTopic || topicConfig?.label || "General Grammar";
+    options?.customTopic || topicConfig?.label || "General Danish Grammar";
   const topicLabelDa = topicConfig?.labelDa || topicLabel;
   const count = options?.questionCount || topicConfig?.questionCount || 10;
   const topicId = topicConfig?.id || ("custom" as GrammarTopicId);
 
-  const studyLangName =
-    LANGUAGES.find((l) => l.value === (options?.studyLang ?? "da-DK"))?.label ?? "Danish";
-  const nativeLangName =
-    LANGUAGES.find((l) => l.value === (options?.nativeLang ?? "en-US"))?.label ?? "English";
-  const level = options?.userLevel ?? "a1";
+  const levelHint = options?.level
+    ? ` The student is at CEFR ${options.level.toUpperCase()} level. For A1 use very simple words and short sentences; for A2 use everyday vocabulary; for B1 use wider vocabulary; for B2 use complex structures.`
+    : "";
 
   if (!openai) {
     if (topicConfig) {
@@ -47,11 +38,11 @@ export async function generateGrammarQuestions(
       messages: [
         {
           role: "system",
-          content: `You are a ${studyLangName} grammar teacher creating exercises for a CEFR ${level.toUpperCase()} level student. The student's native language is ${nativeLangName}. Topic: "${topicLabel}" (${topicLabelDa}). Respond ONLY with a JSON array, no markdown fences.`,
+          content: `You are a Danish grammar teacher creating exercises for the topic: "${topicLabel}" (${topicLabelDa}).${levelHint} Respond ONLY with a JSON array, no markdown fences.`,
         },
         {
           role: "user",
-          content: `Create exactly ${count} ${studyLangName} grammar questions on the topic "${topicLabel}" for a CEFR ${level.toUpperCase()} student.
+          content: `Create exactly ${count} Danish grammar questions on the topic "${topicLabel}".
 
 Mix of types: roughly 70% multiple-choice and 30% fill-in-the-blank.
 
@@ -61,14 +52,14 @@ For each question, return a JSON object:
   "sentence": "The sentence. Use '___' for blanks in fill-in-the-blank questions. For multiple-choice, write the full question.",
   "options": ["option1", "option2", "option3", "option4"],
   "correctAnswer": "the correct option (must be one of options)",
-  "explanation": "Brief explanation in ${nativeLangName} of why this is correct, mentioning the grammar rule."
+  "explanation": "Brief explanation in English of why this is correct, mentioning the grammar rule."
 }
 
 Rules:
-- Sentences should be in ${studyLangName}.
-- Explanations MUST be in ${nativeLangName} (the student's native language).
+- Sentences should be in Danish.
+- Explanations should be in English (the student is learning Danish).
 - Options should be plausible distractors.
-- Adjust difficulty to CEFR ${level.toUpperCase()} level.
+- Vary difficulty from easy to moderate.
 - Return ONLY the JSON array.
 - IMPORTANT: Every question MUST have exactly 4 items in the "options" array. Never return a question without options, for both multiple-choice and fill-in-the-blank types.`,
         },
@@ -113,17 +104,8 @@ Rules:
 export async function generateGrammarExplanation(
   topicLabel: string,
   topicLabelDa?: string,
-  studyLang?: Language,
-  nativeLang?: Language,
-  userLevel?: WritingLevel,
 ): Promise<string> {
   const openai = getOpenAIClient();
-
-  const studyLangName =
-    LANGUAGES.find((l) => l.value === (studyLang ?? "da-DK"))?.label ?? "Danish";
-  const nativeLangName =
-    LANGUAGES.find((l) => l.value === (nativeLang ?? "en-US"))?.label ?? "English";
-  const level = userLevel ?? "a1";
 
   if (!openai) {
     return `**${topicLabel}**\n\nConnect an OpenAI API key to get an AI-generated grammar refresher for this topic.`;
@@ -136,19 +118,20 @@ export async function generateGrammarExplanation(
       messages: [
         {
           role: "system",
-          content: `You are a friendly ${studyLangName} grammar teacher. The student's native language is ${nativeLangName} and their CEFR level is ${level.toUpperCase()}. Explain grammar concepts clearly and concisely in ${nativeLangName} with ${studyLangName} examples. Format with markdown (bold, bullet points).`,
+          content:
+            "You are a friendly Danish grammar teacher. Explain grammar concepts clearly and concisely for language learners. Use simple English with Danish examples. Format with markdown (bold, bullet points).",
         },
         {
           role: "user",
-          content: `Give me a short grammar refresher on the ${studyLangName} topic: "${topicLabel}"${topicLabelDa ? ` (${topicLabelDa})` : ""}.
+          content: `Give me a short grammar refresher on the Danish topic: "${topicLabel}"${topicLabelDa ? ` (${topicLabelDa})` : ""}.
 
 Include:
-1. A brief explanation of the rule in ${nativeLangName} (2-3 sentences)
+1. A brief explanation of the rule (2-3 sentences)
 2. The key patterns or forms to remember (use a table or list)
-3. 3-4 example sentences in ${studyLangName} with ${nativeLangName} translations
+3. 3-4 example sentences in Danish with English translations
 4. 1-2 common mistakes to avoid
 
-Keep it concise — this is a quick refresher, not a full lesson. Adjust complexity to CEFR ${level.toUpperCase()} level.`,
+Keep it concise — this is a quick refresher, not a full lesson.`,
         },
       ],
     });
@@ -354,12 +337,8 @@ function generateLocalGrammarQuestions(
 
 export async function generateGrammarTopicTitle(
   rawDescription: string,
-  studyLang?: Language,
 ): Promise<string> {
   const openai = getOpenAIClient();
-  const studyLangName =
-    LANGUAGES.find((l) => l.value === (studyLang ?? "da-DK"))?.label ?? "Danish";
-
   if (!openai) {
     return rawDescription
       .split(" ")
@@ -374,7 +353,8 @@ export async function generateGrammarTopicTitle(
       messages: [
         {
           role: "system",
-          content: `You are a ${studyLangName} grammar expert. Given a learner's description of a grammar concept, return ONLY a concise English title for that grammar topic. Format: [Category]: [Specifics] or a short noun phrase. Max 8 words. No quotes, no punctuation at end.`,
+          content:
+            "You are a Danish grammar expert. Given a learner's description of a grammar concept, return ONLY a concise English title for that grammar topic. Format: [Category]: [Specifics] or a short noun phrase. Max 8 words. No quotes, no punctuation at end.",
         },
         { role: "user", content: rawDescription },
       ],
