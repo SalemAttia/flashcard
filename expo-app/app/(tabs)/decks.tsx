@@ -23,7 +23,7 @@ import { Deck } from "../../src/types";
 const LEVEL_ORDER = ["a1", "a2", "b1", "b2"] as const;
 
 export default function HomeScreen() {
-  const { decks, loaded, saveDeck } = useDecks();
+  const { decks, loaded, saveDeck, deleteDeck } = useDecks();
   const { level } = useUserLevel();
   const [generatingId, setGeneratingId] = useState<string | null>(null);
 
@@ -228,6 +228,10 @@ export default function HomeScreen() {
               return;
             }
             router.push(`/test?deckId=${deck.id}`);
+          }}
+          onDelete={(deck) => {
+            deleteDeck(deck.id);
+            Toast.show({ type: "success", text1: "Deck deleted" });
           }}
         />
       </ScrollView>

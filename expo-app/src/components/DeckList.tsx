@@ -6,6 +6,8 @@ import {
   Calendar,
   Layout,
   ClipboardCheck,
+  Globe,
+  Trash2,
 } from "lucide-react-native";
 import Animated, {
   useSharedValue,
@@ -22,6 +24,8 @@ interface DeckListProps {
   onEdit: (deck: Deck) => void;
   onStudy: (deck: Deck) => void;
   onTest: (deck: Deck) => void;
+  onDelete: (deck: Deck) => void;
+  currentUserId?: string;
 }
 
 function DeckCard({
@@ -30,12 +34,16 @@ function DeckCard({
   onEdit,
   onStudy,
   onTest,
+  onDelete,
+  isOwnDeck,
 }: {
   deck: Deck;
   index: number;
   onEdit: () => void;
   onStudy: () => void;
   onTest: () => void;
+  onDelete: () => void;
+  isOwnDeck: boolean;
 }) {
   const opacity = useSharedValue(0);
   const translateY = useSharedValue(10);
@@ -71,9 +79,19 @@ function DeckCard({
     >
       <View className="flex-row justify-between items-start mb-2">
         <View className="flex-1">
-          <Text className="font-semibold text-lg text-slate-800 dark:text-white">
-            {deck.title}
-          </Text>
+          <View className="flex-row items-center gap-2">
+            <Text className="font-semibold text-lg text-slate-800 dark:text-white">
+              {deck.title}
+            </Text>
+            {deck.isGlobal && (
+              <View className="flex-row items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full">
+                <Globe size={10} color="#059669" />
+                <Text className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  Global
+                </Text>
+              </View>
+            )}
+          </View>
           <Text
             className="text-slate-500 dark:text-slate-400 text-sm mt-0.5"
             numberOfLines={1}
@@ -123,21 +141,34 @@ function DeckCard({
             Test
           </Text>
         </Pressable>
-        <Pressable
-          onPress={onEdit}
-          className="px-4 bg-slate-50 dark:bg-slate-800 rounded-xl items-center justify-center"
-          style={({ pressed }) => ({
-            transform: [{ scale: pressed ? 0.98 : 1 }],
-          })}
-        >
-          <Edit2 size={16} color="#475569" />
-        </Pressable>
+        {isOwnDeck && (
+          <>
+            <Pressable
+              onPress={onEdit}
+              className="px-4 bg-slate-50 dark:bg-slate-800 rounded-xl items-center justify-center"
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <Edit2 size={16} color="#475569" />
+            </Pressable>
+            <Pressable
+              onPress={onDelete}
+              className="px-4 bg-rose-50 dark:bg-rose-950/30 rounded-xl items-center justify-center"
+              style={({ pressed }) => ({
+                transform: [{ scale: pressed ? 0.98 : 1 }],
+              })}
+            >
+              <Trash2 size={16} color="#e11d48" />
+            </Pressable>
+          </>
+        )}
       </View>
     </Animated.View>
   );
 }
 
-export function DeckList({ decks, onEdit, onStudy, onTest }: DeckListProps) {
+export function DeckList({ decks, onEdit, onStudy, onTest, onDelete, currentUserId }: DeckListProps) {
   if (decks.length === 0) {
     return (
       <View className="items-center justify-center h-64 gap-4">
@@ -153,16 +184,21 @@ export function DeckList({ decks, onEdit, onStudy, onTest }: DeckListProps) {
 
   return (
     <View className="gap-4">
-      {decks.map((deck, idx) => (
-        <DeckCard
-          key={deck.id}
-          deck={deck}
-          index={idx}
-          onEdit={() => onEdit(deck)}
-          onStudy={() => onStudy(deck)}
-          onTest={() => onTest(deck)}
-        />
-      ))}
+      {decks.map((deck, idx) => {
+        const isOwnDeck = !deck.isGlobal || deck.ownerUid === currentUserId;
+        return (
+          <DeckCard
+            key={deck.id}
+            deck={deck}
+            index={idx}
+            isOwnDeck={isOwnDeck}
+            onEdit={() => onEdit(deck)}
+            onStudy={() => onStudy(deck)}
+            onTest={() => onTest(deck)}
+            onDelete={() => onDelete(deck)}
+          />
+        );
+      })}
     </View>
   );
 }

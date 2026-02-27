@@ -14,6 +14,8 @@ export type Deck = {
   frontLang: Language;
   backLang: Language;
   lastStudied?: string;
+  isGlobal?: boolean;
+  ownerUid?: string;
 };
 
 // Danish Writing Test types

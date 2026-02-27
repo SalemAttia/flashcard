@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
 import { useDecks } from "../src/store/useDecks";
+import { useDailyProgress } from "../src/store/useDailyProgress";
 import { Summary } from "../src/components/Summary";
 
 export default function SummaryScreen() {
@@ -13,6 +14,11 @@ export default function SummaryScreen() {
     deckId: string;
   }>();
   const { getDeck } = useDecks();
+  const { completeItem } = useDailyProgress();
+
+  useEffect(() => {
+    completeItem("study_deck");
+  }, [completeItem]);
 
   const deck = getDeck(deckId!);
 

@@ -13,6 +13,7 @@ interface AuthContextValue {
   user: User | null;
   loading: boolean;
   isAllowed: boolean;
+  isAdmin: boolean;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -90,8 +91,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await firebaseSignOut(auth);
   };
 
+  const isAdmin = user?.email === "salem.at.ibrahim@gmail.com";
+
   return (
-    <AuthContext.Provider value={{ user, loading, isAllowed, signUp, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, isAllowed, isAdmin, signUp, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

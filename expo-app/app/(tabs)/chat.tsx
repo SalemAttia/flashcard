@@ -23,6 +23,7 @@ import { useChatNotes } from "../../src/store/useChatNotes";
 import { useDecks } from "../../src/store/useDecks";
 import { useChatHistory } from "../../src/store/useChatHistory";
 import { useUserLevel } from "../../src/store/useUserLevel";
+import { useDailyProgress } from "../../src/store/useDailyProgress";
 
 import { LanguageSelector } from "../../src/components/Chat/LanguageSelector";
 import { ChatInput } from "../../src/components/Chat/ChatInput";
@@ -31,6 +32,7 @@ import { SaveCardModal } from "../../src/components/Chat/SaveCardModal";
 import { NotesModal } from "../../src/components/Chat/NotesModal";
 
 export default function ChatScreen() {
+  const { completeItem } = useDailyProgress();
   const { messages, setMessages, addMessage, clearHistory, loaded } =
     useChatHistory();
   const [isLoading, setIsLoading] = useState(false);
@@ -74,6 +76,7 @@ export default function ChatScreen() {
 
       try {
         await addMessage(userMessage);
+        completeItem("chat_session");
         const reply = await sendChatMessage(nextMessages, systemPrompt);
 
         const assistantMessage: ChatMessage = {
@@ -92,7 +95,7 @@ export default function ChatScreen() {
         scrollToEnd();
       }
     },
-    [messages, systemPrompt, scrollToEnd, addMessage],
+    [messages, systemPrompt, scrollToEnd, addMessage, completeItem],
   );
 
   const handleOpenSaveCard = useCallback(
