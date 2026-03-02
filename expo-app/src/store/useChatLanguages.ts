@@ -2,23 +2,26 @@ import { useState, useEffect } from "react";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
-import { Language } from "../types";
+import { Language, WritingLevel } from "../types";
 
 import { sanitize } from "../utils/firestore";
 
 const DEFAULT_STUDY: Language = "da-DK";
 const DEFAULT_NATIVE: Language = "en-US";
+const DEFAULT_LEVEL: WritingLevel = "a1";
 
 export function useChatLanguages() {
   const { user } = useAuth();
   const [studyLang, setStudyLang] = useState<Language>(DEFAULT_STUDY);
   const [nativeLang, setNativeLang] = useState<Language>(DEFAULT_NATIVE);
+  const [userLevel, setUserLevel] = useState<WritingLevel>(DEFAULT_LEVEL);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (!user) {
       setStudyLang(DEFAULT_STUDY);
       setNativeLang(DEFAULT_NATIVE);
+      setUserLevel(DEFAULT_LEVEL);
       setLoaded(false);
       return;
     }
@@ -31,6 +34,7 @@ export function useChatLanguages() {
           const data = snap.data();
           setStudyLang((data.studyLang as Language) ?? DEFAULT_STUDY);
           setNativeLang((data.nativeLang as Language) ?? DEFAULT_NATIVE);
+          setUserLevel((data.userLevel as WritingLevel) ?? DEFAULT_LEVEL);
         }
         setLoaded(true);
       },
@@ -63,5 +67,23 @@ export function useChatLanguages() {
     );
   };
 
-  return { studyLang, nativeLang, changeStudyLang, changeNativeLang, loaded };
+  const changeUserLevel = async (level: WritingLevel) => {
+    setUserLevel(level);
+    if (!user) return;
+    await setDoc(
+      doc(db, "users", user.uid, "settings", "languages"),
+      sanitize({ userLevel: level }),
+      { merge: true },
+    );
+  };
+
+  return {
+    studyLang,
+    nativeLang,
+    userLevel,
+    changeStudyLang,
+    changeNativeLang,
+    changeUserLevel,
+    loaded,
+  };
 }

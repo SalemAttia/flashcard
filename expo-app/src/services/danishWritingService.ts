@@ -1,6 +1,7 @@
 import OpenAI from "openai";
-import { Deck, WritingPrompt, WritingEvaluation, WritingLevel } from "../types";
+import { Deck, WritingPrompt, WritingEvaluation, WritingLevel, Language } from "../types";
 import { LevelConfig } from "../constants/writingLevels";
+import { LANGUAGES } from "../constants/languages";
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
@@ -13,8 +14,14 @@ export async function generateWritingPrompts(
   levelConfig: LevelConfig,
   deck?: Deck | null,
   topic?: string | null,
+  studyLang?: Language,
+  nativeLang?: Language,
 ): Promise<WritingPrompt[]> {
   const openai = getOpenAIClient();
+  const studyLangName =
+    LANGUAGES.find((l) => l.value === (studyLang ?? "da-DK"))?.label ?? "Danish";
+  const nativeLangName =
+    LANGUAGES.find((l) => l.value === (nativeLang ?? "en-US"))?.label ?? "English";
 
   if (!openai) {
     return generateLocalPrompts(levelConfig, deck, topic);
@@ -35,18 +42,18 @@ export async function generateWritingPrompts(
       messages: [
         {
           role: "system",
-          content: `You are a Danish language examiner creating writing prompts for a ${levelConfig.label} (CEFR ${levelConfig.value.toUpperCase()}, ${levelConfig.sublabel}) student. Respond ONLY with a JSON array, no markdown fences.`,
+          content: `You are a ${studyLangName} language examiner creating writing prompts for a ${levelConfig.label} (CEFR ${levelConfig.value.toUpperCase()}, ${levelConfig.sublabel}) student. The student's native language is ${nativeLangName}. Respond ONLY with a JSON array, no markdown fences.`,
         },
         {
           role: "user",
-          content: `Create exactly ${levelConfig.promptCount} Danish writing prompts for level ${levelConfig.value.toUpperCase()}.
+          content: `Create exactly ${levelConfig.promptCount} ${studyLangName} writing prompts for level ${levelConfig.value.toUpperCase()}.
 ${vocabContext}${topicContext}
 
 Each prompt must have:
-- "instruction": string (the prompt written IN DANISH, telling the student what to write)
-- "instructionDa": string (an English translation of the instruction, for the student to reveal if needed)
-- "contextWords": string[] (3-5 Danish words to incorporate, ${deck ? "from the vocabulary list" : "common Danish words appropriate for this level"})
-- "hints": string[] (1-3 helpful Danish phrase starters or grammar hints)
+- "instruction": string (the prompt written in ${studyLangName}, telling the student what to write)
+- "instructionDa": string (a ${nativeLangName} translation of the instruction, for the student to reveal if needed)
+- "contextWords": string[] (3-5 ${studyLangName} words to incorporate, ${deck ? "from the vocabulary list" : `common ${studyLangName} words appropriate for this level`})
+- "hints": string[] (1-3 helpful ${studyLangName} phrase starters or grammar hints)
 - "minWords": ${levelConfig.minWords}
 
 Level expectations:
@@ -228,8 +235,14 @@ export async function evaluateWriting(
   prompt: WritingPrompt,
   userText: string,
   levelConfig: LevelConfig,
+  studyLang?: Language,
+  nativeLang?: Language,
 ): Promise<WritingEvaluation> {
   const openai = getOpenAIClient();
+  const studyLangName =
+    LANGUAGES.find((l) => l.value === (studyLang ?? "da-DK"))?.label ?? "Danish";
+  const nativeLangName =
+    LANGUAGES.find((l) => l.value === (nativeLang ?? "en-US"))?.label ?? "English";
 
   if (!openai) {
     return localFallbackEvaluation(prompt, userText, levelConfig);
@@ -242,7 +255,7 @@ export async function evaluateWriting(
       messages: [
         {
           role: "system",
-          content: `You are an expert Danish language examiner grading a ${levelConfig.label} (CEFR ${levelConfig.value.toUpperCase()}, ${levelConfig.sublabel}) writing submission.
+          content: `You are an expert ${studyLangName} language examiner grading a ${levelConfig.label} (CEFR ${levelConfig.value.toUpperCase()}, ${levelConfig.sublabel}) writing submission. The student's native language is ${nativeLangName}. Provide all feedback in ${nativeLangName}.
 
 Evaluate against these criteria:
 - Grammar: ${levelConfig.evaluationCriteria.grammar}
@@ -256,7 +269,7 @@ Grade strictly but fairly for the level. Respond ONLY with valid JSON, no markdo
         {
           role: "user",
           content: `Writing prompt given to student: "${prompt.instruction}"
-Student's response in Danish:
+Student's response in ${studyLangName}:
 "${userText}"
 
 Return a JSON object with this exact schema:
@@ -264,14 +277,14 @@ Return a JSON object with this exact schema:
   "score": number (0-100),
   "passed": boolean,
   "feedback": {
-    "grammar": "specific grammar feedback",
-    "vocabulary": "vocabulary usage feedback",
-    "spelling": "spelling feedback",
-    "fluency": "fluency and coherence feedback",
-    "overall": "summary comment"
+    "grammar": "specific grammar feedback in ${nativeLangName}",
+    "vocabulary": "vocabulary usage feedback in ${nativeLangName}",
+    "spelling": "spelling feedback in ${nativeLangName}",
+    "fluency": "fluency and coherence feedback in ${nativeLangName}",
+    "overall": "summary comment in ${nativeLangName}"
   },
-  "correctedText": "the student's text rewritten correctly in Danish",
-  "highlightedErrors": [{ "word": "wrong word", "suggestion": "correct word", "reason": "why" }]
+  "correctedText": "the student's text rewritten correctly in ${studyLangName}",
+  "highlightedErrors": [{ "word": "wrong word", "suggestion": "correct word", "reason": "explanation in ${nativeLangName}" }]
 }`,
         },
       ],

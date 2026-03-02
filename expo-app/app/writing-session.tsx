@@ -31,6 +31,7 @@ import {
   WritingEvaluation,
   WritingTestResult,
 } from "../src/types";
+import { useChatLanguages } from "../src/store/useChatLanguages";
 
 type SessionPhase =
   | "generating"
@@ -50,6 +51,7 @@ export default function WritingSessionScreen() {
   const { user } = useAuth();
   const { completeItem } = useDailyProgress();
   const { getDeck } = useDecks();
+  const { studyLang, nativeLang } = useChatLanguages();
   const deck = deckId ? getDeck(deckId) : null;
   const levelConfig = getLevelConfig(level as WritingLevel);
 
@@ -81,7 +83,7 @@ export default function WritingSessionScreen() {
 
   const loadPrompts = async () => {
     try {
-      const generated = await generateWritingPrompts(levelConfig, deck, topic);
+      const generated = await generateWritingPrompts(levelConfig, deck, topic, studyLang, nativeLang);
       if (generated.length === 0) throw new Error("No prompts generated");
       setPrompts(generated);
       setPhase("writing");
@@ -110,6 +112,8 @@ export default function WritingSessionScreen() {
         prompt,
         currentText,
         levelConfig,
+        studyLang,
+        nativeLang,
       );
       setCurrentEvaluation(evaluation);
       setResponses((prev) => [

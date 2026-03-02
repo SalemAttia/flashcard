@@ -29,6 +29,8 @@ import OpenAI from "openai";
 import { Globe } from "lucide-react-native";
 import { Deck, Card, Language } from "../types";
 import { LanguagePicker } from "./LanguagePicker";
+import { useChatLanguages } from "../store/useChatLanguages";
+import { LANGUAGES } from "../constants/languages";
 
 const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_KEY;
 
@@ -51,6 +53,10 @@ export function DeckEditor({
   isGlobal,
   onToggleGlobal,
 }: DeckEditorProps) {
+  const { nativeLang, userLevel } = useChatLanguages();
+  const nativeLangName =
+    LANGUAGES.find((l) => l.value === nativeLang)?.label ?? "English";
+
   const [title, setTitle] = useState(deck?.title || "");
   const [description, setDescription] = useState(deck?.description || "");
   const [frontLang, setFrontLang] = useState<Language>(
@@ -64,17 +70,11 @@ export function DeckEditor({
   const [bulkText, setBulkText] = useState("");
   const [showAiGenerate, setShowAiGenerate] = useState(false);
   const [aiTopic, setAiTopic] = useState("");
-  const [aiLevel, setAiLevel] = useState<
-    "beginner" | "intermediate" | "advanced"
-  >("beginner");
   const [aiCardCount, setAiCardCount] = useState(10);
   const [aiLoading, setAiLoading] = useState(false);
   const [showImageGenerate, setShowImageGenerate] = useState(false);
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageBase64, setImageBase64] = useState<string | null>(null);
-  const [imageLevel, setImageLevel] = useState<
-    "beginner" | "intermediate" | "advanced"
-  >("beginner");
   const [imageLoading, setImageLoading] = useState(false);
 
   const addCard = () => {
@@ -143,22 +143,22 @@ export function DeckEditor({
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert language educator. Generate flashcard pairs for language learners. Always respond with valid JSON only, no markdown fences.",
+            content: `You are an expert multilingual language educator. The student's native language is ${nativeLangName}. Their CEFR level is ${userLevel.toUpperCase()}. Generate flashcard pairs for language learners. Always respond with valid JSON only, no markdown fences.`,
           },
           {
             role: "user",
-            content: `Generate ${aiCardCount} flashcard pairs for the topic "${aiTopic}" at ${aiLevel} level.
+            content: `Generate ${aiCardCount} flashcard pairs for the topic "${aiTopic}" at CEFR ${userLevel.toUpperCase()} level.
 Front language: ${frontLang}
 Back language: ${backLang}
 
 Return a JSON array where each object has:
 { "front": "word/phrase in ${frontLang}", "back": "translation in ${backLang}" }
 
-Guidelines:
-- For beginner: common, everyday words and simple phrases
-- For intermediate: more nuanced vocabulary, common idioms
-- For advanced: specialized terms, complex expressions, rare vocabulary
+Guidelines based on CEFR level:
+- A1: common everyday nouns, basic adjectives, simple greetings
+- A2: everyday vocabulary, simple verbs, short useful phrases
+- B1: wider vocabulary, common idioms, descriptive phrases, compound words
+- B2: specialized terms, complex expressions, nuanced vocabulary, formal register
 - Ensure variety within the topic
 - Return ONLY the JSON array.`,
           },
@@ -206,7 +206,7 @@ Guidelines:
     }
     const result = await ImagePicker.launchCameraAsync({
       base64: true,
-      quality: 0.7,
+      quality: 0.9,
       allowsEditing: true,
     });
     if (!result.canceled && result.assets[0]) {
@@ -226,7 +226,7 @@ Guidelines:
     }
     const result = await ImagePicker.launchImageLibraryAsync({
       base64: true,
-      quality: 0.7,
+      quality: 0.9,
       allowsEditing: true,
     });
     if (!result.canceled && result.assets[0]) {
@@ -252,15 +252,19 @@ Guidelines:
         dangerouslyAllowBrowser: true,
       });
 
+      const frontLangName =
+        LANGUAGES.find((l) => l.value === frontLang)?.label ?? frontLang;
+      const backLangName =
+        LANGUAGES.find((l) => l.value === backLang)?.label ?? backLang;
+
       const response = await openai.chat.completions.create({
-        model: "gpt-4o",
-        temperature: 0.7,
-        max_tokens: 2000,
+        model: "gpt-4o-mini",
+        temperature: 0.3,
+        max_tokens: 4096,
         messages: [
           {
             role: "system",
-            content:
-              "You are an expert language educator. You analyze images and generate vocabulary flashcard pairs based on objects, scenes, actions, and concepts visible in the image. Always respond with valid JSON only, no markdown fences.",
+            content: `You are an expert multilingual OCR and language education assistant. The student's native language is ${nativeLangName} and their CEFR level is ${userLevel.toUpperCase()}. Always respond with valid JSON only, no markdown fences.`,
           },
           {
             role: "user",
@@ -269,25 +273,31 @@ Guidelines:
                 type: "image_url",
                 image_url: {
                   url: `data:image/jpeg;base64,${imageBase64}`,
-                  detail: "low",
+                  detail: "high",
                 },
               },
               {
                 type: "text",
-                text: `Analyze this image and generate vocabulary flashcard pairs at ${imageLevel} level.
-Front language: ${frontLang}
-Back language: ${backLang}
+                text: `Analyze this image thoroughly and create vocabulary flashcard pairs.
+Front language: ${frontLangName} (${frontLang})
+Back language: ${backLangName} (${backLang})
+Student CEFR level: ${userLevel.toUpperCase()}
 
 Return a JSON array where each object has:
-{ "front": "word/phrase in ${frontLang}", "back": "translation in ${backLang}" }
+{ "front": "word/phrase in ${frontLangName}", "back": "translation in ${backLangName}" }
 
-Guidelines:
-- Identify objects, actions, scenes, colors, materials, and concepts visible in the image
-- For beginner: common, everyday nouns and simple adjectives
-- For intermediate: more descriptive vocabulary, verbs, prepositions, short phrases
-- For advanced: nuanced descriptions, compound words, idioms related to the scene
-- Each card should relate to something actually visible in the image
-- Ensure variety - don't repeat similar words
+CRITICAL INSTRUCTIONS:
+- If the image contains ANY readable text (printed, handwritten, signs, labels, captions, UI text, book pages, screenshots), extract ALL of it. Create one card per word or short phrase.
+- If the image shows objects or scenes, identify ALL visible items, actions, colors, materials, and concepts.
+- There is NO limit on the number of cards. Return as many as the image contains. Extract EVERYTHING.
+- Do NOT skip words. Do NOT summarize. Be exhaustive.
+- Every card must relate to something actually visible or readable in the image.
+- Adjust vocabulary complexity to CEFR ${userLevel.toUpperCase()} level:
+  - A1: include all common everyday words, skip highly technical/specialized terms
+  - A2: include everyday vocabulary plus simple descriptive words
+  - B1: include most vocabulary including common idioms and compound words
+  - B2: include everything — specialized terms, nuanced vocabulary, formal register
+- Ensure accurate translations in ${backLangName}.
 - Return ONLY the JSON array.`,
               },
             ],
@@ -604,30 +614,12 @@ Guidelines:
 
             <View className="gap-1.5">
               <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
-                Level
+                Level (from settings)
               </Text>
-              <View className="flex-row gap-2">
-                {(["beginner", "intermediate", "advanced"] as const).map(
-                  (level) => (
-                    <Pressable
-                      key={level}
-                      onPress={() => !aiLoading && setAiLevel(level)}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${aiLevel === level
-                          ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
-                          : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
-                        }`}
-                    >
-                      <Text
-                        className={`text-xs font-bold capitalize ${aiLevel === level
-                            ? "text-indigo-600"
-                            : "text-slate-400"
-                          }`}
-                      >
-                        {level}
-                      </Text>
-                    </Pressable>
-                  ),
-                )}
+              <View className="bg-indigo-50 dark:bg-indigo-950/30 border-2 border-indigo-500 rounded-xl py-3 items-center">
+                <Text className="text-xs font-bold text-indigo-600">
+                  CEFR {userLevel.toUpperCase()}
+                </Text>
               </View>
             </View>
 
@@ -752,30 +744,12 @@ Guidelines:
 
             <View className="gap-1.5">
               <Text className="text-xs font-semibold text-slate-400 uppercase tracking-widest ml-1">
-                Level
+                Level (from settings)
               </Text>
-              <View className="flex-row gap-2">
-                {(["beginner", "intermediate", "advanced"] as const).map(
-                  (level) => (
-                    <Pressable
-                      key={level}
-                      onPress={() => !imageLoading && setImageLevel(level)}
-                      className={`flex-1 py-3 rounded-xl items-center border-2 ${imageLevel === level
-                          ? "bg-indigo-50 dark:bg-indigo-950/30 border-indigo-500"
-                          : "bg-slate-50 dark:bg-slate-950 border-slate-100 dark:border-slate-800"
-                        }`}
-                    >
-                      <Text
-                        className={`text-xs font-bold capitalize ${imageLevel === level
-                            ? "text-indigo-600"
-                            : "text-slate-400"
-                          }`}
-                      >
-                        {level}
-                      </Text>
-                    </Pressable>
-                  ),
-                )}
+              <View className="bg-indigo-50 dark:bg-indigo-950/30 border-2 border-indigo-500 rounded-xl py-3 items-center">
+                <Text className="text-xs font-bold text-indigo-600">
+                  CEFR {userLevel.toUpperCase()}
+                </Text>
               </View>
             </View>
           </View>
